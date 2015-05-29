@@ -5,8 +5,6 @@
  #
  #  Description : GREYC's Magic for Image Computing - G'MIC Language interpreter
  #                ( http://gmic.eu )
- #                This file is also a part of the CImg Library project.
- #                ( http://cimg.sourceforge.net )
  #
  #  Copyright   : David Tschumperle
  #                ( http://tschumperle.users.greyc.fr/ )

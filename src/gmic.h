@@ -5,8 +5,6 @@
  #
  #  Description : GREYC's Magic for Image Computing
  #                ( http://gmic.eu )
- #                This file is also a part of the CImg Library project.
- #                ( http://cimg.sourceforge.net )
  #
  #  Note        : Include this file in your C++ source code, if you
  #                want to use the G'MIC interpreter in your own program.

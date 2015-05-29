@@ -18454,7 +18454,7 @@ gimp_autocrop_layers :
 #@gimp_en : available at:"}
 #@gimp_en : note = link("http://gmic.eu/")
 #@gimp_en : note = note{"and"}
-#@gimp_en : note = link("http://cimg.sourceforge.net/")
+#@gimp_en : note = link("http://cimg.eu/")
 #@gimp_en : note = note{"\n
 #@gimp_en : If you appreciate <b>G'MIC</b>, you are welcome to send us a nice postcard from your place, at:\n\n
 #@gimp_en : <small><tt>David Tschumperl&#233;,\n Laboratoire GREYC (CNRS UMR 6072), Equipe Image,\n
@@ -18537,7 +18537,7 @@ gimp_logo_en :
 #@gimp_fr : disponibles aux adresses :"}
 #@gimp_fr : note = link("http://gmic.eu/")
 #@gimp_fr : note = note{"et"}
-#@gimp_fr : note = link("http://cimg.sourceforge.net/")
+#@gimp_fr : note = link("http://cimg.eu/")
 #@gimp_fr : note = note{"\n
 #@gimp_fr : Si vous appr&#233;ciez <b>G'MIC</b>, vous pouvez nous le faire savoir en nous envoyant une jolie carte
 #@gimp_fr : postale de votre ville ou r&#233;gion, &#224; l'adresse :\n\n
@@ -18566,7 +18566,7 @@ gimp_logo_fr :
 #@gimp_ca : disponibles a :"}
 #@gimp_ca : note = link("http://gmic.eu/")
 #@gimp_ca : note = note{"i"}
-#@gimp_ca : note = link("http://cimg.sourceforge.net/")
+#@gimp_ca : note = link("http://cimg.eu/")
 #@gimp_ca : note = note{"\n
 #@gimp_ca : Si t'agrada el <b>G'MIC</b>, pots enviar-nos una postal del lloc on vius, a :\n\n
 #@gimp_ca : <small><tt>David Tschumperl&#233;,\n Laboratoire GREYC (CNRS UMR 6072), Equipe Image,\n
@@ -18784,31 +18784,31 @@ _gimp_manage_filter_sources :
 #@gimp : note = note{" <b>-</b> We've received <b>25</b> postcards from <b>G'MIC</b> enthusiasts so far.
 #@gimp :               You could be the <b>26th</b> sender :)"}
 #@gimp : note = note{" <b>-</b> A big hug goes to these postcard senders (recently received first) :"}
-#@gimp : link = link(0,"[1] ZondeR - France","http://cimg.sourceforge.net/img/postcard51.jpg")
-#@gimp : link = link(0,"[2] Bill C. - USA","http://cimg.sourceforge.net/img/postcard50.jpg")
-#@gimp : link = link(0,"[3] Michael T. - France","http://cimg.sourceforge.net/img/postcard49.jpg")
-#@gimp : link = link(0,"[4] Patrick Wauters - Lisboa","http://cimg.sourceforge.net/img/postcard48.jpg")
-#@gimp : link = link(0,"[5] Akky [Gimpchat] - Australia","http://cimg.sourceforge.net/img/postcard47.jpg")
-#@gimp : link = link(0,"[6] Michel Thomas - Germany","http://cimg.sourceforge.net/img/postcard45.jpg")
-#@gimp : link = link(0,"[7] Pierre-Yves - Ile de Batz/France","http://cimg.sourceforge.net/img/postcard44.jpg")
-#@gimp : link = link(0,"[8] Family Hamacher - Trier/Germany","http://cimg.sourceforge.net/img/postcard43.jpg")
-#@gimp : link = link(0,"[9] Benoit Gauzere and Francois Lozes - Hokusai/Japan","http://cimg.sourceforge.net/img/postcard41.jpg")
-#@gimp : link = link(0,"[10] Dr. Rainer Teubner - Seligenstadt/Germany","http://cimg.sourceforge.net/img/postcard40.jpg")
-#@gimp : link = link(0,"[11] Mauro Mitrino - Mantova/Italy","http://cimg.sourceforge.net/img/postcard39.jpg")
-#@gimp : link = link(0,"[12] Werner Meier - Mettlach/Germany","http://cimg.sourceforge.net/img/postcard37.jpg")
-#@gimp : link = link(0,"[13] Arto Huotari - Helsinki/Finland","http://cimg.sourceforge.net/img/postcard36.jpg")
-#@gimp : link = link(0,"[14] Benoit Gauzere - California/USA","http://cimg.sourceforge.net/img/postcard33.jpg")
-#@gimp : link = link(0,"[15] Arkadi Gelfond - Foster City - California/USA","http://cimg.sourceforge.net/img/postcard30.jpg")
-#@gimp : link = link(0,"[16] Corinne Masimann - Neuchatel/Switzerland","http://cimg.sourceforge.net/img/postcard29.jpg")
-#@gimp : link = link(0,"[17] Mahvin - Portland/USA","http://cimg.sourceforge.net/img/postcard27.jpg")
-#@gimp : link = link(0,"[18] Vincent Roullier - Caen/France","http://cimg.sourceforge.net/img/postcard26.jpg")
-#@gimp : link = link(0,"[19] M???? - Munich/Germany","http://cimg.sourceforge.net/img/postcard24.jpg")
-#@gimp : link = link(0,"[20] F. Albior - Jaca/Spain","http://cimg.sourceforge.net/img/postcard23.jpg")
-#@gimp : link = link(0,"[21] PhotoComIX - Frascati/Italy","http://cimg.sourceforge.net/img/postcard22.jpg")
-#@gimp : link = link(0,"[22] Guy Poizat - Cabestany/France","http://cimg.sourceforge.net/img/postcard21.jpg")
-#@gimp : link = link(0,"[23] Institut for Biomathematik und Biometrie - Neuherberg/Germany","http://cimg.sourceforge.net/img/postcard20.jpg")
-#@gimp : link = link(0,"[24] Jaime - Barcelona/Spain","http://cimg.sourceforge.net/img/postcard14.jpg")
-#@gimp : link = link(0,"[25] Jean-Michel Webbe - Guadeloupe/France","http://cimg.sourceforge.net/img/postcard15.jpg")
+#@gimp : link = link(0,"[1] ZondeR - France","http://cimg.eu/img/postcard51.jpg")
+#@gimp : link = link(0,"[2] Bill C. - USA","http://cimg.eu/img/postcard50.jpg")
+#@gimp : link = link(0,"[3] Michael T. - France","http://cimg.eu/img/postcard49.jpg")
+#@gimp : link = link(0,"[4] Patrick Wauters - Lisboa","http://cimg.eu/img/postcard48.jpg")
+#@gimp : link = link(0,"[5] Akky [Gimpchat] - Australia","http://cimg.eu/img/postcard47.jpg")
+#@gimp : link = link(0,"[6] Michel Thomas - Germany","http://cimg.eu/img/postcard45.jpg")
+#@gimp : link = link(0,"[7] Pierre-Yves - Ile de Batz/France","http://cimg.eu/img/postcard44.jpg")
+#@gimp : link = link(0,"[8] Family Hamacher - Trier/Germany","http://cimg.eu/img/postcard43.jpg")
+#@gimp : link = link(0,"[9] Benoit Gauzere and Francois Lozes - Hokusai/Japan","http://cimg.eu/img/postcard41.jpg")
+#@gimp : link = link(0,"[10] Dr. Rainer Teubner - Seligenstadt/Germany","http://cimg.eu/img/postcard40.jpg")
+#@gimp : link = link(0,"[11] Mauro Mitrino - Mantova/Italy","http://cimg.eu/img/postcard39.jpg")
+#@gimp : link = link(0,"[12] Werner Meier - Mettlach/Germany","http://cimg.eu/img/postcard37.jpg")
+#@gimp : link = link(0,"[13] Arto Huotari - Helsinki/Finland","http://cimg.eu/img/postcard36.jpg")
+#@gimp : link = link(0,"[14] Benoit Gauzere - California/USA","http://cimg.eu/img/postcard33.jpg")
+#@gimp : link = link(0,"[15] Arkadi Gelfond - Foster City - California/USA","http://cimg.eu/img/postcard30.jpg")
+#@gimp : link = link(0,"[16] Corinne Masimann - Neuchatel/Switzerland","http://cimg.eu/img/postcard29.jpg")
+#@gimp : link = link(0,"[17] Mahvin - Portland/USA","http://cimg.eu/img/postcard27.jpg")
+#@gimp : link = link(0,"[18] Vincent Roullier - Caen/France","http://cimg.eu/img/postcard26.jpg")
+#@gimp : link = link(0,"[19] M???? - Munich/Germany","http://cimg.eu/img/postcard24.jpg")
+#@gimp : link = link(0,"[20] F. Albior - Jaca/Spain","http://cimg.eu/img/postcard23.jpg")
+#@gimp : link = link(0,"[21] PhotoComIX - Frascati/Italy","http://cimg.eu/img/postcard22.jpg")
+#@gimp : link = link(0,"[22] Guy Poizat - Cabestany/France","http://cimg.eu/img/postcard21.jpg")
+#@gimp : link = link(0,"[23] Institut for Biomathematik und Biometrie - Neuherberg/Germany","http://cimg.eu/img/postcard20.jpg")
+#@gimp : link = link(0,"[24] Jaime - Barcelona/Spain","http://cimg.eu/img/postcard14.jpg")
+#@gimp : link = link(0,"[25] Jean-Michel Webbe - Guadeloupe/France","http://cimg.eu/img/postcard15.jpg")
 #@gimp : sep = separator()
 #@gimp : note = note{"\nMay the force be with you!"}
 gimp_friends :

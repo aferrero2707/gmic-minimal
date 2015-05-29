@@ -5,8 +5,6 @@
  #
  #  Description : G'MIC for GIMP - A plug-in to allow the use
  #                of G'MIC commands in GIMP.
- #                This file is a part of the CImg Library project.
- #                ( http://cimg.sourceforge.net )
  #
  #  Copyright   : David Tschumperle
  #                ( http://tschumperle.users.greyc.fr/ )
