@@ -3225,19 +3225,19 @@ update_server : -skip ${1=@.},${2=1}
   _nb_sources=0
   -load_gmic http://gmic.eu/gmic_def.$1
   -if {$1!=@.} -l -load_gmic http://gmic.eu/backports$1.gmic -onfail -endl -endif
-  -x "cd $HOME/work/src/gmic_community && git pull"
-  -load_gmic ${HOME}/work/src/gmic_community/compatibility.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/garagecoder.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/garryosgood.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/gentlemanbeggar.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/iainfergusson.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/jboulanger.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/karos.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/naggobot.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/photocomix.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/ronounours.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/tomkeil.gmic
-  -load_gmic ${HOME}/work/src/gmic_community/samj.gmic
+  -x "cd $HOME/work/src/gmic-community && git pull"
+  -load_gmic ${HOME}/work/src/gmic-community/compatibility.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/garagecoder.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/garryosgood.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/gentlemanbeggar.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/iainfergusson.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/jboulanger.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/karos.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/naggobot.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/photocomix.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/ronounours.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/tomkeil.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/samj.gmic
 
   # Merge them together.
   -i[0] (10) -i[2--1] ({"'\n#@gimp ________________\n'"}) -y -a y -discard 13 -replace 9,32
