@@ -3554,25 +3554,6 @@ CImg<char> gmic::substitute_item(const char *const source,
             is_substitution_done = true;
           }
 
-          // Strings comparison.
-          if (!is_substitution_done && inbraces.width()>=5) {
-            char *const peq = std::strstr(inbraces,"'=='");
-            if (peq) {
-              *peq = 0;
-              cimg_snprintf(substr,substr.width(),"%d",(int)!std::strcmp(inbraces,peq + 4));
-              CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-              is_substitution_done = true;
-            } else {
-              char *const pne = std::strstr(inbraces,"'!='");
-              if (pne) {
-                *pne = 0;
-                cimg_snprintf(substr,substr.width(),"%d",(int)std::strcmp(inbraces,pne + 4));
-                CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-                is_substitution_done = true;
-              }
-            }
-          }
-
           // Mathematical expression [truncated output].
           if (!is_substitution_done && inbraces.width()>=3 && *inbraces=='_') try {
               cimg_snprintf(substr,substr.width(),"%g",img.eval(inbraces.data(1)));
