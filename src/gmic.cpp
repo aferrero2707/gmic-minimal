@@ -5081,10 +5081,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (!is_cond) {
               if (scope.size()>1 && scope.back()[0]!='*')
                 error(images,0,scope.back().data(),
-                      "Command '-check': Expression '%s' is false (or file is non-existent).",
+                      "Command '-check': Expression (or file) '%s' is false (or non-existent).",
                       gmic_argument_text());
               else error(images,0,0,
-                         "Command '-check': Expression '%s' is false (or file is non-existent).",
+                         "Command '-check': Expression (or file) '%s' is false (or non-existent).",
                          gmic_argument_text());
             }
             ++position; continue;
