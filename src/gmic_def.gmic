@@ -1317,6 +1317,9 @@ dg : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},${6=0},${7=0
 
 #@gmic display_graph : _width>32,_height>32,_plot_type,_vertex_type,_xmin,_xmax,_ymin,_ymax,_xlabel,_ylabel
 #@gmic : Render graph plot from selected image data.
+#@gmic : 'plot_type' can be { 0=none | 1=lines | 2=splines | 3=bar }.
+#@gmic : 'vertex_type' can be { 0=none | 1=points | 2,3=crosses | 4,5=circles | 6,7=squares }.
+#@gmic : 'xmin','xmax','ymin','ymax' set the coordinates of the displayed xy-axes.
 #@gmic : Default values: 'width=640', 'height=480', 'plot_type=1', 'vertex_type=1', 'xmin=xmax=ymin=ymax=0', 'xlabel="x-axis"' and 'ylabel="y-axis"'.
 #@gmic : $ 128,1,1,1,'cos(x/10+?)' --display_graph 400,300,3
 display_graph : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},${6=0},${7=0},${8=0},"${9=x-axis}","${10=y-axis}"
@@ -14303,7 +14306,7 @@ _oct2dec :
 
 #@gmic padint : number,_size>0
 #@gmic : Return a integer with 'size' digits (eventually left-padded with '0').
-padint : -skip ${2=4}
+padint : -check "isint($1)" -skip ${2=4}
   -v - -u "" -repeat $2 -u @{}{int($1/10^$<)%10} -done -v +
 
 #@gmic path_gimp
