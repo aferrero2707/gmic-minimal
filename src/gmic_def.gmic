@@ -3228,7 +3228,7 @@ update_server : -skip ${1=@.},${2=1}
   _nb_sources=0
   -load_gmic http://gmic.eu/gmic_def.$1
   -if {$1!=@.} -l -load_gmic http://gmic.eu/backports$1.gmic -onfail -endl -endif
-  -x "cd $HOME/work/src/gmic-community && git pull"
+  -x "cd $HOME/work/src/gmic-community && git pull 2>&1 >/dev/null"
   -load_gmic ${HOME}/work/src/gmic-community/compatibility.gmic
   -load_gmic ${HOME}/work/src/gmic-community/garagecoder.gmic
   -load_gmic ${HOME}/work/src/gmic-community/garryosgood.gmic
