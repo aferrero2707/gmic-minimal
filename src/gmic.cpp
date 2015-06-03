@@ -5073,24 +5073,19 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               is_filename = true;
               is_cond = gmic_check_filename(name);
             }
-            if (verbosity>0 || is_debug) {
+            if (verbosity>0 || is_debug)
               print(images,0,"Check %s '%s' -> %s.",
                     is_filename?"file":"expression",
                     gmic_argument_text(),
                     is_filename?(is_cond?"found":"not found"):(is_cond?"true":"false"));
-            }
             if (!is_cond) {
               if (scope.size()>1 && scope.back()[0]!='*')
                 error(images,0,scope.back().data(),
-                      "Command '-check': %s '%s' %s.",
-                      is_filename?"file":"expression",
-                      gmic_argument_text(),
-                      is_filename?"does not exist":"is false");
+                      "Command '-check': Expression (or file) '%s' is false (or non-existent).",
+                      gmic_argument_text());
               else error(images,0,0,
-                         "Command '-check': %s '%s' %s.",
-                         is_filename?"file":"expression",
-                         gmic_argument_text(),
-                         is_filename?"does not exist":"is false");
+                         "Command '-check': Expression (or file) '%s' is false (or non-existent).",
+                         gmic_argument_text());
             }
             ++position; continue;
           }
