@@ -2321,7 +2321,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
   CImg<int> layer_dimensions(spt.images.size(),4);
   CImg<char> layer_name(256);
 
-  const int image_id = gimp_item_get_image(layers[0]);
   int is_selection = 0, sel_x0 = 0, sel_y0 = 0, sel_x1 = 0, sel_y1 = 0;
   if (!gimp_selection_bounds(image_id,&is_selection,&sel_x0,&sel_y0,&sel_x1,&sel_y1)) is_selection = 0;
   else if (output_mode<1 || output_mode>2) sel_x0 = sel_y0 = 0;
