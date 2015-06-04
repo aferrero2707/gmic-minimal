@@ -3228,7 +3228,7 @@ update_server : -skip ${1=@.},${2=1}
   _nb_sources=0
   -load_gmic http://gmic.eu/gmic_def.$1
   -if {$1!=@.} -l -load_gmic http://gmic.eu/backports$1.gmic -onfail -endl -endif
-  -x "cd $HOME/work/src/gmic-community && git pull"
+  -x "cd $HOME/work/src/gmic-community && git pull 2>&1 >/dev/null"
   -load_gmic ${HOME}/work/src/gmic-community/compatibility.gmic
   -load_gmic ${HOME}/work/src/gmic-community/garagecoder.gmic
   -load_gmic ${HOME}/work/src/gmic-community/garryosgood.gmic
@@ -3468,8 +3468,8 @@ update_server : -skip ${1=@.},${2=1}
   # Display list of filters (sorted alphabetically) on stdout.
   -if {$2" && "$1==@.}
     -v + -e[] "> Output list of filters in stdout.\n" -v -
-    -x "date +%Y,%m,%d,%H >"@{-path_tmp}/date.dlm
-    @{-path_tmp}/date.dlm
+    -x "date +%Y,%m,%d,%H >"@{-path_tmp}date.dlm
+    @{-path_tmp}date.dlm
     -echo_stdout "*** List of filters in the G\47MIC plug-in for GIMP ("$nb_filters" filters, on "{i}/{i(1)}/{i(2)}" "{i[3]}:00") ***\n"
     -rm[-1]
     -echo_stdout "* List of filters, sorted by path:\n"
@@ -13978,7 +13978,7 @@ file_mv :
 #@gmic : Return a random filename for storing temporary data.
 file_rand :
   -v -
-  -do filename=@{-path_tmp}@{-file_slash}gmic@%{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}
+  -do filename=@{-path_tmp}gmic@%{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}
   -while $filename
   -u $filename
   -v +
@@ -13997,11 +13997,6 @@ file_rm :
     -x "rm -f \"$1\""
   -endif
   -v +
-
-#@gmic file_slash
-#@gmic : Return '/' or '\' as a path separator for filenames.
-file_slash :
-  -v - -if @{-is_windows} -u "\\" -else -u "/" -endif -v +
 
 #@gmic filename : filename,_number1,_number2,...,_numberN
 #@gmic : Return a filename numbered with specified indices.
@@ -14313,26 +14308,33 @@ padint : -check "isint($1)" -skip ${2=4}
 #@gmic : Return a path to store GIMP configuration files for one user (whose value is OS-dependent).
 path_gimp :
   -v -
-  -if {narg({'${GIMP2_DIRECTORY}'})} -u ${GIMP2_DIRECTORY} -v + -return -endif
-  -if {narg({'${USERPROFILE}'})} -u ${USERPROFILE}
-  -elif {narg({'${HOME}'})} -u ${HOME}
-  -else -u ""
+  -if {!narg($_path_gimp)}
+    -if {narg({'${GIMP2_DIRECTORY}'})} _path_gimp=${GIMP2_DIRECTORY}
+    -elif {narg({'${USERPROFILE}'})} _path_gimp=${USERPROFILE}
+    -elif {narg({'${HOME}'})} _path_gimp=${HOME}
+    -endif
+    -if @{-is_windows} sep=\\ -else sep=/ -endif
+    -if $_path_gimp$sep.gimp-2.8${sep}pluginrc _path_gimp=$_path_gimp$sep.gimp-2.8$sep
+    -elif $_path_gimp$sep.gimp-2.6${sep}pluginrc _path_gimp=$_path_gimp$sep.gimp-2.6$sep
+    -else _path_gimp=@{-path_tmp}
+    -endif
   -endif
-  -if @{}/.gimp-2.8/pluginrc -u @{}/.gimp-2.8
-  -elif @{}/.gimp-2.6/pluginrc -u @{}/.gimp-2.6
-  -else -u @{-path_tmp}
-  -endif -v +
+  -u $_path_gimp
+  -v +
 
 #@gmic path_tmp
 #@gmic : Return a path to store temporary files (whose value is OS-dependent).
 path_tmp :
-  -v - -u ""
-  -if {narg({'${TMP}'})} -u ${TMP}
-  -elif {narg({'${TEMP}'})} -u ${TEMP}
-  -elif {narg({'${TMPDIR}'})} -u ${TMPDIR}
-  -elif {narg({'${HOME}'})} -u "/tmp"
-  -else -u ""
+  -v -
+  -if {!narg($_path_tmp)}
+    -if {narg({'${TMP}'})} _path_tmp=${TMP}
+    -elif {narg({'${TEMP}'})} _path_tmp=${TEMP}
+    -elif {narg({'${TMPDIR}'})} _path_tmp=${TMPDIR}
+    -elif {narg({'${HOME}'})} _path_tmp="/tmp"
+    -endif
+    -if @{-is_windows} _path_tmp=$_path_tmp\\ -else _path_tmp=$_path_tmp/ -endif
   -endif
+  -u $_path_tmp
   -v +
 
 #@gmic path_prc
@@ -18850,13 +18852,13 @@ gimp_gmicky :
 gimp_gmicky_preview :
   w={w} h={h} -rm
   -if {$1==0}
-    filename=@{-path_tmp}/gmicky_small.cimgz
+    filename=@{-path_tmp}gmicky_small.cimgz
     url=http://gmic.eu/img/gmicky_small.cimgz
   -elif {$1==1}
-    filename=@{-path_tmp}/gmicky_wilber_small.cimgz
+    filename=@{-path_tmp}gmicky_wilber_small.cimgz
     url=http://gmic.eu/img/gmicky_wilber_small.cimgz
   -else
-    filename=@{-path_tmp}/roddy_small.cimgz
+    filename=@{-path_tmp}roddy_small.cimgz
     url=http://gmic.eu/img/roddy_small.cimgz
   -endif
   -if $filename $filename -else -i $url -o $filename -endif
@@ -18898,6 +18900,7 @@ gimp_gmicky_preview :
 #@gimp : - <b>05/14/2014</b> : version <i>1.5.9.0</i>.\n
 #@gimp : - <b>08/20/2014</b> : version <i>1.6.0.0</i>.\n
 #@gimp : - <span foreground="purple"><b>05/23/2015</b> : version <i>1.6.3.1</i> (Current stable).</span>\n
+#@gimp : - <b>06/03/2015</b> : version <i>1.6.4.0</i> (Current pre-release).\n
 #@gimp : "}
 #@gimp : sep = separator()
 #@gimp : link = link("View latest changelog","https://www.flickr.com/groups/gmic/discuss/72157652079823575/")
@@ -18944,7 +18947,7 @@ gimp_survey : -skip $"*"
 
 gimp_survey_preview :
   -if $-1
-    lockname=@{-path_tmp}/.gmic_survey.lock
+    lockname=@{-path_tmp}.gmic_survey.lock
     -if $lockname -gimp_print_preview "Your answers have been sent.",20,"Thank you!",16
     -else
       -str2hex $"*",@.
@@ -19028,7 +19031,7 @@ survey :
   -r2dx 1280 -round
 
   # Save result.
-  out=@{-path_tmp}/gmic_survey.png -o $out
+  out=@{-path_tmp}gmic_survey.png -o $out
   -l[] GMIC_LOGIN=@{-gmic_ftp\ 0} -onfail GMIC_LOGIN="" -endl
   -l[] GMIC_PASSWD=@{-gmic_ftp\ 1} -onfail GMIC_PASSWD="" -endl
   -if {narg($GMIC_LOGIN)}
@@ -21053,11 +21056,11 @@ gimp_apply_Bcurve_preview :
   -gimp_apply_RGBcurve_preview[^-1] @-1,2,${-2,-1} -rm[-1]
 
 gimp_apply_RGBcurve_configfile :
-  filename=@{-path_tmp}/.gmic_RGBcurve.dlm
+  filename=@{-path_tmp}.gmic_RGBcurve.dlm
   -if $filename $filename -else (0,-1,128,-1,128,-1,128,-1,128,-1,128,255,1) -r[-1] 100%,3 -endif
 
 gimp_apply_RGBcurve_preview :
-  (${1--3}) -r[-1] 13,3,1,1,-1 -o[-1] @{-path_tmp}/.gmic_RGBcurve.dlm -rm[-1]
+  (${1--3}) -r[-1] 13,3,1,1,-1 -o[-1] @{-path_tmp}.gmic_RGBcurve.dlm -rm[-1]
   -function1d $13,0,$1,\
                   @{"-if {$2>=0} -u $2,$3, -else -u \"\" -endif"}\
                   @{"-if {$4>=0} -u $4,$5, -else -u \"\" -endif"}\
@@ -21230,11 +21233,11 @@ gimp_apply_Crcurve_preview :
   -gimp_apply_YCbCrcurve_preview[^-1] @-1,2,${-2,-1} -rm[-1]
 
 gimp_apply_YCbCrcurve_configfile :
-  filename=@{-path_tmp}/.gmic_YCbCrcurve.dlm
+  filename=@{-path_tmp}.gmic_YCbCrcurve.dlm
   -if $filename $filename -else (0,-1,128,-1,128,-1,128,-1,128,-1,128,255,1) -r[-1] 100%,3 -endif
 
 gimp_apply_YCbCrcurve_preview :
-  (${1--3}) -r[-1] 13,3,1,1,-1 -o[-1] @{-path_tmp}/.gmic_YCbCrcurve.dlm -rm[-1]
+  (${1--3}) -r[-1] 13,3,1,1,-1 -o[-1] @{-path_tmp}.gmic_YCbCrcurve.dlm -rm[-1]
   -function1d $13,0,$1,\
                   @{"-if {$2>=0} -u $2,$3, -else -u \"\" -endif"}\
                   @{"-if {$4>=0} -u $4,$5, -else -u \"\" -endif"}\
@@ -21408,11 +21411,11 @@ gimp_apply_bcurve_preview :
   -gimp_apply_Labcurve_preview[^-1] @-1,2,${-2,-1} -rm[-1]
 
 gimp_apply_Labcurve_configfile :
-  filename=@{-path_tmp}/.gmic_Labcurve.dlm
+  filename=@{-path_tmp}.gmic_Labcurve.dlm
   -if $filename $filename -else (0,-1,128,-1,128,-1,128,-1,128,-1,128,255,1) -r[-1] 100%,3 -endif
 
 gimp_apply_Labcurve_preview :
-  (${1--3}) -r[-1] 13,3,1,1,-1 -o[-1] @{-path_tmp}/.gmic_Labcurve.dlm -rm[-1]
+  (${1--3}) -r[-1] 13,3,1,1,-1 -o[-1] @{-path_tmp}.gmic_Labcurve.dlm -rm[-1]
   -function1d $13,0,$1,\
                   @{"-if {$2>=0} -u $2,$3, -else -u \"\" -endif"}\
                   @{"-if {$4>=0} -u $4,$5, -else -u \"\" -endif"}\
@@ -21880,7 +21883,7 @@ gimp_transfer_rgb_preview :
   -if {@#<2} -gimp_print_preview "Warning:",,"This filter requires at least two input layers to work properly." -return -endif
   -_gimp_transfer_rgb[]
   ref={if($4,0,-1)}
-  pf=@{-path_tmp}/gmic_tmp -o[$ref] $pf
+  pf=@{-path_tmp}gmic_tmp -o[$ref] $pf
   -gimp_split_preview[^$ref] "-i "$pf" -gimp_transfer_rgb $1,$2,0,0,0 -rm[-1]",$-1
   -if $4 -mv[0] @# -endif
   -if $6 -repeat {@#-1} -l[$>,-1]
@@ -26304,7 +26307,7 @@ gimp_custom_gradient_preview : -skip "${15=}"
 gimp_custom_gradient : -skip "${15=}"
   -_gimp_custom_gradient0 ${1-14},"$15",${16--1}
   -if {$-1>=0&&narg("$15")}
-    dir_ggr=@{-path_gimp}/gradients
+    dir_ggr=@{-path_gimp}gradients
     0 -nm[-1] @{"-normalize_filename \"$15\""} name_ggr=@{-1,b} -rm[-1] -output_ggr[-1] $dir_ggr/$name_ggr.ggr,"$15"
   -endif
   -i[-2] (0^0^0^0) -a[-2,-1] x
@@ -26380,7 +26383,7 @@ _gimp_custom_gradient1 :
 gimp_line_gradient : -skip "${10=}"
   -_gimp_line_gradient $*
   -if {narg("$10")}
-    dir_ggr=@{-path_gimp}/gradients
+    dir_ggr=@{-path_gimp}gradients
     0 -nm[-1] @{"-normalize_filename \"$10\""} name_ggr=@{-1,b} -rm[-1] -output_ggr[-1] $dir_ggr/$name_ggr.ggr,"$10"
   -endif
   -repeat @# -r[$>] 100%,64,1,100% -done
@@ -27359,7 +27362,7 @@ gimp_gmic_demos :
   --l[$sel] -m "foo : -x_"$com -foo -rm -uncommand foo -endl
 
 gimp_gmic_demos_preview :
-  -rm filename=@{-path_tmp}/gmic_demos.cimgz
+  -rm filename=@{-path_tmp}gmic_demos.cimgz
   -if $filename $filename
   -else -l[] http://gmic.eu/img/gmic_demos.cimgz -o $filename -endl
   -endif

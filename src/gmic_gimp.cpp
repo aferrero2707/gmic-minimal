@@ -1155,7 +1155,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
     if (line[0]!='#' || line[1]!='@' || line[2]!='g' || // Check for a '#@gimp' line.
         line[3]!='i' || line[4]!='m' || line[5]!='p') continue;
     if (line[6]=='_') { // Check for a localized filter.
-      // Weither the entry match current locale or not.
+      // Whether the entry match current locale or not.
       if (line[7]==locale[0] && line[8]==locale[1] && line[9]==' ') _line = line.data() + 10;
       else continue;
     } else if (line[6]==' ') _line = line.data() + 7; else continue; // Check for a non-localized filter.
