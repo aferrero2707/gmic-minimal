@@ -12236,6 +12236,9 @@ sketchbw :
 
     -if $14 # Render sketch with curved strokes
       -repeat $1
+
+      -w[0]
+
         alpha={($2+$>*$3/$1)*pi/180}
         --*[-4] {cos($alpha)} --*[-4] {sin($alpha)} -+[-2,-1]
         --*[-4] {cos($alpha)} --*[-4] {sin($alpha)} -+[-2,-1]
