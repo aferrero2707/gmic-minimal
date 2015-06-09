@@ -4842,47 +4842,6 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           // Arc-tangent.
           gmic_simple_item("-atan",atan,"Compute pointwise arc-tangent of image%s.");
 
-          // Draw axes.
-          if (!std::strcmp("-axes",command)) {
-            gmic_substitute_args();
-            float xmin = 0, xmax = 0, ymin = 0, ymax = 0, siz = 13;
-            sep = *color = 0;
-            pattern = ~0U; opacity = 1;
-            if (std::sscanf(argument,"%f,%f%c",
-                            &xmin,&xmax,&end)==2 ||
-                std::sscanf(argument,"%f,%f,%f,%f%c",
-                            &xmin,&xmax,&ymin,&ymax,&end)==4 ||
-                std::sscanf(argument,"%f,%f,%f,%f,%f%c",
-                            &xmin,&xmax,&ymin,&ymax,&siz,&end)==5 ||
-                std::sscanf(argument,"%f,%f,%f,%f,%f,%f%c",
-                            &xmin,&xmax,&ymin,&ymax,&siz,&opacity,&end)==6 ||
-                (std::sscanf(argument,"%f,%f,%f,%f,%f,%f,0%c%x%c",
-                             &xmin,&xmax,&ymin,&ymax,&siz,&opacity,&sep,&pattern,&end)==8 &&
-                 sep=='x') ||
-                (std::sscanf(argument,"%f,%f,%f,%f,%f,%f,%4095[0-9.eEinfa,+-]%c",
-                             &xmin,&xmax,&ymin,&ymax,&siz,&opacity,color,&end)==7 &&
-                 (bool)(pattern=~0U)) ||
-                (*color=0,std::sscanf(argument,"%f,%f,%f,%f,%f,%f,0%c%x,%4095[0-9.eEinfa,+-]%c",
-                                      &xmin,&xmax,&ymin,&ymax,&siz,&opacity,
-                                      &sep,&pattern,color,&end)==9 && sep=='x')) {
-              siz = cimg::round(siz);
-              print(images,0,"Draw xy-axes on image%s, with x-range (%g,%g), y-range (%g,%g), "
-                    "font height %g, opacity %g, pattern 0x%x and color (%s).",
-                    gmic_selection,
-                    xmin,xmax,
-                    ymin,ymax,
-                    siz,opacity,pattern,
-                    *color?color:"default");
-              cimg_forY(selection,l) {
-                CImg<T> &img = images[selection[l]];
-                col.assign(img.spectrum(),1,1,1,0).fill(color,true);
-                gmic_apply(draw_axes(xmin,xmax,ymin,ymax,col.data(),opacity,
-                                     -60,-60,0,0,pattern,pattern,(unsigned int)siz));
-              }
-            } else arg_error("axes");
-            is_released = false; ++position; continue;
-          }
-
         } // command1=='a'.
 
         //----------------------------

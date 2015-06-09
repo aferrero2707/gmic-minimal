@@ -1320,7 +1320,7 @@ dg : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},${6=0},${7=0
 #@gmic : 'plot_type' can be { 0=none | 1=lines | 2=splines | 3=bar }.
 #@gmic : 'vertex_type' can be { 0=none | 1=points | 2,3=crosses | 4,5=circles | 6,7=squares }.
 #@gmic : 'xmin','xmax','ymin','ymax' set the coordinates of the displayed xy-axes.
-#@gmic : Default values: 'width=640', 'height=480', 'plot_type=1', 'vertex_type=1', 'xmin=xmax=ymin=ymax=0', 'xlabel="x-axis"' and 'ylabel="y-axis"'.
+#@gmic : Default values: 'width=640', 'height=480', 'plot_type=1', 'vertex_type=1', 'xmin=xmax=ymin=ymax=0 (auto)', 'xlabel="x-axis"' and 'ylabel="y-axis"'.
 #@gmic : $ 128,1,1,1,'cos(x/10+?)' --display_graph 400,300,3
 display_graph : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},${6=0},${7=0},${8=0},"${9=x-axis}","${10=y-axis}"
   -_display_graph ${1-8},"$9","$10"
@@ -1334,12 +1334,25 @@ _display_graph : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},
     -if {$5==$6} xmin=0 xmax={$siz-$one} -else xmin={min($5,$6)} xmax={max($5,$6)} -endif
     -if {$7==$8} ymin={im-(iM-im)/20} ymax={iM+(iM-im)/20} -else ymin={min($7,$8)} ymax={max($7,$8)} -endif
 
+    # Compute drawing variables.
+    deltax={abs($xmax-$xmin)}
+    scalex={10^round(log10($deltax)-1)}
+    mx0={round(min($1,$2),$scalex,-1)}
+    Mx0={round(max($1,$2),$scalex,1)}
+    -do Nx={1+round(($Mx0-$mx0)/$scalex,1,1)} scalex={2*$scalex} -while {$Nx>11}
+    scalex={$scalex/2}
+
+    deltay={abs($ymax-$ymin)}
+    scaley={10^round(log10($deltay)-1)}
+    my0={round(min($3,$4),$scaley,-1)}
+    My0={round(max($3,$4),$scaley,1)}
+    -do Ny={1+round(($My0-$my0)/$scaley,1,1)} scaley={2*$scaley} -while {$Ny>11}
+    scaley={$scaley/2}
+
     # Create plot canvas.
     gw={$1-32} gh={$2-32} gg={($gw-$one)/($siz-$one)}
     $gw,$gh,1,3,255
-    -if {$siz<32} -grid[-1] $gg,$gg,0,0,0.25,0xCCCCCCCC,0
-    -else -grid[-1] 10%,10%,0,0,0.25,0xCCCCCCCC,0
-    -endif
+    -grid[-1] {$scalex*$gw/$deltax},{$scaley*$gh/$deltay},{($mx0-$xmin)*$gw/$deltax},{($my0-$ymin)*$gh/$deltay},0.25,0xCCCCCCCC,0
 
     # Define color palette for curves.
     -if {@{-2,s}==1} (120,120,200)
@@ -1356,15 +1369,11 @@ _display_graph : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},
     -line[-1] 100%,100%,0,100%,1,255 -line[-1] 0,100%,0,0,1,255
 
     100%,100%,1,1,255
-    -axes[-1] $xmin,$xmax,$ymax,$ymin,13,1,0
-    -if {$xmin>0} -axes[-1] 0,0,$ymax,$ymin,13,1,160 -endif
-    -if {$xmax<0} -axes[-1] {w-1},{w-1},$ymax,$ymin,13,1,160 -endif
-    -if {$ymin>0} -axes[-1] $xmin,$xmax,{h-1},{h-1},13,1,160 -endif
-    -if {$ymax<0} -axes[-1] $xmin,$xmax,0,0,13,1,160 -endif
+    -axes[-1] $xmin,$xmax,$ymax,$ymin,14,1,0
     --erode[-1] 3 -!=[-1] 255 -r[-2] 100%,100%,1,3 -j[-3] [-2],0,0,0,0,1,[-1],1 -rm[-2,-1]
     -frame[-1] 16,16,220
-    0 -t[-1] "$9",0,0,13,1,-220,-220,-220 -j[-2] [-1],{(@{-2,w}-w)/2},{@{-2,h}-16},0,0,-1 -rm[-1]
-    0 -t[-1] "$10",0,0,13,1,-220,-220,-220 -rotate[-1] -90 -j[-2] [-1],2,{(@{-2,h}-h)/2},0,0,-1 -rm[-1]
+    0 -t[-1] "$9",0,0,14,1,-220,-220,-220 -j[-2] [-1],{(@{-2,w}-w)/2},{@{-2,h}-16},0,0,-1 -rm[-1]
+    0 -t[-1] "$10",0,0,14,1,-220,-220,-220 -rotate[-1] -90 -j[-2] [-1],2,{(@{-2,h}-h)/2},0,0,-1 -rm[-1]
 
   -nm $nm -endl -done -c 0,255 -v +
 
@@ -1396,7 +1405,7 @@ _display_histogram : -check "${1=512}>0 && ${2=300}>0 && ${3=256}>0" -skip ${4=0
       $1,$2,1,{s},-255
       -repeat {s} -sh[-2,-1] $>,$> -graph[-1] [-2],3,0,$vM,0,1,0 -rm[-2,-1] -done
       -rm[-2] -+ 255
-      -if $6 100%,100% -axes[-1] $m,$M,$vM,0,13,1,255 --dilate[-1] 3 -r[-2] [-3] -j[-3] [-2],0,0,0,0,1,[-1],255 -rm[-2,-1] -endif
+      -if $6 100%,100% -axes[-1] $m,$M,$vM,0,14,1,255 --dilate[-1] 3 -r[-2] [-3] -j[-3] [-2],0,0,0,0,1,[-1],255 -rm[-2,-1] -endif
     -endl -done
     -a z -nm $nm
   -endl -done -v +
@@ -1454,11 +1463,7 @@ display_parametric : -check "${1=512}>0 && ${2=$1}>0 && ${4=0}>=0" -skip ${3=3},
     -if $6 # Add decoration.
       xc={0.5*($xm+$xM)} yc={0.5*($ym+$yM)} dx={0.5*($xM-$xm)/0.96} dy={0.5*($yM-$ym)/0.96}
       xm={$xc-$dx} xM={$xc+$dx} ym={$yc-$dy} yM={$yc+$dy}
-      100%,100% -axes[-1] $xm,$xM,$yM,$ym,13,1,1
-      -if {$xm>0} -axes[-1] 0,0,$yM,$ym,13,1,160 -endif
-      -if {$xM<0} -axes[-1] {w-1},{w-1},$yM,$ym,13,1,160 -endif
-      -if {$ym>0} -axes[-1] $xm,$xM,{h-1},{h-1},13,1,160 -endif
-      -if {$yM<0} -axes[-1] $xm,$xM,0,0,13,1,160 -endif
+      100%,100% -axes[-1] $xm,$xM,$yM,$ym,14,1,1
       --dilate[-1] 3 --[-1] [-2] -*[-1] 200 -==[-2] 0
       -*[-3,-2] -+[-2,-1] -c[-1] 0,255
       -frame 1,1,128 -frame 15,15,220
@@ -1537,7 +1542,7 @@ _display_polar : -check "${1=500}>32 && ${2=$1}>32" -skip ${3=1},${4=200},${5=$4
 
     # Draw axes and frame.
     nM={$M/0.96}
-    100%,100% -axes[-1] {-$nM},$nM,$nM,{-$nM},13,1,1
+    100%,100% -axes[-1] {-$nM},$nM,$nM,{-$nM},14,1,1
     --dilate[-1] 3 --[-1] [-2] -*[-1] 200 -==[-2] 0
     -*[-3,-2] -+[-2,-1] -c[-1] 0,255
     -frame[-1] 1,1,128 -frame[-1] 15,15,220
@@ -8427,14 +8432,129 @@ variance_patch : -check "isint(${1=16}) && $1>=1"
 #
 #---------------------------------
 
-#@gmic axes : x0,x1,y0,y1,_font_height>=0,_opacity,_pattern,_color1,.. : (+)
+#@gmic axes : x0,x1,y0,y1,_font_height>=0,_opacity,_pattern,_color1,...
 #@gmic : Draw xy-axes on selected images.
 #@gmic : 'pattern' is an hexadecimal number starting with '0x' which can be omitted
 #@gmic : even if a color is specified.
 #@gmic : To draw only one x-axis at row Y, set both 'y0' and 'y1' to Y.
 #@gmic : To draw only one y-axis at column X, set both 'x0' and 'x1' to X.
-#@gmic : Default values: 'font_height=13', 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
+#@gmic : Default values: 'font_height=14', 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ 400,400,1,3,255 -axes -1,1,1,-1
+axes : -check "isint(${5=14}) && $5>=0 && ${6=1}>=0" -skip ${7=0},${8=0}
+  -v - ({'"$7"'}) is_pattern={@{-1,0-1}'=='{'0x'}} -rm[-1]
+  -if $is_pattern
+    -v + -e[0--3] "Draw xy-axes on image$?, with x-range ($1,$2), y-range ($3,$4), font height $5, opacity $6, pattern $7 and color (${8--1})." -v -
+    pattern=$7 color=${8--1}
+  -else
+    -v + -e[0--3] "Draw xy-axes on image$?, with x-range ($1,$2), y-range ($3,$4), font height $5, opacity $6 and color (${7--1})." -v -
+    pattern=0xffffffff color=${7--1}
+  -endif
+  -if {!$5" || "!$6} -v + -return -endif
+  mx={min($1,$2)} Mx={max($1,$2)}
+  my={min($3,$4)} My={max($3,$4)}
+
+  # Determine labels.
+  -if {$1!=$2}
+    deltax={abs($2-$1)/10}
+    scalex={10^round(log10($deltax))}
+    mx0={round(min($1,$2),$scalex,-1)}
+    Mx0={round(max($1,$2),$scalex,1)}
+    -do Nx={1+round(($Mx0-$mx0)/$scalex,1,1)} scalex={2*$scalex} -while {$Nx>11}
+    scalex={$scalex/2}
+  -endif
+
+  -if {$3!=$4}
+    deltay={abs($4-$3)/10}
+    scaley={10^round(log10($deltay))}
+    my0={round(min($3,$4),$scaley,-1)}
+    My0={round(max($3,$4),$scaley,1)}
+    -do Ny={1+round(($My0-$my0)/$scaley,1,1)} scaley={2*$scaley} -while {$Ny>11}
+    scaley={$scaley/2}
+  -endif
+
+  # Start drawing axes on selected images.
+  -repeat @# -l[$>]
+    w1=@{0,w-1} h1=@{0,h-1}
+
+    # Draw x-axis.
+    is_0x=0 ox=$6
+    -if {$3==$4} y0=$3
+    -else
+      -if {$my>0} y0={if($4>=$3,0,$h1)} # ox={0.5*$6}
+      -elif {$My<0} y0={if($4>=$3,$h1,0)} # ox={0.5*$6}
+      -else y0={v=-$my*$h1/($My-$my);if($4>=$3,v,$h1-v)}
+      -endif
+    -endif
+    sty={if($y0>$h1-$5,-1,1)}
+
+    -if {$1!=$2}
+
+      -line 0,$y0,$w1,$y0,$ox,$pattern,$color
+      4,4,1,1,x<=y --mirror[-1] y -rows[-1] 1,3 -a[-2,-1] y [-1],[-1],1,[0] -fc[-1] $color
+      -if {$2>=$1} -j[0] [-1],{$w1-3},{$y0-3},0,0,$ox,[-2]
+      -else -mirror[-2] x -j[0] [-1],0,{$y0-3},0,0,$ox,[-2]
+      -endif
+      -rm[-2,-1]
+
+      -repeat $Nx
+        val={_$mx0+$>*$scalex}
+        -if {$val>=$mx" && "$val<=$Mx}
+          x={v=($val-$mx)*$w1/($Mx-$mx);if($2>=$1,v,$w1-v)}
+          -line $x,{$y0-1},$x,{$y0+1},$ox,$pattern,$color
+          -if $val
+            0 -t[-1] $val,0,0,$5,1,1 100%,100%,1,[0] -fc[-1] $color
+            -j[0] [-1],{max(0,min($w1-w,$x-w/2))},{if($sty>0,$y0+3,$y0-h-3)},0,0,$ox,[-2] -rm[-2,-1]
+          -else is_0x=1
+          -endif
+        -endif
+      -done
+
+    -endif
+
+    # Draw y-axis.
+    is_0y=0 oy=$6
+    -if {$1==$2} x0=$1
+    -else
+      -if {$mx>0} x0={if($2>=$1,0,$w1)} # oy={0.5*$6}
+      -elif {$Mx<0} x0={if($2>=$1,$w1,0)} # oy={0.5*$6}
+      -else x0={v=-$mx*$w1/($Mx-$mx);if($2>=$1,v,$w1-v)}
+      -endif
+    -endif
+    stx={if($x0>$w1-$5,-1,1)}
+
+    -if {$3!=$4}
+
+      -line $x0,0,$x0,$h1,$oy,$pattern,$color
+      4,4,1,1,x>=y --mirror[-1] x -z[-1] 1,3 -a[-2,-1] x [-1],[-1],1,[0] -fc[-1] $color
+      -if {$4>=$3} -j[0] [-1],{$x0-3},{$h1-3},0,0,$oy,[-2]
+      -else -mirror[-2] y -j[0] [-1],{$x0-3},0,0,0,$oy,[-2]
+      -endif
+      -rm[-2,-1]
+
+      -repeat $Ny
+        val={_$my0+$>*$scaley}
+        -if {$val>=$my" && "$val<=$My}
+          y={v=($val-$my)*$h1/($My-$my);if($4>=$3,v,$h1-v)}
+          -line {$x0-1},$y,{$x0+1},$y,$oy,$pattern,$color
+          -if $val
+            0 -t[-1] $val,0,0,$5,1,1 100%,100%,1,[0] -fc[-1] $color
+            -j[0] [-1],{if($stx>0,$x0+6,$x0-w-6)},{max(0,min($h1-h,$y-h/2))},0,0,$oy,[-2] -rm[-2,-1]
+          -else is_0y=1
+          -endif
+        -endif
+      -done
+
+    -endif
+
+    # Draw origin, if necessary.
+    -if {$is_0x" || "$is_0y}
+      oxy={max($ox,$oy)}
+      0 -t[-1] 0,0,0,$5,1,1 100%,100%,1,[0] -fc[-1] $color
+      -j[0] [-1],{if($stx>0,$x0+6,$x0-w-6)},{if($sty>0,$y0+3,$y0-h-3)},0,0,$oxy,[-2] -rm[-2,-1]
+    -endif
+
+  -endl -done
+  -v +
 
 #@gmic ball : _size>0, _R,_G,_B,0<=_specular_light<=8,0<=_specular_size<=8,_shadow>=0
 #@gmic : Input a 2d RGBA colored ball sprite.
@@ -8504,7 +8624,7 @@ cie1931 :
     @{-2,w},@{-2,h} -j3d[-1] [-2],2,30,0,1,2 -rm[-2]
     --erode[-1] 4 --[-1] [-2] -==[-1] 0 -*[-3,-1]
     -a[-2,-1] c -blend[-2,-1] alpha
-    100%,100%,1,1,255 -axes[-1] 0,0.75,0.85,0,13,1 --erode[-1] 3 -negative[-1] -to_rgb[-2]
+    100%,100%,1,1,255 -axes[-1] 0,0.75,0.85,0,14,1 --erode[-1] 3 -negative[-1] -to_rgb[-2]
     -j[-3] [-2],0,0,0,0,1,[-1],400 -rm[-2,-1]
   -mv[-1] 2 -done -rm[0,1] -v +
 
