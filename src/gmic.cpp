@@ -2500,14 +2500,15 @@ gmic& gmic::error(const char *const format, ...) {
       for (unsigned int i = 0; i<nb_carriages; ++i) std::fputc('\n',cimg::output());
     nb_carriages = 1;
     if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
-      std::fprintf(cimg::output(),"[gmic]%s %s*** Error (file '%s', %sline #%u) *** %s%s",
-                   s_scope.data(),cimg::t_red,
+      std::fprintf(cimg::output(),"[gmic]%s %s%s*** Error (file '%s', %sline #%u) *** %s%s",
+                   s_scope.data(),cimg::t_red,cimg::t_bold,
                    commands_files[debug_filename].data(),
                    is_debug_info?"":"call from ",debug_line,message.data(),
                    cimg::t_normal);
     else
-      std::fprintf(cimg::output(),"[gmic]%s %s*** Error *** %s%s",
-                   s_scope.data(),cimg::t_red,message.data(),cimg::t_normal);
+      std::fprintf(cimg::output(),"[gmic]%s %s%s*** Error *** %s%s",
+                   s_scope.data(),cimg::t_red,cimg::t_bold,
+                   message.data(),cimg::t_normal);
     std::fflush(cimg::output());
     cimg::mutex(29,0);
   }
@@ -2982,16 +2983,16 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
     if (!scope_selection || *scope_selection) {
       if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
         std::fprintf(cimg::output(),
-                     "[gmic]-%u%s %s*** Error (file '%s', %sline #%u) *** %s%s",
-                     list.size(),s_scope.data(),cimg::t_red,
+                     "[gmic]-%u%s %s%s*** Error (file '%s', %sline #%u) *** %s%s",
+                     list.size(),s_scope.data(),cimg::t_red,cimg::t_bold,
                      commands_files[debug_filename].data(),
                      is_debug_info?"":"call from ",debug_line,message.data(),
                      cimg::t_normal);
       else
         std::fprintf(cimg::output(),
-                     "[gmic]-%u%s %s*** Error *** %s%s",
-                     list.size(),s_scope.data(),
-                     cimg::t_red,message.data(),cimg::t_normal);
+                     "[gmic]-%u%s %s%s*** Error *** %s%s",
+                     list.size(),s_scope.data(),cimg::t_red,cimg::t_bold,
+                     message.data(),cimg::t_normal);
     } else std::fprintf(cimg::output(),"%s",message.data());
     std::fflush(cimg::output());
     cimg::mutex(29,0);
@@ -13777,9 +13778,12 @@ int main(int argc, char **argv) {
   } catch (gmic_exception &e) {
 
     // Something went wrong during the pipeline execution.
-    std::fprintf(cimg::output(),"\n[gmic] %s%s%s%s",
-                 cimg::t_red,cimg::t_bold,e.what(),cimg::t_normal);
-    std::fflush(cimg::output());
+    if (gmic_instance.verbosity<0) {
+      std::fprintf(cimg::output(),"\n[gmic] %s%s%s%s",
+                   cimg::t_red,cimg::t_bold,
+                   e.what(),cimg::t_normal);
+      std::fflush(cimg::output());
+    }
     if (*e.command_help()) {
       std::fprintf(cimg::output(),"\n[gmic] Command '-%s' has the following description: \n",
 		   e.command_help());
