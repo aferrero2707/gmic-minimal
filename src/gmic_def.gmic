@@ -11776,53 +11776,6 @@ cartoon : -skip ${1=3},${2=150},${3=20},${4=0.25},${5=1.5},${6=8}
     -rgb2lab[-2] -s[-2] c -*[-3,-2] $5 -a[-4--2] c -lab2rgb[-2] -quantize[-2] $6,1,0 -n[-2] 0,255 -*
   -endl -a c -endl -done -v +
 
-#@gmic circlism : _radius_min>0,_radius_max>0,_smoothness[%]>=0,_radius_linearity>=0,_location_linearity>=0,_shape={0=squares | 1=diamonds | 2=circle }
-#@gmic : Apply circlism effect on selected images (effect inspired by Ben Heine).
-#@gmic : Default values: 'radius_min=2', 'radius_max=20', 'smoothness=1', 'radius_linearity=0.4', 'location_linearity=3' and 'shape=1'.
-#@gmic : $ image.jpg --circlism ,
-circlism : -check "${1=2}>0 && ${2=20}>0 && ${3=1}>=0 && ${4=0.4}>0 && ${5=3}>=0" -skip ${6=2}
-  -e[^-1] "Apply circlism effect on image$?, with radii ($1,$2), smoothness $3, radius linearity $4 and location linearity $5.\n"
-  -v - -repeat @# -l[$>]
-    --gradient_norm -b[-1] $3 -n[-1] 0,1 --^[-1] $5 -^[-2] $4 sumg0=@{-1,+} 100%,100%
-    it=0 failed=0 noedges=0 svg="-1,-1"
-    -do
-      --distance[-1] 1,3
-      -if $noedges xyzc=@{-1,C} -else --*[-3,-1] xyzc=@{-1,C} -rm[-1] -endif
-      n=@{-4,($xyzc)}
-      x={arg(1,$xyzc)}
-      y={arg(2,$xyzc)}
-      r={min(max($1,$2*(1-$n)),sqrt(@{-1,($xyzc)})-2)}
-      -rm[-1]
-      -if {$r>=$1}
-        -if {$6==2}  # Fill with circles.
-          -ellipse[-1] $x,$y,$r,$r,0,1,1 -ellipse[-2] $x,$y,{$r+$1},{$r+$1},0,1,-1
-        -elif {$6==1} # Fill with squares.
-          x0={$x-$r/2} y0={$y-$r/2} x1={$x+$r/2} y1={$y+$r/2}
-          -rectangle[-1] $x0,$y0,$x1,$y1,1,1
-          x0={$x-($r+$1)/2} y0={$y-($r+$1)/2} x1={$x+($r+$1)/2} y1={$y+($r+$1)/2}
-          -rectangle[-2] $x0,$y0,$x1,$y1,1,-1
-        -else # Fill with diamonds.
-          x0={round($x-$r/2)} y0={round($y-$r/2)} x1={round($x+$r/2)} y1={round($y+$r/2)}
-          -polygon[-1] 4,$x0,$y,$x,$y0,$x1,$y,$x,$y1,1,1
-          x0={round($x-($r+$1)/2)} y0={round($y-($r+$1)/2)} x1={round($x+($r+$1)/2)} y1={round($y+($r+$1)/2)}
-          -polygon[-2] 4,$x0,$y,$x,$y0,$x1,$y,$x,$y1,1,-1
-        -endif
-        failed=0
-      -else
-        -=[-2] -1,$x,$y
-        failed={$failed+1}
-        -if {$failed==100} failed=0 -if $noedges n=-1 -else noedges=1 -endif -endif
-      -endif
-      it={$it+1}
-      -if {!($it%50)}
-        p={round(100*(($sumg0-@{-2,+})/@{-2,wh})^3)}
-        -rprogress $p -v + -e[] "\r  "$p% -v -
-      -endif
-    -while {$n>=0}
-    -rm[-3,-2] -rprogress -1
-    -blend shapeaverage0
-  -endl -done -v +
-
 #@gmic color_ellipses : _count>0,_radius>=0,_opacity>=0
 #@gmic : Add random color ellipses to selected images.
 #@gmic : Default values: 'count=400', 'radius=5' and 'opacity=0.1'.
@@ -12336,9 +12289,6 @@ sketchbw :
 
     -if $14 # Render sketch with curved strokes
       -repeat $1
-
-      -w[0]
-
         alpha={($2+$>*$3/$1)*pi/180}
         --*[-4] {cos($alpha)} --*[-4] {sin($alpha)} -+[-2,-1]
         --*[-4] {cos($alpha)} --*[-4] {sin($alpha)} -+[-2,-1]
