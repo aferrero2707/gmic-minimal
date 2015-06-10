@@ -8317,7 +8317,7 @@ pointcloud : -check "${1=0}<3" -skip ${2=0},${3=0},${4=0}
     $dx,{$dy*$dz},1,$spectrum -j3d[-1] [-2],0,0,0,1,0,0,0 -rm[-2] -r[-1] $dx,$dy,$dz,100%,-1
   -nm $nm -endl -done -v +
 
-#@gmic psnr : _max_value : (+)
+#@gmic psnr : _max_value
 #@gmic : Compute PSNR (Peak Signal-to-Noise Ratio) matrix between selected images.
 #@gmic : Default value: 'max_value=255'.
 #@gmic : $ image.jpg --noise 30 --noise[0] 35 --noise[0] 38 -cut[-1] 0,255 -psnr 255 -replace_inf 0
@@ -13235,7 +13235,7 @@ fade_z : -skip ${1=30},${2=70}
 
 #@gmic sub_alpha : [base_image],_opacity_gain>=1
 #@gmic : Compute the minimal alpha-channel difference (opposite of alpha blending) between the selected images and the specified base image.
-#@gmic : The alpha difference A-B is defined as the image having minimal opacity, such that alpha_blend(B,A-B) = B.
+#@gmic : The alpha difference A-B is defined as the image having minimal opacity, such that alpha_blend(B,A-B) = A.
 #@gmic : Default value: 'opacity_gain=1'.
 #@gmic : $ image.jpg -testimage2d {w},{h} --sub_alpha[0] [1] -display_rgba
 sub_alpha : -check "${2=1}>=1 && "@{"-is_image_arg $1"}
