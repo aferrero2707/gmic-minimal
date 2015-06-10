@@ -8453,108 +8453,87 @@ axes : -check "isint(${5=14}) && $5>=0 && ${6=1}>=0" -skip ${7=0},${8=0}
   mx={min($1,$2)} Mx={max($1,$2)}
   my={min($3,$4)} My={max($3,$4)}
 
-  # Determine labels.
-  -if {$1!=$2}
-    deltax={abs($2-$1)/10}
-    scalex={10^round(log10($deltax))}
-    mx0={round(min($1,$2),$scalex,-1)}
-    Mx0={round(max($1,$2),$scalex,1)}
-    -do Nx={1+round(($Mx0-$mx0)/$scalex,1,1)} scalex={2*$scalex} -while {$Nx>11}
-    scalex={$scalex/2}
-  -endif
-
-  -if {$3!=$4}
-    deltay={abs($4-$3)/10}
-    scaley={10^round(log10($deltay))}
-    my0={round(min($3,$4),$scaley,-1)}
-    My0={round(max($3,$4),$scaley,1)}
-    -do Ny={1+round(($My0-$my0)/$scaley,1,1)} scaley={2*$scaley} -while {$Ny>11}
-    scaley={$scaley/2}
-  -endif
-
   # Start drawing axes on selected images.
   -repeat @# -l[$>]
     w1=@{0,w-1} h1=@{0,h-1}
 
+    # Determine number of axes tick marks.
+    -if {$1!=$2} u=@{"-_axes[] $1,$2,{0.3*w/$5}"} offx={arg(1,$u)} deltax={arg(2,$u)} -endif
+    -if {$3!=$4} u=@{"-_axes[] $3,$4,{0.3*h/$5}"} offy={arg(1,$u)} deltay={arg(2,$u)} -endif
+
     # Draw x-axis.
-    is_0x=0 ox=$6
-    -if {$3==$4} y0=$3
-    -else
-      -if {$my>0} y0={if($4>=$3,0,$h1)} # ox={0.5*$6}
-      -elif {$My<0} y0={if($4>=$3,$h1,0)} # ox={0.5*$6}
-      -else y0={v=-$my*$h1/($My-$my);if($4>=$3,v,$h1-v)}
-      -endif
-    -endif
+    is_0x=0
+    -if {$3==$4} y0=$3 -else y0={v=-$my*$h1/($My-$my);if($4>=$3,v,$h1-v)} -endif
     sty={if($y0>$h1-$5,-1,1)}
 
     -if {$1!=$2}
-
-      -line 0,$y0,$w1,$y0,$ox,$pattern,$color
+      -line 0,$y0,$w1,$y0,$6,$pattern,$color
       4,4,1,1,x<=y --mirror[-1] y -rows[-1] 1,3 -a[-2,-1] y [-1],[-1],1,[0] -fc[-1] $color
-      -if {$2>=$1} -j[0] [-1],{$w1-3},{$y0-3},0,0,$ox,[-2]
-      -else -mirror[-2] x -j[0] [-1],0,{$y0-3},0,0,$ox,[-2]
+      -if {$2>=$1} -j[0] [-1],{$w1-3},{$y0-3},0,0,$6,[-2]
+      -else -mirror[-2] x -j[0] [-1],0,{$y0-3},0,0,$6,[-2]
       -endif
       -rm[-2,-1]
 
-      -repeat $Nx
-        val={_$mx0+$>*$scalex}
+      i=0 -do
+        val={_$offx+$i*$deltax} i={$i+1}
         -if {$val>=$mx" && "$val<=$Mx}
           x={v=($val-$mx)*$w1/($Mx-$mx);if($2>=$1,v,$w1-v)}
-          -line $x,{$y0-1},$x,{$y0+1},$ox,$pattern,$color
+          -line $x,{$y0-1},$x,{$y0+1},$6,$pattern,$color
           -if $val
             0 -t[-1] $val,0,0,$5,1,1 100%,100%,1,[0] -fc[-1] $color
-            -j[0] [-1],{max(0,min($w1-w,$x-w/2))},{if($sty>0,$y0+3,$y0-h-3)},0,0,$ox,[-2] -rm[-2,-1]
+            -j[0] [-1],{max(0,min($w1-w,$x-w/2))},{if($sty>0,$y0+3,$y0-h-3)},0,0,$6,[-2] -rm[-2,-1]
           -else is_0x=1
           -endif
         -endif
-      -done
-
+      -while {$val<$Mx}
     -endif
 
     # Draw y-axis.
-    is_0y=0 oy=$6
-    -if {$1==$2} x0=$1
-    -else
-      -if {$mx>0} x0={if($2>=$1,0,$w1)} # oy={0.5*$6}
-      -elif {$Mx<0} x0={if($2>=$1,$w1,0)} # oy={0.5*$6}
-      -else x0={v=-$mx*$w1/($Mx-$mx);if($2>=$1,v,$w1-v)}
-      -endif
-    -endif
+    is_0y=0
+    -if {$1==$2} x0=$1 -else x0={v=-$mx*$w1/($Mx-$mx);if($2>=$1,v,$w1-v)} -endif
     stx={if($x0>$w1-$5,-1,1)}
 
     -if {$3!=$4}
-
-      -line $x0,0,$x0,$h1,$oy,$pattern,$color
+      -line $x0,0,$x0,$h1,$6,$pattern,$color
       4,4,1,1,x>=y --mirror[-1] x -z[-1] 1,3 -a[-2,-1] x [-1],[-1],1,[0] -fc[-1] $color
-      -if {$4>=$3} -j[0] [-1],{$x0-3},{$h1-3},0,0,$oy,[-2]
-      -else -mirror[-2] y -j[0] [-1],{$x0-3},0,0,0,$oy,[-2]
+      -if {$4>=$3} -j[0] [-1],{$x0-3},{$h1-3},0,0,$6,[-2]
+      -else -mirror[-2] y -j[0] [-1],{$x0-3},0,0,0,$6,[-2]
       -endif
       -rm[-2,-1]
 
-      -repeat $Ny
-        val={_$my0+$>*$scaley}
+      i=0 -do
+        val={_$offy+$i*$deltay} i={$i+1}
         -if {$val>=$my" && "$val<=$My}
           y={v=($val-$my)*$h1/($My-$my);if($4>=$3,v,$h1-v)}
-          -line {$x0-1},$y,{$x0+1},$y,$oy,$pattern,$color
+          -line {$x0-1},$y,{$x0+1},$y,$6,$pattern,$color
           -if $val
             0 -t[-1] $val,0,0,$5,1,1 100%,100%,1,[0] -fc[-1] $color
-            -j[0] [-1],{if($stx>0,$x0+6,$x0-w-6)},{max(0,min($h1-h,$y-h/2))},0,0,$oy,[-2] -rm[-2,-1]
+            -j[0] [-1],{if($stx>0,$x0+6,$x0-w-6)},{max(0,min($h1-h,$y-h/2))},0,0,$6,[-2] -rm[-2,-1]
           -else is_0y=1
           -endif
         -endif
-      -done
-
+      -while {$val<$My}
     -endif
 
     # Draw origin, if necessary.
     -if {$is_0x" || "$is_0y}
-      oxy={max($ox,$oy)}
       0 -t[-1] 0,0,0,$5,1,1 100%,100%,1,[0] -fc[-1] $color
-      -j[0] [-1],{if($stx>0,$x0+6,$x0-w-6)},{if($sty>0,$y0+3,$y0-h-3)},0,0,$oxy,[-2] -rm[-2,-1]
+      -j[0] [-1],{if($stx>0,$x0+6,$x0-w-6)},{if($sty>0,$y0+3,$y0-h-3)},0,0,$6,[-2] -rm[-2,-1]
     -endif
 
   -endl -done
   -v +
+
+# Return optimal (offset0,scale) to display input (min,max) values.
+# $1 = min value, $2 = max value, $3 = max number of tags(>=1).
+_axes :
+  n={max(1,round($3))}
+  d={abs($2-$1)/($n-1)}
+  s={10^round(log10($d))}
+  m={round(min($1,$2),$s,-1)}
+  M={round(max($1,$2),$s,1)}
+  -do N={1+round(($M-$m)/$s,1,1)} s={2*$s} -while {$N>$n}
+  -u $m,{$s/2}
 
 #@gmic ball : _size>0, _R,_G,_B,0<=_specular_light<=8,0<=_specular_size<=8,_shadow>=0
 #@gmic : Input a 2d RGBA colored ball sprite.
