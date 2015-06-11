@@ -10053,6 +10053,13 @@ imagesphere3d : -check "${1=32}>=3 && ${2=16}>=3"
 #@gmic : $ image.jpg -resize2dy 128 -luminance -threshold 50% -expand_z 2,0 -blur 1 -isosurface3d 50% -mul3d 1,1,30
 #@gmic : $ -isosurface3d 'x^2+y^2+abs(z)^abs(4*cos(x*y*z*3))',3
 
+#@gmic label3d : "text",font_height>=0,_opacity,_color1,...
+#@gmic : Generate 3d text label.
+#@gmic : Default values: 'font_height=13', 'opacity=1' and 'color=255,255,255'.
+label3d : -check ${2=13}>=0 -skip ${3=1},${4=255},${5=$4},${6=$5}
+  -e[^-1] "Generate 3d label '$1' with font height $2, opacity $3 and color (${4--1})."
+  -v - -l[] 0 -t "$1",0,0,$2,1,${4--1},255 -sprite3d -endl -v +
+
 #@gmic label_points3d : _label_size>0,_opacity
 #@gmic : Add a numbered label to all vertices of selected 3d objects.
 #@gmic : Default values: 'label_size=13' and 'opacity=0.8'.
