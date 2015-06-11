@@ -8039,7 +8039,7 @@ detect_skin : -check "${1=0.5}>=0 && $1<=1" -skip ${2=-1},${3=-1},${4=-1}
   -v +
 
 #@gmic displacement : [source_image],_smoothness,_precision>=0,_nb_scales>=0,iteration_max>=0,is_backward={ 0 | 1 },_[constraints] : (+)
-#@gmic : Estimate displacement field between specified source and selected images.
+#@gmic : Estimate displacement field between specified source and selected target images.
 #@gmic : If 'smoothness>=0', regularization type is set to isotropic, else to anisotropic.
 #@gmic : If 'nbscales==0', the number of needed scales is estimated from the image size.
 #@gmic : When specified, an image of constraints is a Nx4 or Nx6 image that contains N ground-truth values for the estimated displacement field,
