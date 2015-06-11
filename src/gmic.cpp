@@ -6846,7 +6846,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                     false,CImg<char>::empty())).height()==1 &&
                 radius>=0 && regularization>=0) {
               print(images,0,"Apply guided filter on image%s, with guide image [%u], "
-                    " radius %g%s and regularization %g.",
+                    "radius %g%s and regularization %g.",
                     gmic_selection,
                     *ind,
                     radius,sep=='%'?"%":"",
