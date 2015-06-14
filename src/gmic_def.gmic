@@ -788,13 +788,12 @@ _help_header_ascii :
   -_help_section "Usage"
 
 __help_header_ascii :
-  -if {narg($_gmic_version)} strver=$_gmic_version -else strver=@{-strver} -endif
-  -if {narg($_gmic_prerelease)} strprerelease=" (pre-release \#"$_gmic_prerelease")" -else strprerelease="" -endif
+  -if {narg($_prerelease)} strprerelease=" (pre-release \#"$_prerelease")" -else strprerelease="" -endif
   -v +
   -e[] "
 \n "${_gmic_b}"gmic: GREYC's Magic for Image Computing."$_gmic_n"
 \n
-\n        "$_gmic_r${_gmic_b}"Version "$strver$strprerelease$_gmic_n", Copyright (c) 2008-2015, David Tschumperle.
+\n        "$_gmic_r${_gmic_b}"Version "@{-strver}$strprerelease$_gmic_n", Copyright (c) 2008-2015, David Tschumperle.
 \n        "$_gmic_r"(http://gmic.eu)"$_gmic_n
   -v -
 
@@ -820,8 +819,7 @@ _help_footer_ascii :
 # Commands to output help in html format.
 _help_header_html :
   _section=0
-  -if {narg($_gmic_version)} strver=$_gmic_version -else strver=@{-strver} -endif
-  -if {narg($_gmic_prerelease)} strprerelease=" (pre-release \#"$_gmic_prerelease")" -else strprerelease="" -endif
+  -if {narg($_prerelease)} strprerelease=" (pre-release \#"$_prerelease")" -else strprerelease="" -endif
   _gmic_n="</font></b>" _gmic_r="<b><font color=\"#900000\">" _gmic_g="<b><font color=\"#009000\">"
   _gmic_m="<b><font color=\"#900090\">" _gmic_c="<b><font color=\"#005090\">"
 
@@ -884,7 +882,7 @@ _help_header_html :
 \n<a id=\"section0\"><h2>Version</h2></a>
 \n<pre><font color=\"blue\"><b>gmic:</b> GREYC's Magic for Image Computing.</font>
 \n
-\n       Version <font color=\"brown\"><b>"$strver$strprerelease"</b></font>, Copyright (c) 2008-2015, David Tschumperle
+\n       Version <font color=\"brown\"><b>"@{-strver}$strprerelease"</b></font>, Copyright (c) 2008-2015, David Tschumperle
 \n       (<a href=\"http://gmic.eu\">http://gmic.eu</a>)
 \n</pre>
 "
@@ -918,8 +916,8 @@ _help_footer_html :
 
 # Commands to output help in latex format.
 _help_header_latex :
-  -if {narg($_gmic_version)} strver=$_gmic_version -else strver=@{-strver} -endif
-  -if {narg($_gmic_prerelease)} strprerelease=" (pre-release \\\#"$_gmic_prerelease")" -else strprerelease="" -endif
+  strver=@{-strver}
+  -if {narg($_prerelease)} strprerelease=" (pre-release \\\#"$_prerelease")" -else strprerelease="" -endif
   -v + -e[] "\\documentclass[a4paper,11pt,twoside]{book}
 \n\\usepackage{hyperref,fancyhdr,graphicx,amssymb,amsmath,times,makeidx,listings,color}
 \n\\graphicspath{{img/}}
@@ -1014,7 +1012,7 @@ _help_header_man :
         \n\
        .SH HELP\n" -v -
   _gmic_n="\\fR" _gmic_b="\\fB" _gmic_r="" _gmic_g="" _gmic_c="\\fB" _gmic_m=""
-  _gmic_prerelease=
+  _prerelease=
   -__help_header_ascii
   _gmic_n="__N" _gmic_b="__B" _gmic_r="__B" _gmic_c="__B"
   _section=0 _space1="" _space2=" "
@@ -14510,7 +14508,7 @@ struncase :
 #@gmic strver
 #@gmic : Return the current version number of the G'MIC interpreter, as a string.
 strver :
-  -v - ({'@.'}) -r[-1] 7 -f[-1] 'if(x%2,{'.'},i)' -u @{-1,t} -rm[-1] -v +
+  -v - ({'$_version'}) -r[-1] 7 -f[-1] 'if(x%2,{'.'},i)' -u @{-1,t} -rm[-1] -v +
 
 #@gmic tic
 #@gmic : Initialize tic-toc timer.
@@ -14598,7 +14596,7 @@ demo : -check "isint(${1=2}) && $1>=0 && $1<=2"
   -j[-2] [-1],20,$y0,0,0 -rm[-1]
   -rectangle[-1] 0,16,100%,44,1,120,120,32
   0 -t[-1] "G\47MIC "@{-strver}" demos",2,2,28,1,1,1,1
-  -if {narg($_gmic_prerelease)} 0 -t[-1] "Pre-release :\n \#"$_gmic_prerelease,30,2,13,1,1,1,1 -a[-2,-1] x -endif
+  -if {narg($_prerelease)} 0 -t[-1] "Pre-release :\n \#"$_prerelease,30,2,13,1,1,1,1 -a[-2,-1] x -endif
   -b[-1] 0.5 -n[-1] 0,1
 
   (32;255^255;255^0;0) -r[-1] [-2],[-2],1,3,3 -*[-2,-1] -round[-1] 1,-1 --!=[-1] 0 -channels[-1] 1
@@ -18568,8 +18566,8 @@ gimp_logo : -skip "${1=Plug-in for GIMP\n    [ "@{-strver}" ]}"
     -gimp_logo_version{round(?(0.5,3.49))} "$1"
 
 gimp_logo_en :
-  -if {narg($_gmic_prerelease)}
-    -gimp_logo_version{round(?(0.5,3.49))} "       Plug-in for GIMP\n"[" "@{-strver}" pre-release \#"$_gmic_prerelease]
+  -if {narg($_prerelease)}
+    -gimp_logo_version{round(?(0.5,3.49))} "       Plug-in for GIMP\n"[" "@{-strver}" pre-release \#"$_prerelease]
   -else
     -gimp_logo_version{round(?(0.5,3.49))} "Plug-in for GIMP\n    "[" "@{-strver}" "]
   -endif
@@ -18597,8 +18595,8 @@ gimp_logo_en :
 #@gimp_fr : Envoyer une carte postale vous fera rentrer <i>de facto</i> dans le <i>Friends Hall of Fame</i> :) !
 #@gimp_fr : "}
 gimp_logo_fr :
-  -if {narg($_gmic_prerelease)}
-    -gimp_logo_version{round(?(0.5,3.49))} "     Greffon pour GIMP\n"[" "@{-strver}" pre-release \#"$_gmic_prerelease]
+  -if {narg($_prerelease)}
+    -gimp_logo_version{round(?(0.5,3.49))} "     Greffon pour GIMP\n"[" "@{-strver}" pre-release \#"$_prerelease]
   -else
     -gimp_logo_version{round(?(0.5,3.49))} "Greffon pour GIMP\n    "[" "@{-strver}" "]
   -endif
@@ -18625,8 +18623,8 @@ gimp_logo_fr :
 #@gimp_ca : Tot aquell que envi&#239; una postal apareixer&#224; al <i>Friends Hall of Fame</i> :) !
 #@gimp_ca : "}
 gimp_logo_ca :
-  -if {narg($_gmic_prerelease)}
-    -gimp_logo_version{round(?(0.5,3.49))} "         per al GIMP\n"[" "@{-strver}" pre-release \#"$_gmic_prerelease]
+  -if {narg($_prerelease)}
+    -gimp_logo_version{round(?(0.5,3.49))} "         per al GIMP\n"[" "@{-strver}" pre-release \#"$_prerelease]
   -else
     -gimp_logo_version{round(?(0.5,3.49))} "per al GIMP\n  "[" "@{-strver}" "]
   -endif
