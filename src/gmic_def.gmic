@@ -600,6 +600,7 @@ _help_usage :
 \n         . '"${c}"h"$n"': height of the associated image, if any (0 otherwise).
 \n         . '"${c}"d"$n"': depth of the associated image, if any (0 otherwise).
 \n         . '"${c}"s"$n"': spectrum of the associated image, if any (0 otherwise).
+\n         . '"${c}"r"$n"': shared state of the associated image, if any (0 otherwise).
 \n         . '"${c}"x"$n"': current processed column of the associated image, if any (0 otherwise).
 \n         . '"${c}"y"$n"': current processed row of the associated image, if any (0 otherwise).
 \n         . '"${c}"z"$n"': current processed slice of the associated image, if any (0 otherwise).
@@ -611,8 +612,8 @@ _help_usage :
 \n            (roughly in [-5,5]).
 \n         . '"${c}"i"$n"': current processed pixel value (i.e. value located at (x,y,z,c)) of the
 \n            associated image, if any (0 otherwise).
-\n         . '"${c}"im"$n"','"${c}"iM"$n"','"${c}"ia"$n"','"${c}"iv"$n"','"${c}"ic"$n"': Respectively the minimum, maximum, average values,
-\n            variance and median value of the associated image, if any (0 otherwise).
+\n         . '"${c}"im"$n"','"${c}"iM"$n"','"${c}"ia"$n"','"${c}"iv"$n"','"${c}"is"$n"','"${c}"ip"$n"','"${c}"ic"$n"': Respectively the minimum, maximum, average values,
+\n            variance, sum, product and median value of the associated image, if any (0 otherwise).
 \n         . '"${c}"xm"$n"','"${c}"ym"$n"','"${c}"zm"$n"','"${c}"cm"$n"': The pixel coordinates of the minimum value in the associated
 \n            image, if any (0 otherwise).
 \n         . '"${c}"xM"$n"','"${c}"yM"$n"','"${c}"zM"$n"','"${c}"cM"$n"': The pixel coordinates of the maximum value in the
