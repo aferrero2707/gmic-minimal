@@ -246,7 +246,7 @@ _help_usage :
 
   -_help_paragraph " "$c${b}"gmic [command1 [arg1_1,arg1_2,..]] .. [commandN [argN_1,argN_2,..]]"$n"
 \n
-\n '"${g}"gmic"$n"' is an open-source interpreter of the "@{-GMIC}" language, a script-based programming
+\n '"${g}"gmic"$n"' is the open-source interpreter of the "@{-GMIC}" language, a script-based programming
 \n  language dedicated to the design of "${g}"image processing pipelines"$n". It can be used to convert,
 \n  manipulate, filter and visualize datasets made of one or several 1d/2d or 3d multi-
 \n  spectral images.
