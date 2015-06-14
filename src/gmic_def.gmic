@@ -482,28 +482,10 @@ _help_usage :
 \n    . '"$c"@indice"$n"' or '"$c"@{indice,feature}"$n"' are substituted by the "${g}"list of pixel values"$n" of the
 \n       image "$c"[indice]"$n" (separated by commas), or by a "${g}"specific feature (or subset)"$n" of it.
 \n       '"${g}"indice"$n"' denotes either a numbered image indice or an image name. Requested '"${g}"feature"$n"' can be one of:
-\n         . '"${g}"w"$n"': image width (number of image columns).
-\n         . '"${g}"h"$n"': image height (number of image rows).
-\n         . '"${g}"d"$n"': image depth (number of image slices).
-\n         . '"${g}"s"$n"': image spectrum (number of image channels).
-\n         . '"${g}"wh"$n"': image width x image height.
-\n         . '"${g}"whd"$n"': image width x image height x image depth.
-\n         . '"${g}"whds"$n"': image width x image height x image depth x image spectrum.
-\n                   (i.e. number of values in the specified image, eq. to '#').
-\n         . '"${g}"r"$n"': image shared state (1, if the pixel buffer is shared, 0 otherwise).
 \n         . '"${g}"n"$n"': image name or filename (if the image has been read from a file).
 \n         . '"${g}"b"$n"': image basename (i.e. filename without the folder path nor extension).
 \n         . '"${g}"x"$n"': image extension (i.e last characters after the last '.' in the filename).
 \n         . '"${g}"f"$n"': image folder name.
-\n         . '"$g"#"$n"': number of image values (i.e. width x height x depth x spectrum).
-\n         . '"$g"+"$n"': sum of all pixel values.
-\n         . '"$g"-"$n"': difference of all pixel values.
-\n         . '"$g"*"$n"': product of all pixel values.
-\n         . '"$g"/"$n"': quotient of all pixel values.
-\n         . '"${g}"m"$n"': minimum pixel value.
-\n         . '"${g}"M"$n"': maximum pixel value.
-\n         . '"${g}"a"$n"': average pixel value.
-\n         . '"${g}"v"$n"': variance of pixel values.
 \n         . '"${g}"t"$n"': text string built from the image values, regarded as ascii codes.
 \n         . '"${g}"c"$n"': (x,y,z,c) coordinates of the minimum value, separated by commas ','.
 \n         . '"${g}"C"$n"': (x,y,z,c) coordinates of the maximum value, separated by commas ','.
@@ -601,6 +583,9 @@ _help_usage :
 \n         . '"${c}"d"$n"': depth of the associated image, if any (0 otherwise).
 \n         . '"${c}"s"$n"': spectrum of the associated image, if any (0 otherwise).
 \n         . '"${c}"r"$n"': shared state of the associated image, if any (0 otherwise).
+\n         . '"${c}"wh"$n"': shortcut for width*height.
+\n         . '"${c}"whd"$n"': shortcut for width*height*depth.
+\n         . '"${c}"whds"$n"': shortcut for width*height*depth*spectrum (i.e. total number of pixel values).
 \n         . '"${c}"x"$n"': current processed column of the associated image, if any (0 otherwise).
 \n         . '"${c}"y"$n"': current processed row of the associated image, if any (0 otherwise).
 \n         . '"${c}"z"$n"': current processed slice of the associated image, if any (0 otherwise).

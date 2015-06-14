@@ -4037,6 +4037,67 @@ CImg<char> gmic::substitute_item(const char *const source,
                 *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
             } else is_substitution_done = false;
             break;
+          case 't' :
+            if (!subset[1]) {
+              const unsigned int siz = (unsigned int)img.size();
+              if (siz) {
+                unsigned int strsiz = 0;
+                cimg_for(img,ptr,T) if ((unsigned char)*ptr) ++strsiz; else break;
+                if (strsiz) {
+                  CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
+                  _text = CImg<T>(img.data(),strsiz,1,1,1,true);
+                  text.back() = 0;
+                  for (char *ps = _text.data(); *ps; ++ps)
+                    *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
+                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                  _text.move_to(substituted_items);
+                }
+              }
+              *substr = 0;
+            } else is_substitution_done = false;
+            break;
+          case 'c' :
+            if (!subset[1]) {
+              CImg<unsigned int> st;
+              if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
+            } else is_substitution_done = false;
+            break;
+          case 'C' :
+            if (!subset[1]) {
+              CImg<unsigned int> st;
+              if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
+            } else is_substitution_done = false;
+            break;
+          case 'i' :
+            if (!subset[2]) switch (subset[1]) {
+              case 'm' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.min());
+                break;
+              case 'M' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.max());
+                break;
+              case 'a' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.mean());
+                break;
+              case 'v' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.variance());
+                break;
+              case 'c' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.median());
+                break;
+              case 's' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.sum());
+                break;
+              case 'p' :
+                cimg_snprintf(substr,substr.width(),"%.16g",(double)img.product());
+                break;
+              default : is_substitution_done = false;
+              } else is_substitution_done = false;
+            break;
+
+            // Old substitution rules, keep for compatibility reasons only.
           case '#' :
             if (!subset[1]) cimg_snprintf(substr,substr.width(),"%lu",img.size());
             else is_substitution_done = false;
@@ -4088,39 +4149,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             if (!subset[1]) cimg_snprintf(substr,substr.width(),"%.16g",img.variance());
             else is_substitution_done = false;
             break;
-          case 't' :
-            if (!subset[1]) {
-              const unsigned int siz = (unsigned int)img.size();
-              if (siz) {
-                unsigned int strsiz = 0;
-                cimg_for(img,ptr,T) if ((unsigned char)*ptr) ++strsiz; else break;
-                if (strsiz) {
-                  CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
-                  _text = CImg<T>(img.data(),strsiz,1,1,1,true);
-                  text.back() = 0;
-                  for (char *ps = _text.data(); *ps; ++ps)
-                    *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
-                  _text.move_to(substituted_items);
-                }
-              }
-              *substr = 0;
-            } else is_substitution_done = false;
-            break;
-          case 'c' :
-            if (!subset[1]) {
-              CImg<unsigned int> st;
-              if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
-              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
-            } else is_substitution_done = false;
-            break;
-          case 'C' :
-            if (!subset[1]) {
-              CImg<unsigned int> st;
-              if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
-              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
-            } else is_substitution_done = false;
-            break;
+
           default : is_substitution_done = false;
           }
 
