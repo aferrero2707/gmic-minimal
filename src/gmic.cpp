@@ -4098,6 +4098,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             break;
 
             // Old substitution rules, keep for compatibility reasons only.
+            // ----8<----
           case '#' :
             if (!subset[1]) cimg_snprintf(substr,substr.width(),"%lu",img.size());
             else is_substitution_done = false;
@@ -4149,6 +4150,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             if (!subset[1]) cimg_snprintf(substr,substr.width(),"%.16g",img.variance());
             else is_substitution_done = false;
             break;
+            // ---->8----
 
           default : is_substitution_done = false;
           }
