@@ -2598,10 +2598,28 @@ const CImg<char>& gmic::get_default_commands() {
 
 // Set variable in the interpreter environment.
 //---------------------------------------------
-gmic& gmic::set_variable(const char *const variable_name, const char *const variable_content) {
-  const unsigned int hashcode = gmic_hashcode(variable_name,true);
-  CImg<char>::string(variable_name).move_to(*variables_names[hashcode]);
-  CImg<char>::string(variable_content).move_to(*variables[hashcode]);
+gmic& gmic::set_variable(const char *const name, const char *const value,
+                         const unsigned int *const variables_sizes) {
+  if (!name || !value) return *this;
+  int ind = 0; bool is_name_found = false;
+  const bool
+    is_global = *name=='_',
+    is_thread_global = is_global && name[1]=='_';
+  const unsigned int hashcode = gmic_hashcode(name,true);
+  const int lind = is_global || !variables_sizes?0:(int)variables_sizes[hashcode];
+  if (is_thread_global) cimg::mutex(30);
+  CImgList<char>
+    &__variables = *variables[hashcode],
+    &__variables_names = *variables_names[hashcode];
+  for (int l = __variables.width() - 1; l>=lind; --l) if (!std::strcmp(__variables_names[l],name)) {
+      is_name_found = true; ind = l; break;
+    }
+  if (is_name_found) CImg<char>::string(value).move_to(__variables[ind]);
+  else {
+    CImg<char>::string(name).move_to(__variables_names);
+    CImg<char>::string(value).move_to(__variables);
+  }
+  if (is_thread_global) cimg::mutex(30,0);
   return *this;
 }
 
@@ -6131,13 +6149,19 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               error(images,0,0,
                     "Command '-done': Not associated to a '-repeat' command "
                     "within the same scope.");
-            if (--repeatdones.back()(1)) {
-              ++repeatdones.back()(2);
-              position = repeatdones.back()(0);
-            } else {
+            *title = 0;
+            CImg<unsigned int> &back = repeatdones.back();
+            const unsigned int counter = ++back[2];
+            if (back.height()>3) _title.draw_image(CImg<char>(back.data() + 3,back.height() - 3));
+            if (--back[1]) position = back[0];
+            else {
               if (verbosity>0 || is_debug) print(images,0,"End 'repeat..done' block.");
               repeatdones.remove();
               scope.remove();
+            }
+            if (*title) {
+              cimg_snprintf(argx,_argx.width(),"%u",counter);
+              set_variable(title,argx,variables_sizes);
             }
             continue;
           }
@@ -9860,8 +9884,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-repeat",item)) {
             gmic_substitute_args();
             float number = 0;
-            if (std::sscanf(argument,"%f%c",
-                            &number,&end)==1) {
+            *title  = 0;
+            if (std::sscanf(argument,"%f%c",&number,&end)==1 ||
+                (std::sscanf(argument,"%f,%255[a-zA-Z0-9_]%c",&number,title,&sep)==2 &&
+                 (*title<'0' || *title>'9'))) {
               const unsigned int nb = number<=0?0U:
                 cimg::type<float>::is_inf(number)?~0U:(unsigned int)cimg::round(number);
               if (nb) {
@@ -9869,14 +9895,24 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   cimg_snprintf(argx,_argx.width(),"*repeat#%u",debug_line);
                   CImg<char>::string(argx).move_to(scope);
                 } else CImg<char>::string("*repeat").move_to(scope);
-                if (verbosity>0 || is_debug)
-                  print(images,0,"Start '-repeat..-done' block (%u iteration%s).",
-                        nb,nb>1?"s":"");
-                CImg<unsigned int>::vector(position + 1,nb,0).move_to(repeatdones);
+                if (verbosity>0 || is_debug) {
+                  if (*title) print(images,0,"Start '-repeat..-done' block with variable '%s' (%u iteration%s).",
+                                    title,nb,nb>1?"s":"");
+                  else print(images,0,"Start '-repeat..-done' block (%u iteration%s).",
+                             nb,nb>1?"s":"");
+                }
+                if (*title) {
+                  ((CImg<unsigned int>::vector(position + 1,nb,0),
+                    CImg<unsigned int>(title,1,std::strlen(title)+1))>'y').move_to(repeatdones);
+                  set_variable(title,"0",variables_sizes);
+                } else
+                  CImg<unsigned int>::vector(position + 1,nb,0).move_to(repeatdones);
               } else {
-                if (verbosity>0 || is_debug)
-                  print(images,0,"Skip 'repeat..done' block (0 iteration).",
-                        nb);
+                if (verbosity>0 || is_debug) {
+                  if (*title) print(images,0,"Skip 'repeat..done' block with variable '%s' (0 iteration).",
+                                    title);
+                  else print(images,0,"Skip 'repeat..done' block (0 iteration).");
+                }
                 int nb_repeats = 0;
                 for (nb_repeats = 1; nb_repeats && position<commands_line.size(); ++position) {
                   const char *it = commands_line[position].data();
@@ -12901,28 +12937,11 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       sep = 0;
       if (std::strchr(item,'=') && std::sscanf(item,"%255[a-zA-Z0-9_]%c",title,&sep)==2 &&
           sep=='=' && (*title<'0' || *title>'9')) {
-        name.assign(title,(unsigned int)std::strlen(title) + 1);
-        CImg<char> value = CImg<char>::string(item + name.width());
-        int ind = 0; bool is_name_found = false;
-        const bool
-          is_global = *name=='_',
-          is_thread_global = is_global && name[1]=='_';
-        const unsigned int sind = gmic_hashcode(name,true);
-	const int lind = is_global?0:(int)variables_sizes[sind];
-        if (is_thread_global) cimg::mutex(30);
-        CImgList<char>
-	  &__variables = *variables[sind],
-	  &__variables_names = *variables_names[sind];
-	for (int l = __variables.width() - 1; l>=lind; --l)
-	  if (!std::strcmp(__variables_names[l],name)) {
-	    is_name_found = true; ind = l; break;
-	  }
+        const char *const value = item + std::strlen(title) + 1;
         print(images,0,"Set %s variable %s='%s'.",
-              *name=='_'?"global":"local",
-              name.data(),value.data());
-        if (is_name_found) value.move_to(__variables[ind]);
-        else { name.move_to(__variables_names); value.move_to(__variables); }
-        if (is_thread_global) cimg::mutex(30,0);
+              *title=='_'?"global":"local",
+              title,value);
+        set_variable(title,value,variables_sizes);
         continue;
       }
 
