@@ -2401,6 +2401,7 @@ CImgList<char> gmic::commands_line_to_CImgList(const char *const commands_line) 
       else if (c=='}') c = _rbrace;
       else if (c==',') c = _comma;
       else if (c=='\"') c = _dquote;
+      else if (c=='@') c = _arobace;
       else if (c==' ') c = ' ';
       else *(ptrd++) = '\\';
       *(ptrd++) = c;
@@ -2408,7 +2409,7 @@ CImgList<char> gmic::commands_line_to_CImgList(const char *const commands_line) 
       if (c=='\"') is_dquoted = false;
       else if (c==1) while (c && c!=' ') c = *(++ptrs); // Discard debug info inside string.
       else *(ptrd++) = c=='$'?_dollar:c=='{'?_lbrace:c=='}'?_rbrace:
-             c==','?_comma:c;
+             c==','?_comma:c=='@'?_arobace:c;
     } else { // Non-escaped character outside string.
       if (c=='\"') is_dquoted = true;
       else if (c==' ') {
@@ -2564,6 +2565,7 @@ gmic& gmic::debug(const char *format, ...) {
       case _rbrace : std::fprintf(cimg::output(),"\\}"); break;
       case _comma : std::fprintf(cimg::output(),"\\,"); break;
       case _dquote : std::fprintf(cimg::output(),"\\\""); break;
+      case _arobace : std::fprintf(cimg::output(),"\\@"); break;
       default : std::fputc(c,cimg::output());
       }
     else std::fputc(c,cimg::output());
@@ -3051,6 +3053,7 @@ gmic& gmic::debug(const CImgList<T>& list, const char *format, ...) {
       case _rbrace : std::fprintf(cimg::output(),"\\}"); break;
       case _comma : std::fprintf(cimg::output(),"\\,"); break;
       case _dquote : std::fprintf(cimg::output(),"\\\""); break;
+      case _arobace : std::fprintf(cimg::output(),"\\@"); break;
       default : std::fputc(c,cimg::output());
       }
     } else std::fputc(c,cimg::output());
@@ -3476,11 +3479,11 @@ CImg<char> gmic::substitute_item(const char *const source,
 
   for (const char *nsource = source; *nsource; )
     if (*nsource!='@' && *nsource!='{' && *nsource!='$') {
-      // If not starting with '{', or '$'.
+      // If not starting with '@', '{', or '$'.
       const char *const nsource0 = nsource;
       do { ++nsource; } while (*nsource && *nsource!='@' && *nsource!='{' && *nsource!='$');
       CImg<char>(nsource0,(unsigned int)(nsource - nsource0)).move_to(substituted_items);
-    } else { // '{}' or '$' expression found.
+    } else { // '@', '{}' or '$' expression found.
       CImg<char> substr(256);
       CImg<unsigned int> _ind;
       int ind = 0, l_inbraces = 0;
@@ -3509,7 +3512,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           const CImg<T>& back_img = images.size()?gmic_check(images.back()):CImg<T>::empty();
           bool is_substituted = false;
 
-          // Single-char cases : {w},{h},{d},{s},{*},{^},{.},{|},{%},{#},{!},{n},{b},{x},{f},{t},{c} and {C}.
+          // Single-char cases : {w},{h},{d},{s},{*},{^},{.},{|},{%},{#},{!},{n},{b},{x},{f},{t},{c},{C}.
           if (!inbraces[1]) {
             switch (*inbraces) {
             case '*' : // Number of available cpus.
@@ -3799,6 +3802,25 @@ CImg<char> gmic::substitute_item(const char *const source,
             is_substituted = true;
           }
 
+          // Strings comparison.
+          if (!is_substituted && inbraces.width()>=5) {
+            char *const peq = std::strstr(inbraces,"'=='");
+            if (peq) {
+              *peq = 0;
+              cimg_snprintf(substr,substr.width(),"%d",(int)!std::strcmp(inbraces,peq + 4));
+              CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+              is_substituted = true;
+            } else {
+              char *const pne = std::strstr(inbraces,"'!='");
+              if (pne) {
+                *pne = 0;
+                cimg_snprintf(substr,substr.width(),"%d",(int)std::strcmp(inbraces,pne + 4));
+                CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+                is_substituted = true;
+              }
+            }
+          }
+
           // Image feature.
           *substr = 0;
           if (!is_substituted && inbraces.width()>=4 &&
@@ -3828,15 +3850,15 @@ CImg<char> gmic::substitute_item(const char *const source,
             const CImg<T>& img = gmic_check(images[ind]);
 
             *substr = 0;
-            const char *feature = inbraces;
-            while (*feature!=',') ++feature;
-            ++feature;
-            if (!*feature)
+            const char *_inbraces = inbraces;
+            while (*_inbraces!=',') ++_inbraces;
+            ++_inbraces;
+            if (!*_inbraces)
               error(images,0,0,
                     "Item substitution '{%s}': Invalid empty feature.",
                     inbraces.data());
 
-            if (!feature[1]) switch (*feature) { // Single-char feature.
+            if (!_inbraces[1]) switch (*_inbraces) { // Single-char feature.
               case 'n' :
                 substr.assign(cimg::max(substr.width(),images_names[ind].width()));
                 cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
@@ -3896,54 +3918,20 @@ CImg<char> gmic::substitute_item(const char *const source,
               } break;
               }
 
-            if (*feature=='@') { // Subset of image values.
-              CImg<T> values;
-              if (!feature[1]) values = img.get_shared();
-              else {
-                int _verbosity = verbosity;
-                bool _is_debug = is_debug;
-                verbosity = -1; is_debug = false;
-                CImg<char> _status;
-                status.move_to(_status); // Save status because 'selection2cimg' can change it.
-                try {
-                  const CImg<unsigned int>
-                    inds = selection2cimg(feature + 1,img.size(),
-                                          CImgList<char>::empty(),"",false,false,CImg<char>::empty());
-                  values.assign(1,inds.height());
-                  cimg_foroff(inds,p) values[p] = img[inds(p)];
-                  is_substituted = true;
-                } catch (gmic_exception &e) {
-                  error(images,0,0,
-                        "Item substitution '{%s}': Invalid values subset (%s).",
-                        inbraces.data(),e.what());
-                }
-                _status.move_to(status);
-                verbosity = _verbosity; is_debug = _is_debug;
-              }
-              if (is_substituted) {
-                cimg_foroff(values,p) {
-                  cimg_snprintf(substr,substr.width(),"%.16g",(double)values[p]);
-                  CImg<char>::string(substr).move_to(substituted_items).back().back() = ',';
-                }
-                if (values) --(substituted_items.back()._width);
-                *substr = 0;
-              }
-            }
-
             /*            CImg<char> argx(256), argy(256), argz(256), argc(256);
             *argx = *argy = *argz = *argc = 0;
             char sepp = 0, sepx = 0, sepy = 0, sepz = 0, sepc = 0;
             float x = 0, y = 0, z = 0, v = 0, bcond = 0;
-            if ((std::sscanf(feature,"(%255[0-9.eE%+-]%c%c",
+            if ((std::sscanf(_inbraces,"(%255[0-9.eE%+-]%c%c",
                              argx.data(),&sepp,&end)==2 ||
-                 std::sscanf(feature,"(%255[0-9.eE%+-],%255[0-9.eE%+-]%c%c",
+                 std::sscanf(_inbraces,"(%255[0-9.eE%+-],%255[0-9.eE%+-]%c%c",
                              argx.data(),argy.data(),&sepp,&end)==3 ||
-                 std::sscanf(feature,"(%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-]%c%c",
+                 std::sscanf(_inbraces,"(%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-]%c%c",
                              argx.data(),argy.data(),argz.data(),&sepp,&end)==4 ||
-                 std::sscanf(feature,"(%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
+                 std::sscanf(_inbraces,"(%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                              "%255[0-9.eE%+-]%c%c",
                              argx.data(),argy.data(),argz.data(),argc.data(),&sepp,&end)==5 ||
-                 std::sscanf(feature,"(%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
+                 std::sscanf(_inbraces,"(%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                              "%255[0-9.eE%+-],%f%c%c",
                              argx.data(),argy.data(),argz.data(),argc.data(),&bcond,&sepp,&end)==6) &&
                 sepp==')' &&
@@ -3974,25 +3962,6 @@ CImg<char> gmic::substitute_item(const char *const source,
               CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
 
             std::fprintf(stderr,"\nDEBUG : image feature '%s', ind = %d\n",inbraces.data(),ind);
-          }
-
-          // Strings comparison.
-          if (!is_substituted && inbraces.width()>=5) {
-            char *const peq = std::strstr(inbraces,"'=='");
-            if (peq) {
-              *peq = 0;
-              cimg_snprintf(substr,substr.width(),"%d",(int)!std::strcmp(inbraces,peq + 4));
-              CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-              is_substituted = true;
-            } else {
-              char *const pne = std::strstr(inbraces,"'!='");
-              if (pne) {
-                *pne = 0;
-                cimg_snprintf(substr,substr.width(),"%d",(int)std::strcmp(inbraces,pne + 4));
-                CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-                is_substituted = true;
-              }
-            }
           }
 
           // Mathematical expression [truncated output].
@@ -4034,7 +4003,215 @@ CImg<char> gmic::substitute_item(const char *const source,
         is_braces = true;
       }
 
-            /*
+      // Substitute '@#' -> number of images in the list.
+      if (*nsource=='@' && nsource[1]=='#') {
+        nsource+=2;
+        cimg_snprintf(substr,substr.width(),"%u",images.size());
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+      // Substitute '$@*' -> number of available cpus.
+      } else if (*nsource=='@' && nsource[1]=='*') {
+        nsource+=2;
+        cimg_snprintf(substr,substr.width(),"%u",cimg::nb_cpus());
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+      // Substitute '@^' -> current level of verbosity.
+      } else if (*nsource=='@' && nsource[1]=='^') {
+        nsource+=2;
+        cimg_snprintf(substr,substr.width(),"%d",verbosity);
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@.' -> current version number of the G'MIC interpreter.
+      } else if (*nsource=='@' && nsource[1]=='.') {
+        nsource+=2;
+        cimg_snprintf(substr,substr.width(),"%u",gmic_version);
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@%' -> pid of the current process.
+      } else if (*nsource=='@' && nsource[1]=='%') {
+        nsource+=2;
+#if cimg_OS==1
+        cimg_snprintf(substr,substr.width(),"%u",(unsigned int)getpid());
+#elif cimg_OS==2 // #if cimg_OS==1
+        cimg_snprintf(substr,substr.width(),"%u",(unsigned int)_getpid());
+#else // #if cimg_OS==1
+        cimg_snprintf(substr,substr.width(),"0");
+#endif // #if cimg_OS==1
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@|' -> current value of the timer.
+      } else if (*nsource=='@' && nsource[1]=='|') {
+        nsource+=2;
+        cimg_snprintf(substr,substr.width(),"%g",(cimg::time() - reference_time)/1000.);
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@!' -> visibility state of the first display window.
+      } else if (*nsource=='@' && nsource[1]=='!') {
+        nsource+=2;
+#if cimg_display==0
+        std::strcpy(substr,"0");
+#else // #if cimg_display==0
+        cimg_snprintf(substr,substr.width(),"%d",
+                      _display_window[0]?(_display_window[0].is_closed()?0:1):0);
+#endif // #if cimg_display==0
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@{!}', @{!1}, '@{!,subset}' and '@{!1,subset}'
+        // -> features of a display window.
+      } else if (*nsource=='@' && inbraces[0]=='!' &&
+                 (inbraces[1]==0 ||
+                  (inbraces[1]>='0' && inbraces[1]<='9' && inbraces[2]==0) ||
+                  (inbraces[1]==',' && inbraces[2]) ||
+                  (inbraces[1]>='0' && inbraces[1]<='9' && inbraces[2]==',' && inbraces[3]))) {
+        nsource+=l_inbraces + 3;
+#if cimg_display==0
+        std::strcpy(substr,"0");
+#else // #if cimg_display==0
+        unsigned int wind = 0;
+        bool is_substituted = true;
+        const char *ninbraces = inbraces.data() + 1;
+        if (*ninbraces>='0' && *ninbraces<='9') wind = (unsigned int)(*(ninbraces++) - '0');
+        if (!*ninbraces) cimg_snprintf(substr,substr.width(),"%d",
+                                       _display_window[wind]?(_display_window[wind].is_closed()?0:1):0);
+        else if (*ninbraces==',') {
+          bool flush_request = false;
+          if (*(++ninbraces)=='-' &&
+              ninbraces[1]!='w' && ninbraces[1]!='h' && ninbraces[1]!='d' && ninbraces[1]!='e' &&
+              ninbraces[1]!='u' && ninbraces[1]!='v' && ninbraces[1]!='n') { flush_request = true; ++ninbraces; }
+          switch (*ninbraces) {
+          case 'w' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].width());
+            else if (ninbraces[1]=='h' && !ninbraces[2])
+              cimg_snprintf(substr,substr.width(),"%ld",
+                            (long)_display_window[wind].width()*_display_window[wind].height());
+            else is_substituted = false;
+            break;
+          case 'h' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].height());
+            else is_substituted = false;
+            break;
+          case 'd' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].window_width());
+            else if (ninbraces[1]=='e' && !ninbraces[2])
+              cimg_snprintf(substr,substr.width(),"%ld",
+                            (long)_display_window[wind].window_width()*
+                            _display_window[wind].window_height());
+            else is_substituted = false;
+            break;
+          case 'e' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].window_height());
+            else is_substituted = false;
+            break;
+          case 'u' :
+            if (!ninbraces[1]) try {
+                cimg_snprintf(substr,substr.width(),"%d",CImgDisplay::screen_width());
+              } catch (CImgDisplayException&) {
+                std::strcpy(substr,"0");
+              }
+            else if (ninbraces[1]=='v' && !ninbraces[2]) try {
+                cimg_snprintf(substr,substr.width(),"%ld",
+                              (long)CImgDisplay::screen_width()*CImgDisplay::screen_height());
+              } catch (CImgDisplayException&) {
+                std::strcpy(substr,"0");
+              }
+            else is_substituted = false;
+            break;
+          case 'v' :
+            if (!ninbraces[1]) try {
+                cimg_snprintf(substr,substr.width(),"%d",CImgDisplay::screen_height());
+              } catch (CImgDisplayException&) {
+                std::strcpy(substr,"0");
+              }
+            else is_substituted = false;
+            break;
+          case 'n' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].normalization());
+            else is_substituted = false;
+            break;
+          case 'x' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].mouse_x());
+            else is_substituted = false;
+            if (flush_request) { _display_window[wind]._mouse_x = -1; _display_window[wind]._mouse_y = -1; }
+            break;
+          case 'y' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].mouse_y());
+            else is_substituted = false;
+            if (flush_request) { _display_window[wind]._mouse_x = -1; _display_window[wind]._mouse_y = -1; }
+            break;
+          case 'b' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].button());
+            else is_substituted = false;
+            if (flush_request) _display_window[wind]._button = 0;
+            break;
+          case 'o' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].wheel());
+            else is_substituted = false;
+            if (flush_request) _display_window[wind]._wheel = 0;
+            break;
+          case 'c' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",(int)_display_window[wind].is_closed());
+            else is_substituted = false;
+            if (flush_request) _display_window[wind]._is_closed = false;
+            break;
+          case 'r' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",(int)_display_window[wind].is_resized());
+            else is_substituted = false;
+            if (flush_request) _display_window[wind]._is_resized = false;
+            break;
+          case 'm' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%d",(int)_display_window[wind].is_moved());
+            else is_substituted = false;
+            if (flush_request) _display_window[wind]._is_moved = false;
+            break;
+          case 'k' :
+            if (!ninbraces[1])
+              cimg_snprintf(substr,substr.width(),"%u",_display_window[wind].key());
+            else is_substituted = false;
+            if (flush_request) _display_window[wind]._keys[0] = 0;
+            break;
+          default : {
+            volatile bool &ik = _display_window[wind].is_key(ninbraces);
+            cimg_snprintf(substr,substr.width(),"%d",(int)ik);
+            if (flush_request) ik = false;
+          }
+          }
+        } else cimg_snprintf(substr,substr.width(),"@{!%s}",inbraces.data());
+
+        if (!is_substituted) std::strcpy(substr,"0");
+
+#endif // #if cimg_display==0
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@/' -> number of levels in current global scope.
+      } else if (*nsource=='@' && nsource[1]=='/') {
+        nsource+=2;
+        cimg_snprintf(substr,substr.width(),"%u",scope.size());
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+
+        // Substitute '@{/}' and '@{/,subset}' -> content of the global scope.
+      } else if (*nsource=='@' && inbraces[0]=='/' &&
+                 (inbraces[1]==0 || (inbraces[1]==',' && inbraces[2]))) {
+        nsource+=l_inbraces + 3;
+        const CImg<unsigned int>
+          subset = selection2cimg(inbraces[1]?inbraces.data() + 2:0,scope.size(),
+                                  CImgList<char>::empty(),
+                                  "Item substitution '@{/[,subset]}'",false,
+                                  false,CImg<char>::empty());
+        if (subset) cimg_foroff(subset,i)
+                      substituted_items.insert(scope[subset[i]]).back().back() = '/';
+
         // Substitute '@>' and '@<' -> current number of nested loops.
       } else if (*nsource=='@' && (nsource[1]=='>' || nsource[1]=='<')) {
         nsource+=2;
@@ -4073,7 +4250,6 @@ CImg<char> gmic::substitute_item(const char *const source,
                       direction=='>'?repeatdones.back()(2):repeatdones.back()(1) - 1);
         CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
         nsource+=is_braces?4:2;
-            */
 
         // Substitute '$name' and '${name}' -> variable, image indice or environment variable.
       } else if (*nsource=='$' &&
@@ -4162,7 +4338,6 @@ CImg<char> gmic::substitute_item(const char *const source,
         if (status.width()>1)
           CImg<char>(status.data(),(unsigned int)std::strlen(status)).move_to(substituted_items);
 
-        /*
         // Substitute '@ind', '@{ind}' and '@{ind,argument}' -> image values or feature.
       } else if (*nsource=='@' && (std::sscanf(nsource + 1,"%d",&ind)==1 ||
                                    ((end=0),std::sscanf(inbraces,"%d%c",&ind,&end)==1) ||
@@ -4513,9 +4688,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           CImg<char>(status.data(),(unsigned int)std::strlen(status)).move_to(substituted_items);
         continue;
       }
-        */
-  }
-}
+    }
   CImg<char>::vector(0).move_to(substituted_items);
   return substituted_items>'x';
 }
@@ -9422,7 +9595,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 const char c = *s;
                 if (c=='\"') is_dquoted = !is_dquoted;
                 if (!is_dquoted) *s = c<' '?(c==_dollar?'$':c==_lbrace?'{':c==_rbrace?'}':
-                                             c==_comma?',':c==_dquote?'\"':c):c;
+                                             c==_comma?',':c==_dquote?'\"':c==_arobace?'@':c):c;
               }
               gi.commands_line_to_CImgList(arguments[l].data()).
                 move_to(_threads_data[l].commands_line);
@@ -12772,7 +12945,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   const char c = *s;
                   if (c=='\"') is_dquoted = !is_dquoted;
                   if (!is_dquoted) *s = c<' '?(c==_dollar?'$':c==_lbrace?'{':c==_rbrace?'}':
-                                               c==_comma?',':c==_dquote?'\"':c):c;
+                                               c==_comma?',':c==_dquote?'\"':c==_arobace?'@':c):c;
                 }
 
                 if (is_debug) {
