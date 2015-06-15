@@ -3534,14 +3534,19 @@ CImg<char> gmic::substitute_item(const char *const source,
              (inbraces[1]>='0' && inbraces[1]<='9' && !inbraces[2]) ||
              (inbraces[1]==',' && inbraces[2]) ||
              (inbraces[1]>='0' && inbraces[1]<='9' && inbraces[2]==',' && inbraces[3]))) {
+#if cimg_display==0
           *substr = '0'; substr[1] = 0;
-#if cimg_display!=0
+          is_substituted = true;
+#else // #if cimg_display==0
+
           unsigned int wind = 0;
           const char *feature = inbraces.data() + 1;
           if (*feature>='0' && *feature<='9') wind = (unsigned int)(*(feature++) - '0');
-          if (!*feature) cimg_snprintf(substr,substr.width(),"%d",
-                                       _display_window[wind]?(_display_window[wind].is_closed()?0:1):0);
-          else if (*feature==',') {
+          if (!*feature) {
+            cimg_snprintf(substr,substr.width(),"%d",
+              _display_window[wind]?(_display_window[wind].is_closed()?0:1):0);
+            is_substituted = true;
+          } else if (*feature==',') {
             bool flush_request = false;
             if (*(++feature)=='-' &&
                 feature[1]!='w' && feature[1]!='h' && feature[1]!='d' && feature[1]!='e' &&
@@ -3644,14 +3649,15 @@ CImg<char> gmic::substitute_item(const char *const source,
                 *substr = '0'; substr[1] = 0;
               }
               is_substituted = true;
-            } else { // Pressed state of specified key.
+            }
+            if (!is_substituted) { // Pressed state of specified key.
               volatile bool &ik = _display_window[wind].is_key(feature);
               cimg_snprintf(substr,substr.width(),"%d",(int)ik);
               is_substituted = true;
               if (flush_request) ik = false;
             }
           }
-#endif // #if cimg_display=!0
+#endif // #if cimg_display==0
         }
 
         // Sequence of ascii characters.
