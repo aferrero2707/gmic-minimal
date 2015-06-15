@@ -4137,59 +4137,36 @@ CImg<char> gmic::substitute_item(const char *const source,
         const bool
           is_global = *name=='_',
           is_thread_global = is_global && name[1]=='_';
-        bool is_reserved = false;
 
-        if (sind==254) { // Check for reserved variables.
-          if (!std::strcmp(name,"_all")) {
-            cimg_snprintf(substr,substr.width(),"%u",images.size());
-            is_reserved = true;
-          } else if (!std::strcmp(name,"_stack")) {
-            cimglist_for(scope,i)
-              substituted_items.insert(scope[i]).back().back() = '/';
-            *substr = 0;
-            is_reserved = true;
-          } else if (!std::strcmp(name,"_time")) {
-            cimg_snprintf(substr,substr.width(),"%g",(cimg::time() - reference_time)/1000.);
-            is_reserved = true;
-          } else if (!std::strcmp(name,"_verbosity")) {
-            cimg_snprintf(substr,substr.width(),"%d",verbosity);
-            is_reserved = true;
+        const int lind = is_global?0:(int)variables_sizes[sind];
+        if (is_thread_global) cimg::mutex(30);
+        const CImgList<char>
+          &__variables = *variables[sind],
+          &__variables_names = *variables_names[sind];
+        bool is_name_found = false;
+        for (int l = __variables.width() - 1; l>=lind; --l)
+          if (!std::strcmp(__variables_names[l],name)) {
+            is_name_found = true; ind = l; break;
           }
-        }
-
-        if (is_reserved && *substr)
-          CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-        else { // Non-reserved variables.
-          const int lind = is_global?0:(int)variables_sizes[sind];
-          if (is_thread_global) cimg::mutex(30);
-          const CImgList<char>
-            &__variables = *variables[sind],
-            &__variables_names = *variables_names[sind];
-          bool is_name_found = false;
-          for (int l = __variables.width() - 1; l>=lind; --l)
-            if (!std::strcmp(__variables_names[l],name)) {
+        if (is_name_found) {
+          if (__variables[ind].size()>1)
+            CImg<char>(__variables[ind].data(),__variables[ind].size() - 1).
+              move_to(substituted_items);
+        } else {
+          for (int l = images.width() - 1; l>=0; --l)
+            if (images_names[l] && !std::strcmp(images_names[l],name)) {
               is_name_found = true; ind = l; break;
             }
           if (is_name_found) {
-            if (__variables[ind].size()>1)
-              CImg<char>(__variables[ind].data(),__variables[ind].size() - 1).
-                move_to(substituted_items);
+            char text[64];
+            cimg_snprintf(text,sizeof(text),"%d",ind);
+            CImg<char>(text,(unsigned int)std::strlen(text)).move_to(substituted_items);
           } else {
-            for (int l = images.width() - 1; l>=0; --l)
-              if (images_names[l] && !std::strcmp(images_names[l],name)) {
-                is_name_found = true; ind = l; break;
-              }
-            if (is_name_found) {
-              char text[64];
-              cimg_snprintf(text,sizeof(text),"%d",ind);
-              CImg<char>(text,(unsigned int)std::strlen(text)).move_to(substituted_items);
-            } else {
-              const char *const s_env = std::getenv(name);
-              if (s_env) CImg<char>(s_env,(unsigned int)std::strlen(s_env)).move_to(substituted_items);
-            }
+            const char *const s_env = std::getenv(name);
+            if (s_env) CImg<char>(s_env,(unsigned int)std::strlen(s_env)).move_to(substituted_items);
           }
-          if (is_thread_global) cimg::mutex(30,0);
         }
+        if (is_thread_global) cimg::mutex(30,0);
         nsource+=l_name;
 
         // Substitute '${"-command"}' by the status value after command execution.
@@ -12934,12 +12911,6 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           is_global = *name=='_',
           is_thread_global = is_global && name[1]=='_';
         const unsigned int sind = gmic_hashcode(name,true);
-        if (sind==254 &&
-            (!std::strcmp(name,"_all") || !std::strcmp(name,"_time") || !std::strcmp(name,"_verbosity") ||
-             !std::strcmp(name,"_stack")))
-          error(images,0,0,
-                "Variable assignment: Cannot assign reserved variable '%s' with value '%s'.",
-                name.data(),value.data());
 	const int lind = is_global?0:(int)variables_sizes[sind];
         if (is_thread_global) cimg::mutex(30);
         CImgList<char>
