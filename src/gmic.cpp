@@ -3529,7 +3529,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           }
 
         // Display window features.
-        if (!is_substituted && *inbraces=='!' &&
+        if (!is_substituted && *inbraces=='*' &&
             (!inbraces[1] ||
              (inbraces[1]>='0' && inbraces[1]<='9' && !inbraces[2]) ||
              (inbraces[1]==',' && inbraces[2]) ||
@@ -3874,9 +3874,6 @@ CImg<char> gmic::substitute_item(const char *const source,
         }
         is_braces = true;
       }
-
-
-
 
       // Substitute '@#' -> number of images in the list.
       if (*nsource=='@' && nsource[1]=='#') {
