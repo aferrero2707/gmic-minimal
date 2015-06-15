@@ -3510,7 +3510,6 @@ CImg<char> gmic::substitute_item(const char *const source,
           error(images,0,0,
                 "Item substitution '{}': empty braces.");
 
-        const CImg<T>& back_img = images.size()?gmic_check(images.back()):CImg<T>::empty();
         bool is_substituted = false;
 
         // Single-char cases not associated to an image : {#},{^},{|},{!}.
@@ -3709,22 +3708,10 @@ CImg<char> gmic::substitute_item(const char *const source,
           }
         }
 
-        /*
-          // Image feature.
-          *substr = 0;
-          if (!is_substituted && inbraces.width()>=4 &&
-              (std::sscanf(inbraces,"%d,%c",&ind,&end)==2 ||
-               std::sscanf(inbraces,"%255[a-zA-Z0-9_],%c",substr.data(),&end)==2)) {
-            if (*substr) {
-              _ind = selection2cimg(substr,images.size(),images_names,
-                                    "Item substitution '{name,feature}'",true,
-                                    false,CImg<char>::empty());
-              if (_ind.height()!=1)
-                error(images,0,0,
-                      "Item substitution '{%s}': Invalid selection [%s], specifies multiple images.",
-                      inbraces.data(),substr.data());
-              ind = (int)*_ind;
-            }
+        // Image feature.
+        if (!is_substituted) {
+          const char *feature = inbraces;
+          if (std::sscanf(inbraces,"%d%c",&ind,&(sep=0))==2 && sep==',') {
             if (ind<0) ind+=images.width();
             if (ind<0 || ind>=images.width()) {
               if (images.width())
@@ -3736,101 +3723,101 @@ CImg<char> gmic::substitute_item(const char *const source,
                       "Item substitution '{%s}': Invalid selection [%d] (no image data available).",
                       inbraces.data(),ind);
             }
-            const CImg<T>& img = gmic_check(images[ind]);
-
-            *substr = 0;
-            const char *_inbraces = inbraces;
-            while (*_inbraces!=',') ++_inbraces;
-            ++_inbraces;
-            if (!*_inbraces)
+            while (*feature!=',') ++feature; ++feature;
+          } else if (std::sscanf(inbraces,"%255[a-zA-Z0-9_]%c",substr.data(),&(sep=0))==2 && sep==',') {
+            selection2cimg(substr,images.size(),images_names,
+                           "Item substitution '{name,feature}'",true,
+                           false,CImg<char>::empty()).move_to(_ind);
+            if (_ind.height()!=1)
               error(images,0,0,
-                    "Item substitution '{%s}': Invalid empty feature.",
-                    inbraces.data());
+                    "Item substitution '{%s}': Invalid selection [%s], specifies multiple images.",
+                    inbraces.data(),substr.data());
+            ind = (int)*_ind;
+            while (*feature!=',') ++feature; ++feature;
+          } else ind = images.size() - 1;
+          const CImg<T>& img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
+          *substr = 0;
+          if (!*feature)
+            error(images,0,0,
+                  "Item substitution '{%s}': Invalid empty feature.",
+                  inbraces.data());
 
-            if (!_inbraces[1]) switch (*_inbraces) { // Single-char feature.
-              case 'n' :
-                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-                cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
-                gmic_strreplace_bw(substr);
-                is_substituted = true;
-                break;
-              case 'b' : {
-                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-                cimg::split_filename(images_names[ind].data(),substr);
-                const char *const basename = gmic_basename(substr);
-                std::memmove(substr,basename,std::strlen(basename) + 1);
-                gmic_strreplace_bw(substr);
-                is_substituted = true;
-              } break;
-              case 'x' :
-                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-                cimg_snprintf(substr,substr.width(),"%s",
-                              cimg::split_filename(images_names[ind].data()));
-                gmic_strreplace_bw(substr);
-                is_substituted = true;
-                break;
-              case 'f' : {
-                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-                std::strcpy(substr,images_names[ind]);
-                const char *const basename = gmic_basename(substr);
-                substr[basename - substr.data()] = 0;
-                gmic_strreplace_bw(substr);
-                is_substituted = true;
-              } break;
-              case 't' : {
-                const unsigned int siz = (unsigned int)img.size();
-                if (siz) {
-                  unsigned int strsiz = 0;
-                  cimg_for(img,ptr,T) if ((unsigned char)*ptr) ++strsiz; else break;
-                  if (strsiz) {
-                    CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
-                    _text = CImg<T>(img.data(),strsiz,1,1,1,true);
-                    text.back() = 0;
-                    gmic_strreplace_bw(text);
-                    _text.move_to(substituted_items);
-                  }
+          if (!feature[1]) switch (*feature) { // Single-char feature.
+            case 'n' :
+              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+              cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
+              gmic_strreplace_bw(substr);
+              is_substituted = true;
+              break;
+            case 'b' : {
+              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+              cimg::split_filename(images_names[ind].data(),substr);
+              const char *const basename = gmic_basename(substr);
+              std::memmove(substr,basename,std::strlen(basename) + 1);
+              gmic_strreplace_bw(substr);
+              is_substituted = true;
+            } break;
+            case 'x' :
+              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+              cimg_snprintf(substr,substr.width(),"%s",
+                            cimg::split_filename(images_names[ind].data()));
+              gmic_strreplace_bw(substr);
+              is_substituted = true;
+              break;
+            case 'f' : {
+              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+              std::strcpy(substr,images_names[ind]);
+              const char *const basename = gmic_basename(substr);
+              substr[basename - substr.data()] = 0;
+              gmic_strreplace_bw(substr);
+              is_substituted = true;
+            } break;
+            case 't' : {
+              const unsigned int siz = (unsigned int)img.size();
+              if (siz) {
+                unsigned int strsiz = 0;
+                cimg_for(img,ptr,T) if ((unsigned char)*ptr) ++strsiz; else break;
+                if (strsiz) {
+                  CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
+                  _text = CImg<T>(img.data(),strsiz,1,1,1,true);
+                  text.back() = 0;
+                  gmic_strreplace_bw(text);
+                  _text.move_to(substituted_items);
                 }
-                *substr = 0;
-                is_substituted = true;
-              } break;
-              case 'c' : {
-                CImg<unsigned int> st;
-                if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
-                cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
-                is_substituted = true;
-              } break;
-              case 'C' : {
-                CImg<unsigned int> st;
-                if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
-                cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
-                is_substituted = true;
-              } break;
               }
-        */
+              *substr = 0;
+              is_substituted = true;
+            } break;
+            case 'c' : {
+              CImg<unsigned int> st;
+              if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
+              is_substituted = true;
+            } break;
+            case 'C' : {
+              CImg<unsigned int> st;
+              if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
+              is_substituted = true;
+            } break;
+            }
 
-
-        // Mathematical expression [truncated output].
-        if (!is_substituted && inbraces.width()>=3 && *inbraces=='_') try {
-            cimg_snprintf(substr,substr.width(),"%g",back_img.eval(inbraces.data(1)));
-            is_substituted = true;
-          } catch (CImgException& e) {
-            const char *const e_ptr = std::strstr(e.what(),": ");
-            error(images,0,0,
-                  "Item substitution '{_expression}': %s",
-                  e_ptr?e_ptr + 2:e.what());
+          if (!is_substituted) { // Mathematical expression.
+            const bool is_rounded = *feature=='_';
+            if (is_rounded) ++feature;
+            try {
+              const double res = img.eval(feature);
+              if (is_rounded) cimg_snprintf(substr,substr.width(),"%g",res);
+              else cimg_snprintf(substr,substr.width(),"%.16g",res);
+              is_substituted = true;
+            } catch (CImgException& e) {
+              const char *const e_ptr = std::strstr(e.what(),": ");
+              error(images,0,0,
+                    "Item substitution '{expression}': %s",
+                    e_ptr?e_ptr + 2:e.what());
+            }
           }
-
-        // Mathematical expression [full precision output].
-        if (!is_substituted) try {
-            cimg_snprintf(substr,substr.width(),"%.16g",back_img.eval(inbraces.data()));
-            is_substituted = true;
-          } catch (CImgException& e) {
-            const char *const e_ptr = std::strstr(e.what(),": ");
-            error(images,0,0,
-                  "Item substitution '{expression}': %s",
-                  e_ptr?e_ptr + 2:e.what());
-          }
-
+        }
         if (is_substituted && *substr)
           CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
 
