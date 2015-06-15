@@ -14508,7 +14508,7 @@ struncase :
 #@gmic strver
 #@gmic : Return the current version number of the G'MIC interpreter, as a string.
 strver :
-  -v - ({'$_version'}) -r[-1] 7 -f[-1] 'if(x%2,{'.'},i)' -u @{-1,t} -rm[-1] -v +
+  -v - ({'@.'}) -r[-1] 7 -f[-1] 'if(x%2,{'.'},i)' -u @{-1,t} -rm[-1] -v +
 
 #@gmic tic
 #@gmic : Initialize tic-toc timer.

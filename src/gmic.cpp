@@ -3509,23 +3509,61 @@ CImg<char> gmic::substitute_item(const char *const source,
           const CImg<T>& img = images.size()?gmic_check(images.back()):CImg<T>::empty();
           bool is_substitution_done = false;
 
-          // Special regular cases to optimize: {w},{h},{d},{s}.
+          // Single-char cases : {w},{h},{d},{s},{*},{^},{.},{|},{%},{#} and {!}.
           if (!inbraces[1]) {
             switch (*inbraces) {
-            case 'w' :
+            case 'w' : // Width of last image.
               cimg_snprintf(substr,substr.width(),"%d",img.width());
               is_substitution_done = true;
               break;
-            case 'h' :
+            case 'h' : // Height of last image.
               cimg_snprintf(substr,substr.width(),"%d",img.height());
               is_substitution_done = true;
               break;
-            case 'd' :
+            case 'd' : // Depth of last image.
               cimg_snprintf(substr,substr.width(),"%d",img.depth());
               is_substitution_done = true;
               break;
-            case 's' :
+            case 's' : // Spectrum of last image.
               cimg_snprintf(substr,substr.width(),"%d",img.spectrum());
+              is_substitution_done = true;
+              break;
+            case '*' : // Number of available cpus.
+              cimg_snprintf(substr,substr.width(),"%u",cimg::nb_cpus());
+              is_substitution_done = true;
+              break;
+            case '^' : // Current level of verbosity.
+              cimg_snprintf(substr,substr.width(),"%d",verbosity);
+              is_substitution_done = true;
+              break;
+            case '.' : // Version number of the interpreter.
+              cimg_snprintf(substr,substr.width(),"%u",gmic_version);
+              is_substitution_done = true;
+              break;
+            case '|' : // Current value of the timer.
+              cimg_snprintf(substr,substr.width(),"%g",(cimg::time() - reference_time)/1000.);
+              is_substitution_done = true;
+              break;
+            case '%' : // Pid of the current process.
+#if cimg_OS==1
+              cimg_snprintf(substr,substr.width(),"%u",(unsigned int)getpid());
+#elif cimg_OS==2 // #if cimg_OS==1
+              cimg_snprintf(substr,substr.width(),"%u",(unsigned int)_getpid());
+#else // #if cimg_OS==1
+              cimg_snprintf(substr,substr.width(),"0");
+#endif // #if cimg_OS==1
+              is_substitution_done = true;
+              break;
+            case '#' : // Number of images in the list.
+              cimg_snprintf(substr,substr.width(),"%u",images.size());
+              is_substitution_done = true;
+            case '!' : // Visibility state of the display window.
+#if cimg_display==0
+              std::strcpy(substr,"0");
+#else // #if cimg_display==0
+              cimg_snprintf(substr,substr.width(),"%d",
+                            _display_window[0]?(_display_window[0].is_closed()?0:1):0);
+#endif // #if cimg_display==0
               is_substitution_done = true;
               break;
             }
