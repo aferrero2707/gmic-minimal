@@ -201,13 +201,22 @@ inline char *gmic_ellipsize(const char *const s, char *const res, const unsigned
 }
 
 // Replace special characters in a string.
-inline char *gmic_strreplace(char *const str) {
-  for (char *s = str ; *s; ++s) {
-    const char c = *s;
-    if (c<' ')
-      *s = c==_dollar?'$':c==_lbrace?'{':c==_rbrace?'}':c==_comma?',':
-        c==_dquote?'\"':c==_arobace?'@':c;
-  }
+inline char *gmic_strreplace_fw(char *const str) {
+  if (str) for (char *s = str ; *s; ++s) {
+      const char c = *s;
+      if (c<' ')
+        *s = c==_dollar?'$':c==_lbrace?'{':c==_rbrace?'}':c==_comma?',':
+          c==_dquote?'\"':c==_arobace?'@':c;
+    }
+  return str;
+}
+
+inline char *gmic_strreplace_bw(char *const str) {
+  if (str) for (char *s = str ; *s; ++s) {
+      const char c = *s;
+      *s = c=='$'?_dollar:c=='{'?_lbrace:c=='}'?_rbrace:c==','?_comma:
+        c=='\"'?_dquote:c=='@'?_arobace:c;
+    }
   return str;
 }
 

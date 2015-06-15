@@ -2091,7 +2091,7 @@ inline _gmic_mutex& gmic_mutex() { static _gmic_mutex val; return val; }
      } \
      ++position; \
    } else if (std::sscanf(argument,"'%4095[^']%c%c",formula,&sep,&end)==2 && sep=='\'') { \
-     gmic_strreplace(formula); print(images,0,description3 ".",arg3_1,arg3_2); \
+     gmic_strreplace_fw(formula); print(images,0,description3 ".",arg3_1,arg3_2); \
      cimg_forY(selection,l) { \
        CImg<T>& img = gmic_check(images[selection[l]]); \
        if (is_get_version) { \
@@ -2463,7 +2463,7 @@ gmic& gmic::print(const char *format, ...) {
   CImg<char> message(65536);
   message[message.width() - 2] = 0;
   cimg_vsnprintf(message,message.width(),format,ap);
-  gmic_strreplace(message);
+  gmic_strreplace_fw(message);
   if (message[message.width() - 2]) gmic_ellipsize(message,message.width() - 2);
   va_end(ap);
 
@@ -2488,7 +2488,7 @@ gmic& gmic::error(const char *const format, ...) {
   CImg<char> message(1024);
   message[message.width() - 2] = 0;
   cimg_vsnprintf(message,message.width(),format,ap);
-  gmic_strreplace(message);
+  gmic_strreplace_fw(message);
   if (message[message.width() - 2]) gmic_ellipsize(message,message.width() - 2);
   va_end(ap);
 
@@ -2907,7 +2907,7 @@ gmic& gmic::print(const CImgList<T>& list, const CImg<unsigned int> *const scope
   CImg<char> message(65536);
   message[message.width() - 2] = 0;
   cimg_vsnprintf(message,message.width(),format,ap);
-  gmic_strreplace(message);
+  gmic_strreplace_fw(message);
   if (message[message.width() - 2]) gmic_ellipsize(message,message.width() - 2);
   va_end(ap);
 
@@ -2937,7 +2937,7 @@ gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const scope_
   CImg<char> message(1024);
   message[message.width() - 2] = 0;
   cimg_vsnprintf(message,message.width(),format,ap);
-  gmic_strreplace(message);
+  gmic_strreplace_fw(message);
   if (message[message.width() - 2]) gmic_ellipsize(message,message.width() - 2);
   va_end(ap);
 
@@ -2969,7 +2969,7 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
   CImg<char> message(1024);
   message[message.width() - 2] = 0;
   cimg_vsnprintf(message,message.width(),format,ap);
-  gmic_strreplace(message);
+  gmic_strreplace_fw(message);
   if (message[message.width() - 2]) gmic_ellipsize(message,message.width() - 2);
   va_end(ap);
 
@@ -3502,7 +3502,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           inbraces.assign(ptr_beg,l_inbraces + 1).back() = 0;
           substitute_item(inbraces,images,images_names,parent_images,parent_images_names,variables_sizes).
             move_to(inbraces);
-          gmic_strreplace(inbraces);
+          gmic_strreplace_fw(inbraces);
         }
         nsource+=l_inbraces + 2;
 
@@ -3556,9 +3556,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             case 'n' : // Name of back image.
               substr.assign(cimg::max(substr.width(),images_names.back().width()));
               cimg_snprintf(substr,substr.width(),"%s",images_names.back().data());
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                  *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
               is_substituted = true;
               break;
             case 'b' : { // Basename of back image.
@@ -3566,18 +3564,14 @@ CImg<char> gmic::substitute_item(const char *const source,
               cimg::split_filename(images_names.back().data(),substr);
               const char *const basename = gmic_basename(substr);
               std::memmove(substr,basename,std::strlen(basename) + 1);
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                  *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
             case 'x' : // Extension of back image.
               substr.assign(cimg::max(substr.width(),images_names.back().width()));
               cimg_snprintf(substr,substr.width(),"%s",
                             cimg::split_filename(images_names.back().data()));
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                  *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
               is_substituted = true;
               break;
             case 'f' : { // Folder name of back image.
@@ -3585,9 +3579,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               std::strcpy(substr,images_names.back());
               const char *const basename = gmic_basename(substr);
               substr[basename - substr.data()] = 0;
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                  *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
             case 't' : { // Ascii content of back image.
@@ -3599,9 +3591,7 @@ CImg<char> gmic::substitute_item(const char *const source,
                   CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
                   _text = CImg<T>(back_img.data(),strsiz,1,1,1,true);
                   text.back() = 0;
-                  for (char *ps = _text.data(); *ps; ++ps)
-                    *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                      *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                  gmic_strreplace_bw(text);
                   _text.move_to(substituted_items);
                 }
               }
@@ -3853,9 +3843,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               case 'n' :
                 substr.assign(cimg::max(substr.width(),images_names[ind].width()));
                 cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
-                for (char *ps = substr.data(); *ps; ++ps)
-                  *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                gmic_strreplace_bw(substr);
                 is_substituted = true;
                 break;
               case 'b' : {
@@ -3863,18 +3851,14 @@ CImg<char> gmic::substitute_item(const char *const source,
                 cimg::split_filename(images_names[ind].data(),substr);
                 const char *const basename = gmic_basename(substr);
                 std::memmove(substr,basename,std::strlen(basename) + 1);
-                for (char *ps = substr.data(); *ps; ++ps)
-                  *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                gmic_strreplace_bw(substr);
                 is_substituted = true;
               } break;
               case 'x' :
                 substr.assign(cimg::max(substr.width(),images_names[ind].width()));
                 cimg_snprintf(substr,substr.width(),"%s",
                               cimg::split_filename(images_names[ind].data()));
-                for (char *ps = substr.data(); *ps; ++ps)
-                  *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                gmic_strreplace_bw(substr);
                 is_substituted = true;
                 break;
               case 'f' : {
@@ -3882,9 +3866,7 @@ CImg<char> gmic::substitute_item(const char *const source,
                 std::strcpy(substr,images_names[ind]);
                 const char *const basename = gmic_basename(substr);
                 substr[basename - substr.data()] = 0;
-                for (char *ps = substr.data(); *ps; ++ps)
-                  *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                gmic_strreplace_bw(substr);
                 is_substituted = true;
               } break;
               case 't' : {
@@ -3896,9 +3878,7 @@ CImg<char> gmic::substitute_item(const char *const source,
                     CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
                     _text = CImg<T>(img.data(),strsiz,1,1,1,true);
                     text.back() = 0;
-                    for (char *ps = _text.data(); *ps; ++ps)
-                      *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                        *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                    gmic_strreplace_bw(text);
                     _text.move_to(substituted_items);
                   }
                 }
@@ -4342,7 +4322,7 @@ CImg<char> gmic::substitute_item(const char *const source,
         nsource+=l_inbraces + 3;
         if (l_inbraces>0) {
           const CImgList<char>
-            ncommands_line = commands_line_to_CImgList(gmic_strreplace(inbraces));
+            ncommands_line = commands_line_to_CImgList(gmic_strreplace_fw(inbraces));
           unsigned int nposition = 0;
           CImg<char>::string("*substitute").move_to(scope);
           CImg<unsigned int> nvariables_sizes(256);
@@ -4453,9 +4433,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             if (!subset[1]) {
               substr.assign(cimg::max(substr.width(),images_names[nind].width()));
               cimg_snprintf(substr,substr.width(),"%s",images_names[nind].data());
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
             }
             else is_substituted = false;
             break;
@@ -4465,9 +4443,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               cimg::split_filename(images_names[nind].data(),substr);
               const char *const basename = gmic_basename(substr);
               std::memmove(substr,basename,std::strlen(basename) + 1);
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
             } else is_substituted = false;
             break;
           case 'x' :
@@ -4475,9 +4451,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               substr.assign(cimg::max(substr.width(),images_names[nind].width()));
               cimg_snprintf(substr,substr.width(),"%s",
                             cimg::split_filename(images_names[nind].data()));
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
             }
             else is_substituted = false;
             break;
@@ -4487,9 +4461,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               std::strcpy(substr,images_names[nind]);
               const char *const basename = gmic_basename(substr);
               substr[basename - substr.data()] = 0;
-              for (char *ps = substr.data(); *ps; ++ps)
-                *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+              gmic_strreplace_bw(substr);
             } else is_substituted = false;
             break;
           case 't' :
@@ -4502,9 +4474,7 @@ CImg<char> gmic::substitute_item(const char *const source,
                   CImg<char> text(strsiz + 1), _text = text.get_shared_points(0,strsiz - 1,0,0,0);
                   _text = CImg<T>(img.data(),strsiz,1,1,1,true);
                   text.back() = 0;
-                  for (char *ps = _text.data(); *ps; ++ps)
-                    *ps = *ps=='$'?_dollar:*ps=='{'?_lbrace:*ps=='}'?_rbrace:
-                    *ps==','?_comma:*ps=='\"'?_dquote:*ps=='@'?_arobace:*ps;
+                  gmic_strreplace_bw(text);
                   _text.move_to(substituted_items);
                 }
               }
@@ -4701,7 +4671,7 @@ CImg<char> gmic::substitute_item(const char *const source,
         nsource+=l_inbraces + 3;
         if (l_inbraces>0) {
           const CImgList<char>
-            ncommands_line = commands_line_to_CImgList(gmic_strreplace(inbraces));
+            ncommands_line = commands_line_to_CImgList(gmic_strreplace_fw(inbraces));
           unsigned int nposition = 0;
           CImg<char>::string("*substitute").move_to(scope);
           CImg<unsigned int> nvariables_sizes(256);
@@ -4903,7 +4873,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         if (item[1]=='-' && item[2] && item[2]!='[' && (item[2]!='3' || item[3]!='d')) {
           ++item; is_get_version = true;
         }
-        gmic_strreplace(item);
+        gmic_strreplace_fw(item);
         const int err = std::sscanf(item,"%255[^[]%c%255[a-zA-Z_0-9.eE%^,:+-]%c%c",
                                     command,&sep0,restriction,&sep1,&end);
         if (err==1) {
@@ -5511,7 +5481,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-check",item)) {
             gmic_substitute_args();
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
-            gmic_strreplace(name);
+            gmic_strreplace_fw(name);
             bool is_cond = false, is_filename = false;
             const CImg<T> &img = images.size()?images.back():CImg<T>::empty();
             try { if (img.eval(name)) is_cond = true; }
@@ -5988,7 +5958,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
             const char *arg_command_text = gmic_argument_text();
             char *arg_command = name;
-            gmic_strreplace(arg_command);
+            gmic_strreplace_fw(arg_command);
 
             unsigned int siz = 0;
             for (unsigned int l = 0; l<256; ++l) siz+=commands[l].size();
@@ -6808,7 +6778,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   gmic_argument_text());
             CImg<char> arg_exec(argument,(unsigned int)std::strlen(argument) + 1);
             cimg::strunescape(arg_exec);
-            gmic_strreplace(arg_exec);
+            gmic_strreplace_fw(arg_exec);
             cimg::mutex(31);
             const int errcode = cimg::system(arg_exec);
             cimg::mutex(31,0);
@@ -7170,7 +7140,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     arg_fill_text.data());
               CImg<char> arg_fill(argument,(unsigned int)std::strlen(argument) + 1);
               cimg::strpare(arg_fill,'\'',true,false);
-              gmic_strreplace(arg_fill);
+              gmic_strreplace_fw(arg_fill);
               cimg_forY(selection,l) gmic_apply(fill(arg_fill.data(),true));
             }
             is_released = false; ++position; continue;
@@ -7393,7 +7363,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   sep1=='x')) &&
                 resolution>0 && plot_type<=3 && vertex_type<=7) {
               resolution = cimg::round(resolution);
-              gmic_strreplace(formula);
+              gmic_strreplace_fw(formula);
               print(images,0,
                     "Draw graph of formula '%s' on image%s, with resolution %g, %s contours, "
                     "%s vertices, x-range = (%g,%g), y-range = (%g,%g), opacity %g, "
@@ -7786,7 +7756,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                        dx>0 && dy>0) {
               dx = cimg::round(dx);
               dy = cimg::round(dy);
-              gmic_strreplace(formula);
+              gmic_strreplace_fw(formula);
               print(images,0,"Extract 3d isoline %g from formula '%s', in range (%g,%g)-(%g,%g) "
                     "with size %g%sx%g%s.",
                     value,
@@ -7903,7 +7873,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               dx = cimg::round(dx);
               dy = cimg::round(dy);
               dz = cimg::round(dz);
-              gmic_strreplace(formula);
+              gmic_strreplace_fw(formula);
               print(images,0,"Extract 3d isosurface %g from formula '%s', "
                     "in range (%g,%g,%g)-(%g,%g,%g) with size %g%sx%g%sx%g%s.",
                     value,
@@ -8609,7 +8579,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             print(images,0,"Set name of image%s to '%s'.",
                   gmic_selection,gmic_argument_text());
             CImg<char>::string(argument).move_to(name);
-            gmic_strreplace(name);
+            gmic_strreplace_fw(name);
             cimg_forY(selection,l) images_names[selection[l]].assign(name);
             ++position; continue;
           }
@@ -8918,8 +8888,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 _filename[_filename.width() - 1] = 0;
               }
             }
-            gmic_strreplace(_filename);
-            gmic_strreplace(options);
+            gmic_strreplace_fw(_filename);
+            gmic_strreplace_fw(options);
 
             if (*cext) { // Force output to be written as a '.ext' file : generate random filename.
               if (*_filename=='-' && (!_filename[1] || _filename[1]=='.')) {
@@ -9913,7 +9883,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                              &xmin,&xmax,&ymin,&ymax,&end)==8) &&
                 resolution>0 && plot_type<=3 && vertex_type<=7) {
               resolution = cimg::round(resolution);
-              gmic_strreplace(formula);
+              gmic_strreplace_fw(formula);
               if (xmin==0 && xmax==0) { xmin = -4; xmax = 4; }
               if (!plot_type && !vertex_type) plot_type = 1;
               if (resolution<1) resolution = 65536;
@@ -11462,7 +11432,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                     formula,&x,&y,&z,&L,&dl,&interp,&is_backward,
                                     &is_oriented_only,&end)==9) &&
                        dl>0 && interp<4) {
-              gmic_strreplace(formula);
+              gmic_strreplace_fw(formula);
               print(images,0,"Extract 3d streamline from formula '%s', starting from (%g,%g,%g).",
                     formula,
                     x,y,z);
@@ -11797,7 +11767,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                  std::sscanf(argz,"%f%c",&height,&end)==1 ||
                  (std::sscanf(argz,"%f%c%c",&height,&sep,&end)==2 && sep=='%')) &&
                 height>=0) {
-              gmic_strreplace(name);
+              gmic_strreplace_fw(name);
               print(images,0,"Draw text '%s' at position (%g%s,%g%s) on image%s, with font "
                     "height %g%s, opacity %g and color (%s).",
                     name.data(),
@@ -11930,7 +11900,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimglist_for(command_list,l) {
                 CImg<char>& arg_command = command_list[l];
                 arg_command.resize(1,arg_command.height() + 1,1,1,0);
-                gmic_strreplace(arg_command);
+                gmic_strreplace_fw(arg_command);
                 if (*arg_command) {
                   const int ind = (int)gmic_hashcode(arg_command,false);
                   cimglist_for(commands_names[ind],l)
@@ -12065,7 +12035,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (std::sscanf(argument,"%f%c",&_is_cond,&end)!=1) {
               is_filename = true;
               name.assign(argument,(unsigned int)std::strlen(argument) + 1);
-              gmic_strreplace(name);
+              gmic_strreplace_fw(name);
               _is_cond = (float)gmic_check_filename(name);
             }
             const bool is_cond = (bool)_is_cond;
@@ -12148,7 +12118,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               sep0 = sep1 = 0;
             }
             if (dimh==0) dimw = 0;
-            gmic_strreplace(title);
+            gmic_strreplace_fw(title);
 
             // Get images to display and compute associated optimal size.
             unsigned int optw = 0, opth = 0;
@@ -12461,7 +12431,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (std::sscanf(argument,"%f%c",&_is_cond,&end)!=1) {
             is_filename = true;
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
-            gmic_strreplace(name);
+            gmic_strreplace_fw(name);
             _is_cond = (float)gmic_check_filename(name);
           }
           const bool is_cond = (bool)_is_cond;
@@ -13127,7 +13097,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       sepx = sepy = sepz = sepc = *indices = *indicesy = *indicesz = *indicesc = *argx = *argy = *argz = *argc = 0;
 
       CImg<char> arg_input(argument,(unsigned int)std::strlen(argument) + 1);
-      gmic_strreplace(arg_input);
+      gmic_strreplace_fw(arg_input);
 
       if (*arg_input=='0' && !arg_input[1]) {
 
@@ -13227,7 +13197,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             std::strlen(argz) + std::strlen(argc) + 4;
           s_values.assign(_s_values,(unsigned int)std::strlen(_s_values) + 1);
           cimg::strpare(s_values,'\'',true,false);
-          gmic_strreplace(s_values);
+          gmic_strreplace_fw(s_values);
           CImg<char> s_values_text(72);
           const unsigned int l = (unsigned int)std::strlen(s_values);
           if (l>=72) {
@@ -13315,8 +13285,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             _filename[_filename.width() - 1] = 0;
           }
         }
-        gmic_strreplace(_filename);
-        gmic_strreplace(options);
+        gmic_strreplace_fw(_filename);
+        gmic_strreplace_fw(options);
         CImg<char> __filename0 = CImg<char>::string(_filename);
         const char *const _filename0 = __filename0.data();
 

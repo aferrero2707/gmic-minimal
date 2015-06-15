@@ -2653,7 +2653,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
       CImgList<char> return_values = spt.status.get_split(CImg<char>::vector(_rbrace,_lbrace),false,false);
       if (return_values._width==get_filter_nbparams(filter))
         cimglist_for(return_values,l) {
-          gmic_strreplace(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
+          gmic_strreplace_fw(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
           if (std::strcmp(return_values[l].data(),get_filter_parameter(filter,l))) {
             set_filter_parameter(filter,l,return_values[l]);
             update_parameters = true;
@@ -2915,7 +2915,7 @@ void process_preview() {
       CImgList<char> return_values = spt.status.get_split(CImg<char>::vector(_rbrace,_lbrace),false,false);
       if (return_values._width==get_filter_nbparams(filter))
         cimglist_for(return_values,l) {
-          gmic_strreplace(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
+          gmic_strreplace_fw(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
           if (std::strcmp(return_values[l].data(),get_filter_parameter(filter,l))) {
             set_filter_parameter(filter,l,return_values[l]);
             update_parameters = true;
