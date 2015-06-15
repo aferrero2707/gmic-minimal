@@ -3749,13 +3749,13 @@ CImg<char> gmic::substitute_item(const char *const source,
                   inbraces.data());
 
           if (!feature[1]) switch (*feature) { // Single-char feature.
-            case 'n' :
+            case 'n' : // Image name.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
               gmic_strreplace_bw(substr);
               is_substituted = true;
               break;
-            case 'b' : {
+            case 'b' : { // Image basename.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               cimg::split_filename(images_names[ind].data(),substr);
               const char *const basename = gmic_basename(substr);
@@ -3763,14 +3763,14 @@ CImg<char> gmic::substitute_item(const char *const source,
               gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
-            case 'x' :
+            case 'x' : // Image extension.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               cimg_snprintf(substr,substr.width(),"%s",
                             cimg::split_filename(images_names[ind].data()));
               gmic_strreplace_bw(substr);
               is_substituted = true;
               break;
-            case 'f' : {
+            case 'f' : { // Image folder name.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               std::strcpy(substr,images_names[ind]);
               const char *const basename = gmic_basename(substr);
@@ -3778,7 +3778,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
-            case 't' : {
+            case 't' : { // Ascii string from image values.
               const unsigned int siz = (unsigned int)img.size();
               if (siz) {
                 unsigned int strsiz = 0;
@@ -3794,13 +3794,13 @@ CImg<char> gmic::substitute_item(const char *const source,
               *substr = 0;
               is_substituted = true;
             } break;
-            case 'c' : {
+            case 'c' : { // Coordinates of minimal value.
               CImg<unsigned int> st;
               if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
               cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
               is_substituted = true;
             } break;
-            case 'C' : {
+            case 'C' : { // Coordinates of maximal value.
               CImg<unsigned int> st;
               if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
               cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
@@ -3808,7 +3808,39 @@ CImg<char> gmic::substitute_item(const char *const source,
             } break;
             }
 
-          if (!is_substituted) { // Mathematical expression.
+          if (!is_substituted && *feature=='[' && inbraces[l_inbraces - 1]==']') { // Subset of values.
+            CImg<char> subset(feature + 1,inbraces.data() + l_inbraces - feature - 1);
+            subset.back() = 0;
+            CImg<T> values;
+            is_substituted = true;
+            ++feature;
+            int _verbosity = verbosity;
+            bool _is_debug = is_debug;
+            verbosity = -1; is_debug = false;
+            CImg<char> _status;
+            status.move_to(_status); // Save status because 'selection2cimg' can change it.
+            try {
+              const CImg<unsigned int>
+                inds = selection2cimg(subset,img.size(),
+                                      CImgList<char>::empty(),"",false,false,CImg<char>::empty());
+              values.assign(1,inds.height());
+              cimg_foroff(inds,p) values[p] = img[inds(p)];
+            } catch (gmic_exception &e) {
+              error(images,0,0,
+                    "Item substitution '{%s}': Invalid value subset (%s).",
+                    inbraces.data(),e.what());
+            }
+            _status.move_to(status);
+            verbosity = _verbosity; is_debug = _is_debug;
+            cimg_foroff(values,p) {
+              cimg_snprintf(substr,substr.width(),"%.16g",(double)values[p]);
+              CImg<char>::string(substr).move_to(substituted_items).back().back() = ',';
+            }
+            if (values) --(substituted_items.back()._width);
+            *substr = 0;
+          }
+
+          if (!is_substituted) { // Other mathematical expression.
             const bool is_rounded = *feature=='_';
             if (is_rounded) ++feature;
             try {
@@ -3842,6 +3874,9 @@ CImg<char> gmic::substitute_item(const char *const source,
         }
         is_braces = true;
       }
+
+
+
 
       // Substitute '@#' -> number of images in the list.
       if (*nsource=='@' && nsource[1]=='#') {
