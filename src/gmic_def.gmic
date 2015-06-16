@@ -1638,7 +1638,7 @@ document_gmic : -skip ${1="ascii"},${2=""},${3=1}
   ks0="0" ks1="-k[0]"
 
   # Parse lines of the commands file.
-  -repeat $! -l[$>] -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}" && "(i[6]=={'" "'}" || "i[6]=={':'})} # Process only lines starting with '#@gmic'.
+  -repeat $! -l[$>] -if {h>7" && "{{[0-{min(h-1,5)}]}'=='{'"#@gmic"'}}" && "(i[6]=={'" "'}" || "i[6]=={':'})} # Process only lines starting with '#@gmic'.
     -rows 7,100% -autocrop {'" "'}  # Discard '#@gmic'.
     _is_example=0
     -if {i!={':'}}
@@ -2567,7 +2567,7 @@ roddy :
 #@gmic : unsigned chars (doing so will output a valid .cimg[z] or .gmz file).
 #@gmic : If 'store_names' is set to '1', serialization uses the .gmz format to store data in memory (otherwise the .cimg[z] format).
 #@gmic : Default values: 'datatype=float', 'is_compressed=1' and 'store_names=1'.
-#@gmic : $ image.jpg --serialize uchar --unserialize[-1]
+#@gmic : $$ image.jpg --serialize uchar --unserialize[-1]
 
 #@gmic sh : eq. to '-shared'. : (+)
 
@@ -5585,9 +5585,9 @@ to_colormode : -skip ${1=0}
   -elif {$1==3} -to_rgb
   -elif {$1==4} -to_rgba
   -else
-    s=1 -repeat $! -l[$>]
-      -if {s>4} -error "Command '-to_colormode': Image ["$>"] is not a G,GA,RGB or RGBA image."
-      -else s={0,max($s,s)}
+    s=1 -repeat $!
+      -if {$>,s>4} -error "Command '-to_colormode': Image ["$>"] is not a G,GA,RGB or RGBA image."
+      -else s={$>,max($s,s)}
       -endif
     -done -to_colormode $s
   -endif
