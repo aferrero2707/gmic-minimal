@@ -1150,8 +1150,8 @@ _display0 :
   w=0 h=0 d=0 s=0
   -repeat $! -l[$>] w={$w+w} h={max($h,h)} d={max($d,d)} s={max($s,s)} -endl -done
   -if {$!==1} -w -1,-1,0,0,-1,-1,{0,n}\ ($wx$hx$dx$s)
-  -elif {$!==2} -w -1,-1,0,0,-1,-1,{0,n},{-1,n}\ ($wx$hx$dx$s)
-  -else -w -1,-1,0,0,-1,-1,{0,n},..,{-1,n}\ ($wx$hx$dx$s)
+  -elif {$!==2} -w -1,-1,0,0,-1,-1,{0,n},{n}\ ($wx$hx$dx$s)
+  -else -w -1,-1,0,0,-1,-1,{0,n},..,{n}\ ($wx$hx$dx$s)
   -endif
   -v + -d
   -v - -w[] 0 -v +
@@ -1187,7 +1187,7 @@ _display_array : -check ${1=13}>0" && "${2=$1}>0
     wmax={0.9*{*,u}} hmax={0.9*{*,v}}
     -do
       -if {w>=$wmax||h>=$hmax}
-        n={-1,n} -nm[-1] "Image "'{-1,b}.{-1,x}'" is too large, please select a sub-image."
+        n={n} -nm[-1] "Image "'{b}.{x}'" is too large, please select a sub-image."
         --select[-1] 2 x0={i[0]} y0={i[1]} w={1+i[3]-i[0]} h={1+i[4]-i[1]}
         -rm[-1] -nm[-1] $n
       -endif
@@ -2382,7 +2382,7 @@ output_ggr : -skip "${2=}"
  -v - N=$!
   -repeat $N --l[$>] -r 1,{w*h*d},1,100%,-1 -to_rgba -/ 255
     -if {narg("$2")} name="$2"
-    -else -l[] 1 -nm[-1] "$1" ({'{-1,b}'}) -f "if(x==0&&i>="{'a'}"&&i<="{'z'}",i-"{'a'}"+"{'A'}",i)" name={t} -rm -endl
+    -else -l[] 1 -nm[-1] "$1" ({'{b}'}) -f "if(x==0&&i>="{'a'}"&&i<="{'z'}",i-"{'a'}"+"{'A'}",i)" name={t} -rm -endl
     -endif
     ({'"GIMP Gradient\nName: "$name\n{0,h}\n'})
     -repeat {0,h}
@@ -3335,7 +3335,7 @@ update_server : -skip ${1=$_version},${2=1}
 
   # Remove duplicate filters.
   # -v + -e[] "\n> Remove duplicate filters." -v -
-  # pname={-1,n}
+  # pname={n}
   # -repeat {$!-1} cname={$<,n}
   #   -if {$cname'=='$pname}
   #     -v + -e[] "  "$<". Remove duplicate '"$cname"'." -v -
@@ -5064,7 +5064,7 @@ colormap : -check "isint($1) && $1>=0" -skip ${2=0},${3=1}
 
     -endif
     -if $3 --norm -rv -a y -sort +,x -rows 1 -endif             # Sort colors by increasing norm.
-    -nm "[colormap of "{-1,b}"]"
+    -nm "[colormap of "{b}"]"
   -endl -done -v +
 
 _colormap : # Implementation of the median-cut algorithm.
@@ -5130,7 +5130,7 @@ _fill_color :
   -e[0--3] "Fill image"$_gmic_s" with color (${^0})."
   -v - -repeat $! -l[$>]
     -repeat {s} -sh[0] $>,$> -f[-1] {arg(1+$>,${^0})} -done -k[0]
-  -nm {-1,n} -endl -done -v +
+  -nm {n} -endl -done -v +
 
 #@gmic gradient2rgb : _is_orientation={ 0 | 1 }
 #@gmic : Compute RGB representation of 2d gradient of selected images.
@@ -5492,7 +5492,7 @@ remove_opacity :
     -if {s==2} -channels 0
     -elif {s==4} -channels 0,2
     -endif
-  -nm {-1,n} -endl -done -v +
+  -nm {n} -endl -done -v +
 
 #@gmic select_color : tolerance[%]>=0,col1,..,colN
 #@gmic : Select pixels with specified color in selected images.
@@ -5954,7 +5954,7 @@ montage : -check "isval(${2=2}) && $2>=0 && $2<=3" -skip "${1=X}",${3=0},"${4=}"
       -else # Portrait - landscape.
         -if {{-2,w/h}<(h/w)} mode=H -else mode=V -endif
       -endif
-      name=$mode{-2,n}:{-1,n}
+      name=$mode{-2,n}:{n}
       -montage[-2,-1] $mode,$2
       -mv[-1] 0 -nm[0] $name
     -done
@@ -8434,7 +8434,7 @@ variance_patch : -check "isint(${1=16}) && $1>=1"
 #@gmic : Default values: 'font_height=14', 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ 400,400,1,3,255 -axes -1,1,1,-1
 axes : -check "isint(${5=14}) && $5>=0 && ${6=1}>=0" -skip ${7=0},${8=0}
-  -v - ({'"$7"'},0) is_pattern={{-1,[0-1]}'=='{'0x'}} -rm[-1]
+  -v - ({'"$7"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1]
   -if $is_pattern
     -v + -e[0--3] "Draw xy-axes on image$?, with x-range ($1,$2), y-range ($3,$4), font height $5, opacity $6, pattern $7 and color (${8--1})." -v -
     pattern=$7 color=${8--1}
@@ -8609,7 +8609,7 @@ cie1931 :
 #@gmic : Default values: 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ image.jpg -repeat 300 -circle {?(100)}%,{?(100)}%,{?(30)},0.3,${-RGB} -done -circle 50%,50%,100,0.7,255
 circle : -skip ${4=1},${5=0}
-  -v - ({'"$5"'},0) is_pattern={{-1,[0-1]}'=='{'0x'}} -rm[-1] -v +
+  -v - ({'"$5"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1] -v +
   -if $is_pattern
     -e[0--3] "Draw outlined circle at ($1,$2) with radius $3 on image$?, with opacity $4 and color (${6--1})."
   -else
@@ -8673,7 +8673,7 @@ gaussian : -skip ${1=3},${2=$1},${3=0}
 #@gmic : $ image.jpg -grid 10%,10%,0,0,0.5,255
 #@gmic : $ 400,400,1,3,255 -grid 10%,10%,0,0,0.3,0xCCCCCCCC,128,32,16
 grid : -check "$1>=0 && $2>=0" -skip ${3=0},${4=0},${5=1},${6=0}
-  -v - ({'"$6"'},0) is_pattern={{-1,[0-1]}'=='{'0x'}} -rm[-1] -v +
+  -v - ({'"$6"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1] -v +
   -if $is_pattern
     -e[0--3] "Draw xy-grid on image$?, with sizes ($1,$2), offsets ($3,$4), opacity $5, pattern $6 and color (${7--1})."
     -v - pattern=$6 color=${7--1}
@@ -9040,7 +9040,7 @@ polka_dots : -check $1>=0 -skip ${2=20},${3=50},${4=50},${5=0},${6=10},${7=1},${
 #@gmic : Default values: 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ image.jpg -repeat 30 -rectangle {?(100)}%,{?(100)}%,{?(100)}%,{?(100)}%,0.3,${-RGB} -done
 rectangle : -skip ${5=1},${6=0}
-  -v - ({'"$5"'},0) is_pattern={{-1,[0-1]}'=='{'0x'}} -rm[-1] -v +
+  -v - ({'"$5"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1] -v +
   -if $is_pattern
     -e[0--3] "Draw outlined rectangle from ($1,$2) to ($3,$4) on image$?, with opacity $5 and color (${7--1})."
   -else
@@ -9370,7 +9370,7 @@ array3d : -check "isint($1) && $1>0 && isint(${2=1}) && $2>0 && isint(${3=1}) &&
     --rows 8,{8+3*i[6]} -r[-1] 3,{h/3},1,1,-1 -s[-1] x,3
     dx={-3,if(${-is_percent\ $4},$4*(iM-im),$4)}
     dy={-2,if(${-is_percent\ $5},$5*(iM-im),$5)}
-    dz={-1,if(${-is_percent\ $6},$6*(iM-im),$6)}
+    dz={if(${-is_percent\ $6},$6*(iM-im),$6)}
     -rm[-3--1]
 
     # Duplicate along X.
@@ -9510,7 +9510,7 @@ circle3d : -skip ${1=0},${2=0},${3=0},${4=1}
 circles3d : -check ${1=1}>=0 -skip ${2=1}
   -e[^-1] "Convert 3d object$? to sets of 3d "${-arg\ 1+$2,wireframe,filled}" circles with radius $1."
   -v - -p3d 0 -repeat $! -l[$>]
-    nbv={-1,[6]} nbp={-1,[7]}
+    nbv={[6]} nbp={[7]}
     -if {$nbv&&$nbp}
       --3d {$1/2},0,0 --+3d $1,0,0 -+3d nbp2={[7]}
       -s3d -=[1] $nbp,0,1
@@ -10465,7 +10465,7 @@ _sierpinski3d :
 #@gmic : Return bounding box size of the last selected 3d object.
 size3d :
   -v - --rows[-1] 8,{8+3*i[6]} -r[-1] 3,{h/3},1,1,-1 -s[-1] x,3
-  -u {-3,(iM-im)},{-2,(iM-im)},{-1,(iM-im)}
+  -u {-3,iM-im},{-2,iM-im},{iM-im}
   -rm[-3--1] -v +
 
 #@gmic skeleton3d : _metric,_frame_type={ 0=squares | 1=diamonds | 2=circles | 3=auto },_skeleton_opacity,_frame_opacity,_is_frame_wireframe={ 0 | 1 }
@@ -14505,7 +14505,7 @@ struncase :
 #@gmic strver
 #@gmic : Return the current version number of the G'MIC interpreter, as a string.
 strver :
-  -v - ({'$_version'}) -r[-1] 7 -f[-1] 'if(x%2,{'.'},i)' -u {-1,t} -rm[-1] -v +
+  -v - ({'$_version'}) -r[-1] 7 -f[-1] 'if(x%2,{'.'},i)' -u {t} -rm[-1] -v +
 
 #@gmic tic
 #@gmic : Initialize tic-toc timer.
@@ -15170,7 +15170,7 @@ x_colorize : -skip ${1=0},${3=0},${4=0},${5=0} -check "${2=1024}==0 || $2>=128"
 _x_colorize :
 
   # Init variables and images.
-  name={-1,n} title={b} -if {narg({x})} title=$title.{x} -endif
+  name={n} title={b} -if {narg({x})} title=$title.{x} -endif
   w={w} h={h}
 
   -if $1 # Line-art.
@@ -15807,7 +15807,7 @@ x_hough :
         -*[-1] {pi} -+[-3,-1] -%[-2] {2*pi}
         -*[-2] {0.5*{-3,w}/pi} -*[-1] {{-3,h}/$rhomax}
         -a[-2,-1] y
-        -repeat {w} -point[-2] {-1,i($>,0)},{-1,i($>,1)},0,0.3,255 -done
+        -repeat {w} -point[-2] {i($>,0)},{i($>,1)},0,0.3,255 -done
         -rm[-1] -w1[-1]
 
       -elif {{*1,x}>=0" && "{*1,b}} # When clicking on the vote window.
@@ -15900,7 +15900,7 @@ x_jawbreaker : -check "${1=12}>0 && $1<20 && ${2=13}>0 && $2<20 && ${3=5}>0 && $
 
     # Check for the end of the game.
     --f[board] "if(i,j(-1)==i || j(1)==i || j(0,1)==i || j(0,-1)==i,0)"
-    -if {!{-1,is}} -rm[-1] -break -endif -rm[-1]
+    -if {!is} -rm[-1] -break -endif -rm[-1]
 
     # Manage user-events
     -if {*,r} render_board=1                   # Will resize window to initial size, if resized.
@@ -15921,13 +15921,13 @@ x_jawbreaker : -check "${1=12}>0 && $1<20 && ${2=13}>0 && $2<20 && ${3=5}>0 && $
       -if {{board,i($x,$y)}>0}
         -abs[board] -flood[board] $x,$y,0,0,0,1,-{board,i($x,$y)}
         -->=[board] 0 --[-1] 1
-        shapescore={({-1,is}+1)^2} shapescorey={if($shapescore,32,0)} -rm[-1]
+        shapescore={(is+1)^2} shapescorey={if($shapescore,32,0)} -rm[-1]
 
       # When confirming selection of a ball -> remove set of connected balls.
       -elif {board,i($x,$y)}
 
         --flood[board] $x,$y,0,0,0,1,-1 -==[-1] -1
-        -if {{-1,is}>1} # If selected ball is connected to at least one ball.
+        -if {is>1} # If selected ball is connected to at least one ball.
 
           # Save undo state.
           -j[undo] [board]
@@ -15943,7 +15943,7 @@ x_jawbreaker : -check "${1=12}>0 && $1<20 && ${2=13}>0 && $2<20 && ${3=5}>0 && $
           -rows[board] -1,100% -f[board] "if(y==0,if(i(x,h-1),x,w),i)" -sort[board] +,x -rows[board] 1,100%
 
           # Update score.
-          score={$score+int(({-1,is}-1)^2)}
+          score={$score+int((is-1)^2)}
 
         -endif
         -rm[-1] # Remove selection mask.
@@ -16126,7 +16126,7 @@ x_life :
     -endif
 
     --[-1] [0] -*[-1] -1                                        # Compute difference between consecutive states.
-    stock={$stock-2*(min(0,int({-1,is}/16*$score/150)))}        # Increment available cells if the evolution is fast.
+    stock={$stock-2*(min(0,int(is/16*$score/150)))}             # Increment available cells if the evolution is fast.
     -+[1] [0]                                                   # Increment generation counter for still existing cells.
     -min[-1] 0 -+[-1] 1 -*[1,-1]                                # Reset generation counter for died cells.
 
@@ -16252,10 +16252,10 @@ x_mandelbrot : -skip ${1=0},${2=0.317},${3=0.03}
     -if {i[0]>0}                                                                                    # If valid selection found.
       M={max(i[3]-i[0],i[4]-i[1])}                                                                  # Compute max dimension of selected rectangle.
       -if {$M<5} -_x_mandelbrot_coords $1 -rm[1] -_x_mandelbrot_palette -mv[-1] 1                   # If selection too small, reset the view,
-      -else ({{0,[0]}+{-1,[0]}*({0,[2]}-{0,[0]})/$w};\                                              # Else compute new fractal coordinates.
-             {{0,[1]}+{-1,[1]}*({0,[3]}-{0,[1]})/$h};\
-             {{0,[0]}+({-1,[0]}+$M)*({0,[2]}-{0,[0]})/$w};\
-             {{0,[1]}+({-1,[1]}+$M)*({0,[3]}-{0,[1]})/$h})
+      -else ({{0,[0]}+{[0]}*({0,[2]}-{0,[0]})/$w};\                                                 # Else compute new fractal coordinates.
+             {{0,[1]}+{[1]}*({0,[3]}-{0,[1]})/$h};\
+             {{0,[0]}+({[0]}+$M)*({0,[2]}-{0,[0]})/$w};\
+             {{0,[1]}+({[1]}+$M)*({0,[3]}-{0,[1]})/$h})
       -endif
       -rm[0] -mv[-1] 0                                                          # Validate new coordinates.
     -endif
@@ -17881,7 +17881,7 @@ x_spline :
   # Init display and variables.
   -v -
   -if $! -a x -n 0,255 -to_rgb -else (0;0^0;128^0;0) -r[-1] 512,512,1,3,3 -nm[-1] "[G"{`39`}"MIC] Spline Editor" -endif
-  -w[0] {0,w},{0,h},0,0,-1,-1,{-1,n} -r[0] {*,w},{*,h},1,3,1
+  -w[0] {0,w},{0,h},0,0,-1,-1,{n} -r[0] {*,w},{*,h},1,3,1
   -i[1] 1        # Point coordinates
   roundness=0.5  # Curve roundness
   visuflags=23   # Visualisation flags
@@ -18147,7 +18147,7 @@ x_tictactoe :
      0,1,2,0,0,0,0,0;\                                                        # Corresponding Y coords for the stroke.
      3,3,3,4,4,4,5,6)                                                         # Corresponding indice of the stroke sprite.
     -repeat {w}                                                               # Start to check configurations.
-      tmp1={-1,[$>]}                                                          # Save the current configuration code (used several times).
+      tmp1={[$>]}                                                             # Save the current configuration code (used several times).
       -if {($state&$tmp1)==$tmp1||($state&(2*$tmp1))==2*$tmp1}                # If a winner has been found.
         -_x_tictactoe{i($>,3)}                                                # Generate the stroke symbol and his mask.
         -j[-4] [-2],{130*{-3,i($>,1)}+?(-5,5)},\                              # And display it on the board at its position.
