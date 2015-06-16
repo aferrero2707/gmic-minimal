@@ -3448,10 +3448,12 @@ update_server : -skip ${1=@.},${2=1}
     -_update_server_upload[] /tmp/update$1.gmic
     -_update_server_upload[] /tmp/cli_update$1.gmic
     -_update_server_upload[] /tmp/gimp_update$1.gmic
-    (1610,1620,1630,1631) -repeat {w}
-      -_update_server_upload[] /tmp/gimp_update$1.gmic,cli_update{i[$>]}.gmic
-      -_update_server_upload[] /tmp/gimp_update$1.gmic,gimp_update{i[$>]}.gmic
-    -done -rm[-1]
+
+    # (1610,1620,1630,1631) -repeat {w}
+    #   -_update_server_upload[] /tmp/gimp_update$1.gmic,cli_update{i[$>]}.gmic
+    #   -_update_server_upload[] /tmp/gimp_update$1.gmic,gimp_update{i[$>]}.gmic
+    # -done -rm[-1]
+
     -rm -endl
   -endif
 
