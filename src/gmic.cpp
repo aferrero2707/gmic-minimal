@@ -3812,7 +3812,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             case '*' : { // Sequence of all pixel values.
               CImg<char> vs = img.value_string(',');
               vs.back() = 0;
-              vs.move_to(substituted_item);
+              vs.move_to(substituted_items);
               *substr = 0; is_substituted = true;
             } break;
             }
