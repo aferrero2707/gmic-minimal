@@ -3527,7 +3527,6 @@ CImg<char> gmic::substitute_item(const char *const source,
         if (!*inbraces)
           error(images,0,0,
                 "Item substitution '{}': empty braces.");
-
         bool is_substituted = false;
 
         // Single-char cases not associated to an image : {#},{^},{|},{!}.
@@ -6150,10 +6149,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     "Command '-done': Not associated to a '-repeat' command "
                     "within the same scope.");
             *title = 0;
-            CImg<unsigned int> &back = repeatdones.back();
-            const unsigned int counter = ++back[2];
-            if (back.height()>3) _title.draw_image(CImg<char>(back.data() + 3,back.height() - 3));
-            if (--back[1]) position = back[0];
+            CImg<unsigned int> &rd = repeatdones.back();
+            const unsigned int counter = ++rd[2];
+            if (rd.height()>3) std::memcpy(title,rd.data() + 3,(rd.height() - 3)*sizeof(unsigned int));
+            if (--rd[1]) position = rd[0];
             else {
               if (verbosity>0 || is_debug) print(images,0,"End 'repeat..done' block.");
               repeatdones.remove();
@@ -9901,12 +9900,11 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   else print(images,0,"Start '-repeat..-done' block (%u iteration%s).",
                              nb,nb>1?"s":"");
                 }
-                if (*title) {
-                  ((CImg<unsigned int>::vector(position + 1,nb,0),
-                    CImg<unsigned int>(title,1,std::strlen(title)+1))>'y').move_to(repeatdones);
-                  set_variable(title,"0",variables_sizes);
-                } else
-                  CImg<unsigned int>::vector(position + 1,nb,0).move_to(repeatdones);
+                const unsigned int l = std::strlen(title) + 1;
+                CImg<unsigned int> rd(1,3 + l/sizeof(unsigned int) + (l%sizeof(unsigned int)?1:0));
+                rd[0] = position + 1; rd[1] = nb; rd[2] = 0;
+                if (l) { std::memcpy(rd.data() + 3,title,l); set_variable(title,"0",variables_sizes); }
+                rd.move_to(repeatdones);
               } else {
                 if (verbosity>0 || is_debug) {
                   if (*title) print(images,0,"Skip 'repeat..done' block with variable '%s' (0 iteration).",
