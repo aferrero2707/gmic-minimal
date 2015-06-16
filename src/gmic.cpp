@@ -2948,8 +2948,7 @@ gmic& gmic::print(const CImgList<T>& list, const CImg<unsigned int> *const scope
 //-----------------------
 template<typename T>
 gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const scope_selection,
-                 const char *format, ...) {
-  if (verbosity<0 && !is_debug) return *this;
+                 const char *const format, ...) {
   va_list ap;
   va_start(ap,format);
   CImg<char> message(1024);
@@ -2960,18 +2959,25 @@ gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const scope_
   va_end(ap);
 
   // Display message.
+  const CImg<char> s_scope = scope2string(scope_selection);
   cimg::mutex(29);
   if (*message!='\r')
     for (unsigned int i = 0; i<nb_carriages; ++i) std::fputc('\n',cimg::output());
   nb_carriages = 1;
-  if (!scope_selection || *scope_selection)
-    std::fprintf(cimg::output(),
-                 "[gmic]-%u%s %s*** Warning *** %s%s",
-                 list.size(),scope2string(scope_selection).data(),
-                 cimg::t_red,message.data(),cimg::t_normal);
-  else std::fprintf(cimg::output(),
-                    "%s*** Warning *** %s%s",
-                    cimg::t_red,message.data(),cimg::t_normal);
+  if (!scope_selection || *scope_selection) {
+    if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
+      std::fprintf(cimg::output(),
+                   "[gmic]-%u%s %s%s*** Warning (file '%s', %sline #%u) *** %s%s",
+                   list.size(),s_scope.data(),cimg::t_magenta,cimg::t_bold,
+                   commands_files[debug_filename].data(),
+                   is_debug_info?"":"call from ",debug_line,message.data(),
+                   cimg::t_normal);
+    else
+      std::fprintf(cimg::output(),
+                   "[gmic]-%u%s %s%s*** Warning *** %s%s",
+                   list.size(),s_scope.data(),cimg::t_magenta,cimg::t_bold,
+                   message.data(),cimg::t_normal);
+  } else std::fprintf(cimg::output(),"%s",message.data());
   std::fflush(cimg::output());
   cimg::mutex(29,0);
   return *this;
@@ -3894,6 +3900,7 @@ CImg<char> gmic::substitute_item(const char *const source,
 
       // Substitute '@#' -> number of images in the list.
       if (*nsource=='@' && nsource[1]=='#') {
+        gmic::warn(images,0,"Use of deprecated substituting expression '%s'.",nsource);
         nsource+=2;
         cimg_snprintf(substr,substr.width(),"%u",images.size());
         CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
