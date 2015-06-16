@@ -159,7 +159,7 @@ help : -skip ${1=""},${2=1}
   -if {!$!} -return -endif
   -y -a y
   --_help $1,$2 -k[0]
-  -if {narg(@{})} -_help[0] @{},0 -endif # In case of shortcut, display also help for shortcut command.
+  -if {narg(${})} -_help[0] ${},0 -endif # In case of shortcut, display also help for shortcut command.
   -rm
 
 _help : -skip ${1=""}
@@ -178,7 +178,7 @@ _help : -skip ${1=""}
     -l[] -m "foo : -"$command # Detect command misspelling.
       -repeat 16 -uncommand $command -done # Be sure the specified command does not exist anymore !
       -foo -uncommand foo
-    -onfail ({'@{}'}) -s -,{'" (did you mean "'} -if {$!>1} -s[1] -,39 -k[1] misspelling={t} -endif -rm
+    -onfail ({'${}'}) -s -,{'" (did you mean "'} -if {$!>1} -s[1] -,39 -k[1] misspelling={t} -endif -rm
     -endl
     -if {narg($misspelling)} misspelling=" (did you mean '"$misspelling"' ?)" -endif
     -v + -e[] "\n[gmic] Command '"$command"' has no description"$misspelling". Try 'gmic -h' for global help.\n\n" -v -
@@ -525,7 +525,7 @@ _help_usage :
 \n            the corresponding event immediately after reading its state.
 \n    . '"$c"@{\"command line\"}"$n"' is substituted by the "${g}"status value"$n" set by the execution of the
 \n       specified command line (see command '"$c"-status"$n"' to learn more about status).
-\n    . Expression '"$c"@{}"$n"' stands thus for the "${g}"current status value"$n".
+\n    . Expression '"$c"${}"$n"' stands thus for the "${g}"current status value"$n".
 \n  - '"$c"$name"$n"' and '"$c"${name}"$n"' are both substituted by the "${g}"value of the specified named variable"$n"
 \n     (set previously by item '"${c}"name=value"$n"'), or by the current positive "${g}"indice of the named
 \n     image '[name]'"$n", or by the value of the named "${g}"OS environment variable"$n" (evaluated in this order).
@@ -2748,7 +2748,7 @@ update_film_emulation_html :
   -repeat {narg($categories)}
     category=${-arg\ {1+$>},$categories}
     -arg {1+$>},$category_names
-    category_name=@{}
+    category_name=${}
     presets=@{-_gimp_emulate_film_$category}
 
     -repeat $nb_samples
@@ -2787,7 +2787,7 @@ with or endorsed by the companies that own the trademarks.</i></font></p>\n\n
       -repeat {narg($categories)}
         _category=${-arg\ {1+$>},$categories}
         -arg {1+$>},$category_names
-        _category_name=@{}
+        _category_name=${}
         -if {$_category'=='$category}
           ({'"
 <li><font color=\"#CC7700\"><b>"$_category_name"</b></font></li>\n
@@ -3524,7 +3524,7 @@ _update_server_move :
   _to_move${_nbm}="$1" _move_to${_nbm}="$2" _nbm={$_nbm+1}
 
 _update_server_upload : -skip "${2=""}"
-  -if {narg("$2")} out="$2" -else -basename "$1" out=@{} -endif
+  -if {narg("$2")} out="$2" -else -basename "$1" out=${} -endif
   -l[] GMIC_LOGIN=@{-gmic_ftp\ 0} -onfail GMIC_LOGIN="" -endl
   -l[] GMIC_PASSWD=@{-gmic_ftp\ 1} -onfail GMIC_PASSWD="" -endl
   -if {narg($GMIC_LOGIN)}
@@ -4663,7 +4663,7 @@ otsu : -check "isint(${1=256}) && $1>0"
     -done
     -rm[-1] ->=[-1] $threshold
     threshold={$im+$threshold*($iM-$im)/($1-1)}
-    -if $> -u @{},$threshold -else -u $threshold -endif
+    -if $> -u ${},$threshold -else -u $threshold -endif
   -endl -done -v +
 
 #@gmic polar2complex
@@ -5138,7 +5138,7 @@ _fill_color :
 #@gmic : $ image.jpg --gradient2rgb 0 -equalize[-1]
 gradient2rgb : -check "isbool(${1=0})"
   -arg 1+!$1,"orientation ",""
-  -e[^-1] "Compute RGB representation of 2d gradient "@{}"of image$?."
+  -e[^-1] "Compute RGB representation of 2d gradient "${}"of image$?."
   -v - -norm -repeat $! -l[$>]
     -if $1 -gradient_orientation 2 -else -g xy -endif
     -a c -direction2rgb
@@ -8106,7 +8106,7 @@ histogram_nd : -check $1>0 -skip ${2=0%},${3=100%}
 #@gmic : $ image.jpg --histogram_cumul 256 -histogram[0] 256 -display_graph 400,300,3
 histogram_cumul : -check ${1=256}>0 -skip ${2=0} -skip ${3=0},${4=0}
   -arg 1+!$2,"normalized ",""
-  -e[^-1] "Compute "@{}"cumulative histogram of image$?, using $1 levels."
+  -e[^-1] "Compute "${}"cumulative histogram of image$?, using $1 levels."
   -v - -histogram $1,$3,$4 -cumulate -if $2 -repeat $! -/[$>] @{$>,M} -done -endif -v +
 
 #@gmic histogram_pointwise : nb_levels>0[%],_value0[%],_value1[%]
@@ -10955,7 +10955,7 @@ apply_timeout :
     -onfail
       -v +
       -if ${__is_timeout$id} -error[0--5] "Command '-apply_timeout': Time out ($2 seconds) for command '$1'."
-      -else -error[0--5] "Command '-apply_timeout': "@{}
+      -else -error[0--5] "Command '-apply_timeout': "${}
       -endif
     -endl
     -v +
@@ -13534,14 +13534,14 @@ _xpink :
   prefix=pink.
   -if {!${-is_windows}}
     -x "which "${prefix}${1}" >/dev/null 2>&1"
-    -if {@{}!=0} prefix="" -x "which "$1" >/dev/null 2>&1"
-	  -if {@{}!=0} -error "Executable (pink.)"$1" not found in PATH, status = "@{}"!! Returning!!\n" -return -endif
+    -if {${}!=0} prefix="" -x "which "$1" >/dev/null 2>&1"
+	  -if {${}!=0} -error "Executable (pink.)"$1" not found in PATH, status = "${}"!! Returning!!\n" -return -endif
 	-endif
     -output_pink3d ${filename}.pnk -x ${prefix}${1}" "${filename}".pnk $2 "${filename}"_o.pnk >/dev/null 2>&1"
   -else
     -output_pink3d ${filename}.pnk -x $1" "${filename}".pnk $2 "${filename}"_o.pnk"
   -endif
-  status=@{}
+  status=${}
   -file_rm ${filename}.pnk
   -if {$status!=0\ &&\ {$1'!='seuilauto}} -error "Exec status is "${status}"." -return
   -elif ${filename}_o.pnk -i ${filename}_o.pnk -file_rm ${filename}_o.pnk -k[-1]
@@ -14052,10 +14052,10 @@ filename : -skip "${1=default}"
   -else
   (${2--1}) -nm[-1] "$1" -u @{-1,f}@{-1,b}
   -repeat {w}
-    -u @{}_{int(i/100000)%10}{int(i/10000)%10}{int(i/1000)%10}{int(i/100)%10}{int(i/10)%10}{i%10}
+    -u ${}_{int(i/100000)%10}{int(i/10000)%10}{int(i/1000)%10}{int(i/100)%10}{int(i/10)%10}{i%10}
     -shift[-1] -1
   -done
-  -if {narg({'@{-1,x}'})} -u @{}.@{-1,x} -endif
+  -if {narg({'@{-1,x}'})} -u ${}.@{-1,x} -endif
   -rm[-1]
   -endif
   -v +
@@ -14146,16 +14146,16 @@ img2str :
     -repeat {d} z=$>
       -repeat {h} y=$>
         --z[-1] 0,$y,$z,$c,100%,$y,$z,$c
-        -u @{}@-1
+        -u ${}@-1
         -rm[-1]
-        -if {$y!=h-1} -u @{}; -endif
-        -e @{}
+        -if {$y!=h-1} -u ${}; -endif
+        -e ${}
       -done
-      -if {$z!=d-1} -u @{}/ -endif
+      -if {$z!=d-1} -u ${}/ -endif
     -done
-    -if {$c!=s-1} -u @{}^ -endif
+    -if {$c!=s-1} -u ${}^ -endif
   -done
-  -u @{}")"
+  -u ${}")"
   -v +
 
 #@gmic img2text : _line_separator
@@ -14207,7 +14207,7 @@ is_windows :
 #@gmic : Return the MAD (Maximum Absolute Deviation) of the last selected image.
 #@gmic : The MAD is defined as MAD = med_i|x_i-med_j(x_j)|
 mad :
-  -v - ---[-1] @{-med[-1]} -abs[-1] -med[-1] -u {1.4826*@{}} -rm[-1] -v +
+  -v - ---[-1] @{-med[-1]} -abs[-1] -med[-1] -u {1.4826*${}} -rm[-1] -v +
 
 #@gmic max_w
 #@gmic : Return the maximal width between selected images.
@@ -14266,7 +14266,7 @@ med :
 #@gmic color_med
 #@gmic : Return the median color value of the last selected image.
 color_med :
-  -v - -u "" s="" -repeat {s} --channels[-1] $> -u @{}$s@{-med[-1]} s=, -rm[-1] -done -v +
+  -v - -u "" s="" -repeat {s} --channels[-1] $> -u ${}$s@{-med[-1]} s=, -rm[-1] -done -v +
 
 #@gmic min_w
 #@gmic : Return the minimal width between selected images.
@@ -14348,7 +14348,7 @@ _oct2dec :
 #@gmic padint : number,_size>0
 #@gmic : Return a integer with 'size' digits (eventually left-padded with '0').
 padint : -check "isint($1)" -skip ${2=4}
-  -v - -u "" -repeat $2 -u @{}{int($1/10^$<)%10} -done -v +
+  -v - -u "" -repeat $2 -u ${}{int($1/10^$<)%10} -done -v +
 
 #@gmic path_gimp
 #@gmic : Return a path to store GIMP configuration files for one user (whose value is OS-dependent).
@@ -17596,7 +17596,7 @@ x_select_color : -skip ${1=xsc_variable}
   -while {{*}" && "!{*,ESC}" && "!{*,Q}}
   -rm -w 0
   -if $rgba_mode -u $R,$G,$B,$A -else -u $R,$G,$B -endif
-  _xsc_old=@{}
+  _xsc_old=${}
   -v +
 
 #@gmic x_select_function1d : _variable_name,_background_curve_R,_background_curve_G,_background_curve_B
@@ -18740,7 +18740,7 @@ gimp_manage_filter_sources_preview :
     -gimp_filter_sources
     msg= i=1 -rm[0,1]
     -if $! -repeat $!
-      -if {@{$>,0-3}'=='{'http'}} -basename @{$>,t} msg=$msg"\n["$i"] "@{} i={$i+1}
+      -if {@{$>,0-3}'=='{'http'}} -basename @{$>,t} msg=$msg"\n["$i"] "${} i={$i+1}
       -else
         -if ${-path_rc}{$>,t} msg=$msg"\n["$i"] "@{$>,t}" (local user file)" i={$i+1} -endif
       -endif
@@ -19000,7 +19000,7 @@ gimp_survey_preview :
     -else
       -str2hex $"*",@.
       -l
-        -m "http://gmic.eu/gmic_survey.cgi?"@{}
+        -m "http://gmic.eu/gmic_survey.cgi?"${}
         -gmic_survey_check
         1 -o[-1] raw:$lockname,char -rm[-1]
         -gimp_print_preview "Your answers have been sent.",20,"Thank you!",16
@@ -19279,7 +19279,7 @@ gimp_asciiart :
     -if $-3 --img2ascii $dict,$3,$4%,$5,"$-2"/"$-1"
     -else --img2ascii $dict,$3,$4%,$5
     -endif
-    wh=@{}
+    wh=${}
     -if {$6==0} -k[-1] -n 0,255
     -elif {$6==1} -k[-1] -negative -n 0,255
     -elif {$6==2||$6==3}
@@ -24496,9 +24496,9 @@ gimp_pack : -skip "${5=}"
   -if $3 -to_a -endif
   -if $4 -repeat $! nm$>=@{-gimp_layer_name[$>]} -done -endif
   c0="w" c1="h" c2="max(w,h)" c3="w*h"
-  -pack $2,${c$1} coords=@{}
+  -pack $2,${c$1} coords=${}
   -if $4
-    -repeat 256 -filename "$5/gmic_pack.txt",$> filename=@{} -if $filename -else -break -endif -done
+    -repeat 256 -filename "$5/gmic_pack.txt",$> filename=${} -if $filename -else -break -endif -done
     -if {!narg($filename)} filename="$5/gmic_pack.txt" -endif
     -l[] -repeat {narg($coords)/2}
       x={arg(1+2*$>,$coords)} y={arg(2+2*$>,$coords)}
@@ -27384,7 +27384,7 @@ gimp_custom_code_preview : -skip "${1=-skip ,}"
   w={w} h={h}
   -l _gcp_arg="$1" -gimp_split_preview "-gimp_custom_code $_gcp_arg,${2--2}",$-1,0
   -onfail
-    error_msg=@{}
+    error_msg=${}
     -rr2d $w,$h,2,1
     -gimp_print_preview "Syntax error:",,$error_msg,15,40
   -endl
