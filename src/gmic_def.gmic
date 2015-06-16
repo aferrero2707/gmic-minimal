@@ -2631,8 +2631,8 @@ update :
 _update :
   -e[0--3] "Update commands from the latest definition file on the G\47MIC server."
   -v -
-  out=${-path_rc}cli_update@..gmic
-  -l[] cimgz:http://gmic.eu/cli_update@..gmic
+  out=${-path_rc}cli_update$_version.gmic
+  -l[] cimgz:http://gmic.eu/cli_update$_version.gmic
     -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
     -rm
   -onfail -error[0--3] "Command '-update' : Unreachable update file."
@@ -3131,7 +3131,7 @@ __update_gallery_html :
 # output (stdout), the list of available filters.
 # $1 = update version number.
 # $2 = enable/disable filters list output on stdout.
-update_server : -skip ${1=@.},${2=1}
+update_server : -skip ${1=$_version},${2=1}
   -v -
 
   # Create substitution list to force filters having a particular location.
@@ -3207,7 +3207,7 @@ update_server : -skip ${1=@.},${2=1}
      "-f 'if(y==0&&i>=97&&i<=122,i-32,i)' "
 
   # Copy latest command definitions on G'MIC server if necessary.
-  -if {$1==@.}
+  -if {$1==$_version}
     -v + -e[] "> Upload latest version ("${-strver}") of commands on G'MIC server.\n" -v -
     -_update_server_upload $HOME/work/src/gmic/src/gmic_def.gmic,gmic_def.$1
     -_update_server_upload $HOME/work/src/gmic/src/gmic_def.gmic
@@ -3217,7 +3217,7 @@ update_server : -skip ${1=@.},${2=1}
   -v + -e[] "> Load and archive .gmic source files.\n" -v -
   _nb_sources=0
   -load_gmic http://gmic.eu/gmic_def.$1
-  -if {$1!=@.} -l -load_gmic http://gmic.eu/backports$1.gmic -onfail -endl -endif
+  -if {$1!=$_version} -l -load_gmic http://gmic.eu/backports$1.gmic -onfail -endl -endif
   -x "cd $HOME/work/src/gmic-community && git pull 2>&1 >/dev/null"
   -load_gmic ${HOME}/work/src/gmic-community/compatibility.gmic
   -load_gmic ${HOME}/work/src/gmic-community/garagecoder.gmic
@@ -3396,7 +3396,7 @@ update_server : -skip ${1=@.},${2=1}
 
   # Remove useless comments and line breaks.
   -repeat $! -l[$>] -s -,10 -repeat $! -l[$<]
-    -if {i[0]=={'\#'}" && "i[1]!={'@'}} -rm -endif
+    -if {i[0]=={'\#'}" && "i[1]!={'"@"'}} -rm -endif
   -endl -done -i[^0] ({'\n'}) -a y -endl -done
 
   # Retrieve G'MIC command name for each filter.
@@ -3458,7 +3458,7 @@ update_server : -skip ${1=@.},${2=1}
   -endif
 
   # Display list of filters (sorted alphabetically) on stdout.
-  -if {$2" && "$1==@.}
+  -if {$2" && "$1==$_version}
     -v + -e[] "> Output list of filters in stdout.\n" -v -
     -x "date +%Y,%m,%d,%H >"${-path_tmp}date.dlm
     ${-path_tmp}date.dlm
@@ -4407,7 +4407,7 @@ compress_rle : -skip ${1=0} -check "isint(${2=0}) && $2>=0"
   -if $2 s=", with maximal sequence length "$2 -else s="" -endif
   -v + -e[^-1] "Compress image$? using RLE algorithm"${s{!$1}}$s"." -v -
   -repeat $! -l[$>] nm={0,n} im={im} header={w};{h};{d};{s};$im;{$1!=0}
-    -- $im -y x ({@{0,-1}+1}) -a x -r 100%,3
+    -- $im -y x ({{0,[-1]}+1}) -a x -r 100%,3
     -f '>if(y==0,i,if(y==1,if(i(x,0)==i(x+1,0),-1,x),if(i(x-1,1)==-1,i(x-1,2)+1,1)))'
     -if $2 # Constrain maximum sequence length.
       -transpose -mirror x
@@ -5982,7 +5982,7 @@ montage : -check "isval(${2=2}) && $2>=0 && $2<=3" -skip "${1=X}",${3=0},"${4=}"
     -endl
     -if {$!==$N} -rm -v + -return -endif  # Empty layout code.
     -nm[^-1] 0 -repeat {h} c={i[$>]} -if {$c>=0} -if {$c,n} -i[-2] [$c] i={$!-2} -=[-1] $i,0,$> ref$i=$c -else -nm[$c] 1 ref$c=$c -endif -endif -done # Duplicate multiple references.
-    _code=@-1 _lcode={narg($_code)} -rm[-1]
+    _code={[^]} _lcode={narg($_code)} -rm[-1]
 
     # Determine image positions and sizes.
     N=$! -repeat $N ($>,0,0,{$>,w},{$>,h},0,0,0) -done
@@ -6273,7 +6273,7 @@ rotate_tileable : -check ${2=8}>=0
   (0,1;1,8;1,7;1,6;1,5;1,4;1,5;1,3;2,5;1,2;2,5;3,5;2,3;3,4;4,5;1,1;5,4;7,5;3,2;8,5;9,5;2,1;3,1;4,1;5,1;6,1;7,1;8,1) # List of known fractions.
   -s[-1] x,2 --/[-2,-1] -atan[-1] -*[-1] {180/pi}         # Compute corresponding angles.
   ($angle) -index[-1] [-2] -rm[-2]
-  p={-3,[{[^]}]} q=@{-2,@-1} -rm[-3--1]                   # Find nearest fraction p/q to atan(angle).
+  p={-3,[{[^]}]} q={-2,{[^]}} -rm[-3--1]                  # Find nearest fraction p/q to atan(angle).
   -if {!$p||!$q} -return -endif
 
   -repeat $! -l[$>]
@@ -7006,7 +7006,7 @@ dilate_threshold : -check "isint($1) && $1>=1 && isint(${2=$1}) && $2>=1 && isin
     dz1={int($3/2)} dz2={$3-$dz1-1}
     (-$dx1,$dx1) (-$dy1;$dy1) (-$dz1/$dz1) -r $1,$2,$3,1,3 -a c -round -r {w*h*d},3,1,1,-1 -transpose[-1]
     -i[-2] 1,100%,1,1,254 1,100%,1,1,255 -a x
-    ({'@-1'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,-1e20))" list={t}
+    ({'{[^]}'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,-1e20))" list={t}
     -rm
   -endl
   -f 'max($list)'
@@ -7106,7 +7106,7 @@ erode_threshold : -check "isint($1) && $1>=1 && isint(${2=$1}) && $2>=1 && isint
     dz1={int($3/2)} dz2={$3-$dz1-1}
     (-$dx1,$dx1) (-$dy1;$dy1) (-$dz1/$dz1) -r $1,$2,$3,1,3 -a c -round -r {w*h*d},3,1,1,-1 -transpose[-1]
     -i[-2] 1,100%,1,1,254 1,100%,1,1,255 -a x
-    ({'@-1'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,1e20))" list={t}
+    ({'{[^]}'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,1e20))" list={t}
     -rm
   -endl
   -f 'min($list)'
@@ -8816,8 +8816,8 @@ maze_mask : -check "isint(${1=24}) && $1>0"
   -v - -norm ->= 50% -repeat $! -l[$>]
     -do
       --rand[0] 0,1 -*[-1] [0] ({xM},{yM}) -rm[-2]  # Select one starting point in the mask.
-      --flood[0] @-1,0,0,0,1,2 ->=[-1] 2 --negative[-1] -*[-2] 15 -a[-2,-1] c
-      -flood[0] @-2,0,0,0,1,0
+      --flood[0] {[^]},0,0,0,1,2 ->=[-1] 2 --negative[-1] -*[-2] 15 -a[-2,-1] c
+      -flood[0] {-2,[^]},0,0,0,1,0
       -_generate_maze {w},{h}
     -while {0,iM}
     -rm[0] -+ -_render_maze[-1] $1 -nm[-1] [maze]
@@ -9020,7 +9020,7 @@ polka_dots : -check $1>=0 -skip ${2=20},${3=50},${4=50},${5=0},${6=10},${7=1},${
 #@gmic : drawn outlined instead of filled.
 #@gmic : Default values: 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ image.jpg -polygon 4,20%,20%,80%,30%,80%,70%,20%,80%,0.3,0,255,0 -polygon 4,20%,20%,80%,30%,80%,70%,20%,80%,1,0xCCCCCCCC,255
-#@gmic : $ image.jpg 2,16,1,1,'?(if(x,{h},{w}))' -polygon[-2] {h},@-1,0.6,255,0,255 -remove[-1]
+#@gmic : $ image.jpg 2,16,1,1,'?(if(x,{h},{w}))' -polygon[-2] {h},{[^]},0.6,255,0,255 -remove[-1]
 
 #@gmic quiver : [function_image],_sampling>0,_factor,_is_arrow={ 0 | 1 },_opacity,_pattern,_color1,.. : (+)
 #@gmic : Draw specified 2d vector/orientation field on selected images.
@@ -9347,11 +9347,11 @@ apply_camera3d : -skip ${4=0},${5=0},${6=0},${7=0},${8=-1},${9=0}
   ({$4-$1}^{$5-$2}^{$6-$3})  # f.
   ($7^$8^$9)                 # up.
   -orientation[-2,-1]        # f/|f| and up/|up|.
-  -_cross3d @-2,@-1          # s = f x up
-  -_cross3d @-1,@-3          # u = s x f
+  -_cross3d {-2,[^]},{[^]}        # s = f x up
+  -_cross3d {[^]},{-3,[^]}          # u = s x f
   -rm[-3] -y[-3--1] x -mv[-2,-1] -3
   -a[-3--1] y -z[-1] 0,3  # Rotation matrix R.
-  --3d[^-1] $1,$2,$3 -pose3d[^-1] @-1 -rm[-1] --3d 0,0,800
+  --3d[^-1] $1,$2,$3 -pose3d[^-1] {[^]} -rm[-1] --3d 0,0,800
   -v +
 
 _cross3d :
@@ -9408,7 +9408,7 @@ arrow3d : -check "${7=5%}>=0 && ${8=25%}>=0 && ${9=15%}>=0"
 
   # Compute rotation matrix for arrow orientation.
   ({$4-$1}^{$5-$2}^{$6-$3}) (0.01^-0.02^0.03) -orientation[-2,-1]
-  -_cross3d @-2,@-1 -_cross3d @-1,@-3 -rm[-3] -y[-3--1] x -mv[-2,-1] -3
+  -_cross3d {-2,[^]},{[^]} -_cross3d {[^]},{-3,[^]} -rm[-3] -y[-3--1] x -mv[-2,-1] -3
   -a[-3--1] y
 
   # Rotate and translate the arrow at specified coordinates.
@@ -10223,7 +10223,7 @@ pca_patch3d : -check "isint(${1=7}) && $1>0 && isint(${2=1000}) && $2>0 && isint
     s={s}
 
     # Pick set of M random located patchs.
-    1,$2 -rand[-1] 0,{0,w-1} --rand[-1] 0,{0,h-1} --f[-1] 0 -a[-3--1] x -round[-1] 1 --patches[0] $1,$1,1,@-1 -y[2--1] -a[2--1] x
+    1,$2 -rand[-1] 0,{0,w-1} --rand[-1] 0,{0,h-1} --f[-1] 0 -a[-3--1] x -round[-1] 1 --patches[0] $1,$1,1,{[^]} -y[2--1] -a[2--1] x
     -z[1] 0,1 -transpose[1] -*[1] $6 -a[1,2] y -s[^0] x
 
     # Normalize patch coordinates by using average and standard deviation.
@@ -10845,12 +10845,12 @@ apply_parallel :
   -_$0 "$*"
 
 _apply_parallel :
-  -e[0--3] "Apply command '$*' on all image"$_gmic_s" in parallel, using "@*" threads."
+  -e[0--3] "Apply command '$*' on all image"$_gmic_s" in parallel, using "$_cpus" threads."
   -v -
   -if {$!" && "narg("$*")}
     -m "_ap : -repeat $! -l[$>] $* -if $! -k[0] -else 0 -endif -endl -done"
     command=
-    N={min($!,@*)} S=0 sep=""
+    N={min($!,$_cpus)} S=0 sep=""
     -repeat $N
       E={round(($>+1)*$!/$N)-1}
       command=$command$sep-_ap[$S-$E]
@@ -10875,7 +10875,7 @@ apply_parallel_channels :
   -_$0 "$*"
 
 _apply_parallel_channels :
-  -e[0--3] "Apply command '$*' on all channels of image"$_gmic_s" in parallel, using "@*" threads."
+  -e[0--3] "Apply command '$*' on all channels of image"$_gmic_s" in parallel, using "$_cpus" threads."
   -v - N=$! -repeat $N s$>={$>,s} -done -s c
   -ap "$1"
   -repeat $N -a[$>-{$>+${s$>}-1}] c -done -v +
@@ -11433,8 +11433,8 @@ img2ascii : -skip "${1= !\042\#$%&\047()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQ
 imagegrid : -skip ${2=$1}
   -e[^-1] "Create $1x$2 image grid from image$?."
   -v - -repeat $! -l[$>]
-    ({w},{h}) ($1,$2) -/[-2,-1] -round[-1] 1 -r[-2] @-1,[-2],[-2],2 -rm[-1]
-    ({w},{h}) ($1,$2) -*[-2,-1] -r[-2] @-1,[-2],[-2],2 -rm[-1]
+    ({w},{h}) ($1,$2) -/[-2,-1] -round[-1] 1 -r[-2] {[^]},[-2],[-2],2 -rm[-1]
+    ({w},{h}) ($1,$2) -*[-2,-1] -r[-2] {[^]},[-2],[-2],2 -rm[-1]
     $1,$2,1,[-1],1 -shift[-1] 1,1 -r[-1] [-2],0,2 -*
   -endl -done -v +
 
@@ -11549,7 +11549,7 @@ pack : -skip ${1=0},${2=max(w,h)}
     -done
 
     -if {$slot>=0} # Empty slot found -> Use it.
-      x=@{0,i(0,$slot)} y=@{0,i(1,$slot)} w=@{0,i(2,$slot)} h=@{0,i(3,$slot)}
+      x={0,i(0,$slot)} y={0,i(1,$slot)} w={0,i(2,$slot)} h={0,i(3,$slot)}
       -j[1] [2],$x,$y offsets{2,n}=$x,$y
       -l[0]
         -s y -rm[$slot]
@@ -12704,7 +12704,7 @@ cracks : -skip ${1=0.2},${2=40},${3=0}
   -v - -repeat $! -l[$>]
     ({im},{iM}) [-2],[-2],1,1 -noise[-1] $1,2 -distance[-1] 1 -sharpen[-1] 10000
     -if $3 -g[-1] xy -+[-2,-1] -n[-1] -1,1 -else -n[-1] 0,1 -endif
-    -*[-1] $2 -+[-3,-1] -c[-2] @-1 -rm[-1]
+    -*[-1] $2 -+[-3,-1] -c[-2] {[^]} -rm[-1]
   -endl -done -v +
 
 #@gmic light_patch : _density>0,_darkness>=0,_lightness>=0
@@ -13072,7 +13072,7 @@ blend_seamless : -check "${2=0}>=0 && ${3=100%}>=0" -skip ${1=0}
     -repeat {$!-1} -l[0,1]
 
       # Get background average color.
-      --r[0] 1,1,1,100%,2 avg=@-1 -rm[-1]
+      --r[0] 1,1,1,100%,2 avg={[^]} -rm[-1]
 
       # Compute mixed gradients of background and top layer.
       -split_opacity[-1] -!=[-1] 0 -*[-2] [-1] -erode[-1] 3
@@ -13408,7 +13408,7 @@ register_rigid : -check ${-is_image_arg\ $1}" && ${2=1}>=0 && isint(${3=0}) && $
   -repeat {$!-1}
     --equalize[$>] -b[-1] $2 -n[-1] 0,255
     --phase_correlation[-1] [-2] -rm[-2]
-    -shift[$>] @-1,0,$3 -rm[-1]
+    -shift[$>] {[^]},0,$3 -rm[-1]
   -done -rm[-1] -v +
 
 #@gmic transition : [transition_shape],nb_added_frames>=0,100>=shading>=0,_single_frame_only={ -1=disabled | >=0 }
@@ -14018,7 +14018,7 @@ file_mv :
 #@gmic : Return a random filename for storing temporary data.
 file_rand :
   -v -
-  -do filename=${-path_tmp}gmic@%{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}
+  -do filename=${-path_tmp}gmic$_pid{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}{round(?(0,9))}
   -while $filename
   -u $filename
   -v +
@@ -14140,7 +14140,7 @@ img2str :
     -repeat {d} z=$>
       -repeat {h} y=$>
         --z[-1] 0,$y,$z,$c,100%,$y,$z,$c
-        -u ${}@-1
+        -u ${}{[^]}
         -rm[-1]
         -if {$y!=h-1} -u ${}; -endif
         -e ${}
@@ -18300,7 +18300,7 @@ __help_end : #  <-- don't remove me, used as a marker for help !
 # This command can be superseded on the user '.gmic' file to add sources for the plug-in.
 gimp_filter_sources :
   ({'../gmic'})
-  ({'http://gmic.eu/gimp_update@..gmic'},1) # Override default filters.
+  ({'http://gmic.eu/gimp_update$_version.gmic'},1) # Override default filters.
   -l[] -i cimgz:${-path_rc}gimp_filter_sources -onfail -endl
 
   # Import old faves when possible.
@@ -18358,11 +18358,11 @@ _gimp_merge_layers :
   res=""
   ({'{0,n}'})
   -l[-1]
-    ({'"$1("'}) l={w} str=@-1 -rm[-1]
+    ({'"$1("'}) l={w} str={[^]} -rm[-1]
     -s +,$str
     -if {$!>1}
       -repeat $!
-        -if {$>!=$!-1" && "{{$>,[0-@{$>,min($l,h)-1}]}'=='$str}}
+        -if {$>!=$!-1" && "{{$>,[0-{$>,min($l,h)-1}]}'=='$str}}
           -l[{$>+1}] -s +,{')'} -if {$!>1} res={0,t} -endif -a y -endl
         -endif
         -if {narg({'$res'})} -break -endif
@@ -18992,7 +18992,7 @@ gimp_survey_preview :
     lockname=${-path_tmp}.gmic_survey.lock
     -if $lockname -gimp_print_preview "Your answers have been sent.",20,"Thank you!",16
     -else
-      -str2hex $"*",@.
+      -str2hex $"*",$_version
       -l
         -m "http://gmic.eu/gmic_survey.cgi?"${}
         -gmic_survey_check
@@ -19094,7 +19094,7 @@ _survey_bool : -skip ${3=0}
   (${_answers$1}) -histogram[-1] 2,0,1 -normalize_sum[-1] val0={round(i[0]*100)} val1={100-$val0} -rm[-1]
   0 -t[-1] "$2",0,0,20,1,0,0,0,255
 
-  RGB1={?(60,90)},{?(60,90)},{?(60,90)} ($RGB1) -*[-1] 2 -c[-1] 0,255 RGB2=@-1 -rm[-1]
+  RGB1={?(60,90)},{?(60,90)},{?(60,90)} ($RGB1) -*[-1] 2 -c[-1] 0,255 RGB2={[^]} -rm[-1]
   128,1,1,3 -fc[-1] $RGB1 -line[-1] 0,0,$val1%,0,1,$RGB2
   0 -t[-1] $val1%,0,0,16,1,1
   -r[-2] 100%,{h+8},1,3 -r[-1] [-2],[-2],1,1,0,0,0.5,0.5
@@ -21084,17 +21084,17 @@ _gimp_apply_RGBcurve :
 gimp_apply_Rcurve_preview :
   -gimp_apply_RGBcurve_configfile
   -sh[-1] 0,0,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_RGBcurve_preview[^-1] @-1,0,${-2,-1} -rm[-1]
+  -gimp_apply_RGBcurve_preview[^-1] {[^]},0,${-2,-1} -rm[-1]
 
 gimp_apply_Gcurve_preview :
   -gimp_apply_RGBcurve_configfile
   -sh[-1] 1,1,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_RGBcurve_preview[^-1] @-1,1,${-2,-1} -rm[-1]
+  -gimp_apply_RGBcurve_preview[^-1] {[^]},1,${-2,-1} -rm[-1]
 
 gimp_apply_Bcurve_preview :
   -gimp_apply_RGBcurve_configfile
   -sh[-1] 2,2,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_RGBcurve_preview[^-1] @-1,2,${-2,-1} -rm[-1]
+  -gimp_apply_RGBcurve_preview[^-1] {[^]},2,${-2,-1} -rm[-1]
 
 gimp_apply_RGBcurve_configfile :
   filename=${-path_tmp}.gmic_RGBcurve.dlm
@@ -21261,17 +21261,17 @@ _gimp_apply_YCbCrcurve :
 gimp_apply_Ycurve_preview :
   -gimp_apply_YCbCrcurve_configfile
   -sh[-1] 0,0,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_YCbCrcurve_preview[^-1] @-1,0,${-2,-1} -rm[-1]
+  -gimp_apply_YCbCrcurve_preview[^-1] {[^]},0,${-2,-1} -rm[-1]
 
 gimp_apply_Cbcurve_preview :
   -gimp_apply_YCbCrcurve_configfile
   -sh[-1] 1,1,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_YCbCrcurve_preview[^-1] @-1,1,${-2,-1} -rm[-1]
+  -gimp_apply_YCbCrcurve_preview[^-1] {[^]},1,${-2,-1} -rm[-1]
 
 gimp_apply_Crcurve_preview :
   -gimp_apply_YCbCrcurve_configfile
   -sh[-1] 2,2,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_YCbCrcurve_preview[^-1] @-1,2,${-2,-1} -rm[-1]
+  -gimp_apply_YCbCrcurve_preview[^-1] {[^]},2,${-2,-1} -rm[-1]
 
 gimp_apply_YCbCrcurve_configfile :
   filename=${-path_tmp}.gmic_YCbCrcurve.dlm
@@ -21439,17 +21439,17 @@ _gimp_apply_Labcurve :
 gimp_apply_Lcurve_preview :
   -gimp_apply_Labcurve_configfile
   -sh[-1] 0,0,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_Labcurve_preview[^-1] @-1,0,${-2,-1} -rm[-1]
+  -gimp_apply_Labcurve_preview[^-1] {[^]},0,${-2,-1} -rm[-1]
 
 gimp_apply_acurve_preview :
   -gimp_apply_Labcurve_configfile
   -sh[-1] 1,1,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_Labcurve_preview[^-1] @-1,1,${-2,-1} -rm[-1]
+  -gimp_apply_Labcurve_preview[^-1] {[^]},1,${-2,-1} -rm[-1]
 
 gimp_apply_bcurve_preview :
   -gimp_apply_Labcurve_configfile
   -sh[-1] 2,2,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_Labcurve_preview[^-1] @-1,2,${-2,-1} -rm[-1]
+  -gimp_apply_Labcurve_preview[^-1] {[^]},2,${-2,-1} -rm[-1]
 
 gimp_apply_Labcurve_configfile :
   filename=${-path_tmp}.gmic_Labcurve.dlm
@@ -21864,7 +21864,7 @@ _gimp_select_color :
   -endif
 
 gimp_select_color :
-  ($5^$6^$7^$8) -_gimp_select_color[-1] $1 color=@-1 -rm[-1]
+  ($5^$6^$7^$8) -_gimp_select_color[-1] $1 color={[^]} -rm[-1]
   -repeat $! -l[$>] -to_rgba
     --_gimp_select_color $1
     -select_color[1] $2%,$color
@@ -22588,7 +22588,7 @@ gimp_map_sphere :
   -shift $5%,0,0,0,2 -to_rgba
   -if $9
     -repeat $!
-      --rows[$>] 0 -r[-1] 1,1,1,4,2 RGBA$>=@-1
+      --rows[$>] 0 -r[-1] 1,1,1,4,2 RGBA$>={[^]}
       -r[-1] [$>],[$>],1,4 --[$>,-1]
     -done
   -endif
@@ -26146,19 +26146,19 @@ gimp_random3d :
   -repeat $! -l[$>]
     f3d={0.5*max(w,h)/tan($5*pi/360)} -f3d $f3d -l3d {$6*$f3d},{$7*$f3d},{$8*$f3d} -sl3d $9 -ss3d $10
     -to_rgb ({w},{h},{d},{s}) -/[-1] 2 -repeat $2
-    ({1,[0]}) -+[-1] {1,[1]} -*[-1] $3 -/[-1] 100 -_gimp_random3d$1 @-1 -rm[-2]
+    ({1,[0]}) -+[-1] {1,[1]} -*[-1] $3 -/[-1] 100 -_gimp_random3d$1 {[^]} -rm[-2]
     -r3d[-1] 1,1,0,{?(0,360)}
     ({?(-1,1)}) -*[-1] {1,[0]} ({?(-1,1)}) -*[-1] {1,[1]}
-    -+3d[-3] @-2,@-1,{?(-$4,$4)} -rm[-2,-1]
+    -+3d[-3] {-2,[^]},{[^]},{?(-$4,$4)} -rm[-2,-1]
     -col3d[-1] {?(255)},{?(255)},{?(255)} -done -+3d[2--1] -j3d[0] [-1],50%,50%,0,$12,$11,0,1
     -k[0]
   -endl -done
 
 _gimp_random3d0 : -box3d $1
-_gimp_random3d1 : ($1) -/[-1] 2 -cone3d @-1,$1 -rm[-2]
-_gimp_random3d2 : ($1) -/[-1] 2 -cylinder3d @-1,$1 -rm[-2]
+_gimp_random3d1 : ($1) -/[-1] 2 -cone3d {[^]},$1 -rm[-2]
+_gimp_random3d2 : ($1) -/[-1] 2 -cylinder3d {[^]},$1 -rm[-2]
 _gimp_random3d3 : -sphere3d $1,2
-_gimp_random3d4 : ($1) -/[-1] 3 -torus3d $1,@-1 -rm[-2]
+_gimp_random3d4 : ($1) -/[-1] 3 -torus3d $1,{[^]} -rm[-2]
 
 #@gimp Ball : gimp_ball, gimp_ball_preview(0)
 #@gimp : Radius = int(128,1,1024)
@@ -26295,7 +26295,7 @@ gimp_equation_plot :
 gimp_corner_gradient :
   -repeat $!
     ({w},{h}) -rm[-2]
-    ($1,$5;$9,$13^$2,$6;$10,$14^$3,$7;$11,$15^$4,$8;$12,$16) -r[-1] @-2,1,4,3 -rm[-2]
+    ($1,$5;$9,$13^$2,$6;$10,$14^$3,$7;$11,$15^$4,$8;$12,$16) -r[-1] {-2,[^]},1,4,3 -rm[-2]
   -mv[-1] 0 -done
 
 #@gimp Gradient [custom shape] : gimp_custom_gradient, gimp_custom_gradient_preview(1)
@@ -26470,7 +26470,7 @@ gimp_linear_gradient :
     ({w},{h}) -rm[-2]
     ($1^$2^$3^$4) ($5^$6^$7^$8)
     -if $9 -rv[-2,-1] -endif
-    -r[-2,-1] @-3 -rm[-3]
+    -r[-2,-1] {-3,[^]} -rm[-3]
     -fade_linear $10,$11,$12
   -mv[-1] 0 -done
 
@@ -26488,7 +26488,7 @@ gimp_radial_gradient :
     ({w},{h}) -rm[-2]
     ($1^$2^$3^$4) ($5^$6^$7^$8)
     -if $9 -rv[-2,-1] -endif
-    -r[-2,-1] @-3 -rm[-3]
+    -r[-2,-1] {-3,[^]} -rm[-3]
     100%,100% -=[-1] 1,$12%,$13% -distance[-1] 1 -_fade $10,$11
   -mv[-1] 0 -done
 
