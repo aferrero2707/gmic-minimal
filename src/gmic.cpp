@@ -3532,7 +3532,7 @@ CImg<char> gmic::substitute_item(const char *const source,
         nsource+=l_inbraces + 2;
         if (!*inbraces)
           error(images,0,0,
-                "Item substitution '{}': empty braces.");
+                "Item substitution '{}': Empty braces.");
 
         // Single-char cases not associated to an image : {#},{^},{|},{!}.
         if (!inbraces[1]) switch (*inbraces) {

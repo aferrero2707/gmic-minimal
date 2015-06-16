@@ -1045,7 +1045,7 @@ _help_footer_man :
 # use_vt100
 # This command defines some global variables used to output colored text on VT100 terminals.
 use_vt100 :
-  -v - -if {narg($_gmic_vt100)}
+  -v - -if {narg($_vt100)}
     _gmic_n="\33[0;0;0m" _gmic_r="\33[0;31;59m" _gmic_g="\33[0;32;59m" _gmic_m="\33[0;35;59m"
     _gmic_c="\33[0;36;59m" _gmic_b="\33[1m"
   -endif -v +
@@ -1713,9 +1713,9 @@ _document_gmic_declaration_ascii :
 _document_gmic_description_ascii :
   s="        " bs0="\n" bs1="\\\\\n         "
   -y x -if {!narg($_is_tutorial)} -_document_gmic_split_ascii 96 -endif
-  -if {@#==1" && "narg($_gmic_vt100)" && "{@{0,0-7}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
+  -if {@#==1" && "narg($_vt100)" && "{@{0,0-7}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
   -repeat {@#-1} ({'${bs$_is_example}$s"  "'}) -a[$>,-1] x -done -a x
-  -if {narg($_gmic_vt100)}
+  -if {narg($_vt100)}
     -replace_str "Default values:","\n"$s${_gmic_b}"Default values:"$_gmic_n
     -replace_str "Default value:","\n"$s${_gmic_b}"Default value:"$_gmic_n
   -endif
