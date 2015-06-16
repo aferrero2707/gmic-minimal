@@ -5296,7 +5296,7 @@ pseudogray : -check "isint(${1=5}) && $1>=0 && ${2=2.3}>=0 && isint(${3=8}) && $
 #@gmic : Replace pixels from/to specified colors in selected images.
 #@gmic : $ image.jpg --replace_color 40,3,204,153,110,255,0,0
 replace_color : -check "$1>=0 && $2>=0"
-  -v - -l[] (${3--1}) -y c -s c,2 col1={0,[^]} col2={1,[^]} -rm -endl -v +
+  -v - -l[] (${3--1}) -y c -s c,2 col1={0,^} col2={1,^} -rm -endl -v +
   -e[^-1] "Replace color ("$col1") by color ("$col2") in image$?, with tolerance $1 and smoothness $2."
   -v - -repeat $! -l[$>]
     1,1,1,100%,$col1 -r[1] [0]
@@ -5982,7 +5982,7 @@ montage : -check "isval(${2=2}) && $2>=0 && $2<=3" -skip "${1=X}",${3=0},"${4=}"
     -endl
     -if {$!==$N} -rm -v + -return -endif  # Empty layout code.
     -nm[^-1] 0 -repeat {h} c={i[$>]} -if {$c>=0} -if {$c,n} -i[-2] [$c] i={$!-2} -=[-1] $i,0,$> ref$i=$c -else -nm[$c] 1 ref$c=$c -endif -endif -done # Duplicate multiple references.
-    _code={[^]} _lcode={narg($_code)} -rm[-1]
+    _code={^} _lcode={narg($_code)} -rm[-1]
 
     # Determine image positions and sizes.
     N=$! -repeat $N ($>,0,0,{$>,w},{$>,h},0,0,0) -done
@@ -6273,7 +6273,7 @@ rotate_tileable : -check ${2=8}>=0
   (0,1;1,8;1,7;1,6;1,5;1,4;1,5;1,3;2,5;1,2;2,5;3,5;2,3;3,4;4,5;1,1;5,4;7,5;3,2;8,5;9,5;2,1;3,1;4,1;5,1;6,1;7,1;8,1) # List of known fractions.
   -s[-1] x,2 --/[-2,-1] -atan[-1] -*[-1] {180/pi}         # Compute corresponding angles.
   ($angle) -index[-1] [-2] -rm[-2]
-  p={-3,[{[^]}]} q={-2,{[^]}} -rm[-3--1]                  # Find nearest fraction p/q to atan(angle).
+  p={-3,[{^}]} q={-2,{^}} -rm[-3--1]                  # Find nearest fraction p/q to atan(angle).
   -if {!$p||!$q} -return -endif
 
   -repeat $! -l[$>]
@@ -7006,7 +7006,7 @@ dilate_threshold : -check "isint($1) && $1>=1 && isint(${2=$1}) && $2>=1 && isin
     dz1={int($3/2)} dz2={$3-$dz1-1}
     (-$dx1,$dx1) (-$dy1;$dy1) (-$dz1/$dz1) -r $1,$2,$3,1,3 -a c -round -r {w*h*d},3,1,1,-1 -transpose[-1]
     -i[-2] 1,100%,1,1,254 1,100%,1,1,255 -a x
-    ({'{[^]}'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,-1e20))" list={t}
+    ({'{^}'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,-1e20))" list={t}
     -rm
   -endl
   -f 'max($list)'
@@ -7106,7 +7106,7 @@ erode_threshold : -check "isint($1) && $1>=1 && isint(${2=$1}) && $2>=1 && isint
     dz1={int($3/2)} dz2={$3-$dz1-1}
     (-$dx1,$dx1) (-$dy1;$dy1) (-$dz1/$dz1) -r $1,$2,$3,1,3 -a c -round -r {w*h*d},3,1,1,-1 -transpose[-1]
     -i[-2] 1,100%,1,1,254 1,100%,1,1,255 -a x
-    ({'{[^]}'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,1e20))" list={t}
+    ({'{^}'}) -rm[-2] -replace_str "254,","(v=j(" -replace_str ",255",",0,0,$5);if(abs(v-i)<=$4,v,1e20))" list={t}
     -rm
   -endl
   -f 'min($list)'
@@ -7576,9 +7576,9 @@ phase_correlation : -check ${-is_image_arg\ $1}
     -normalized_cross_correlation[$>] [-1] -rm[-1]
     -l[$>]
       ({C}) -*[-1] 2 -s[-1] x -rm[-1]
-      -if {{-3,[^]}>{-4,w}} --[-3] {-4,w} --[-3] {-4,w} -endif
-      -if {{-2,[^]}>{-4,h}} --[-2] {-4,h} --[-2] {-4,h} -endif
-      -if {{[^]}>{-4,d}} --[-1] {-4,d} --[-1] {-4,d} -endif
+      -if {{-3,^}>{-4,w}} --[-3] {-4,w} --[-3] {-4,w} -endif
+      -if {{-2,^}>{-4,h}} --[-2] {-4,h} --[-2] {-4,h} -endif
+      -if {{^}>{-4,d}} --[-1] {-4,d} --[-1] {-4,d} -endif
       -a[-3--1] c -rm[-2] -/ 2 -* -1
       -nm [phase\ correlation]
   -endl -done -v +
@@ -8816,8 +8816,8 @@ maze_mask : -check "isint(${1=24}) && $1>0"
   -v - -norm ->= 50% -repeat $! -l[$>]
     -do
       --rand[0] 0,1 -*[-1] [0] ({xM},{yM}) -rm[-2]  # Select one starting point in the mask.
-      --flood[0] {[^]},0,0,0,1,2 ->=[-1] 2 --negative[-1] -*[-2] 15 -a[-2,-1] c
-      -flood[0] {-2,[^]},0,0,0,1,0
+      --flood[0] {^},0,0,0,1,2 ->=[-1] 2 --negative[-1] -*[-2] 15 -a[-2,-1] c
+      -flood[0] {-2,^},0,0,0,1,0
       -_generate_maze {w},{h}
     -while {0,iM}
     -rm[0] -+ -_render_maze[-1] $1 -nm[-1] [maze]
@@ -9020,7 +9020,7 @@ polka_dots : -check $1>=0 -skip ${2=20},${3=50},${4=50},${5=0},${6=10},${7=1},${
 #@gmic : drawn outlined instead of filled.
 #@gmic : Default values: 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ image.jpg -polygon 4,20%,20%,80%,30%,80%,70%,20%,80%,0.3,0,255,0 -polygon 4,20%,20%,80%,30%,80%,70%,20%,80%,1,0xCCCCCCCC,255
-#@gmic : $ image.jpg 2,16,1,1,'?(if(x,{h},{w}))' -polygon[-2] {h},{[^]},0.6,255,0,255 -remove[-1]
+#@gmic : $ image.jpg 2,16,1,1,'?(if(x,{h},{w}))' -polygon[-2] {h},{^},0.6,255,0,255 -remove[-1]
 
 #@gmic quiver : [function_image],_sampling>0,_factor,_is_arrow={ 0 | 1 },_opacity,_pattern,_color1,.. : (+)
 #@gmic : Draw specified 2d vector/orientation field on selected images.
@@ -9347,11 +9347,11 @@ apply_camera3d : -skip ${4=0},${5=0},${6=0},${7=0},${8=-1},${9=0}
   ({$4-$1}^{$5-$2}^{$6-$3})  # f.
   ($7^$8^$9)                 # up.
   -orientation[-2,-1]        # f/|f| and up/|up|.
-  -_cross3d {-2,[^]},{[^]}        # s = f x up
-  -_cross3d {[^]},{-3,[^]}          # u = s x f
+  -_cross3d {-2,^},{^}        # s = f x up
+  -_cross3d {^},{-3,^}          # u = s x f
   -rm[-3] -y[-3--1] x -mv[-2,-1] -3
   -a[-3--1] y -z[-1] 0,3  # Rotation matrix R.
-  --3d[^-1] $1,$2,$3 -pose3d[^-1] {[^]} -rm[-1] --3d 0,0,800
+  --3d[^-1] $1,$2,$3 -pose3d[^-1] {^} -rm[-1] --3d 0,0,800
   -v +
 
 _cross3d :
@@ -9408,7 +9408,7 @@ arrow3d : -check "${7=5%}>=0 && ${8=25%}>=0 && ${9=15%}>=0"
 
   # Compute rotation matrix for arrow orientation.
   ({$4-$1}^{$5-$2}^{$6-$3}) (0.01^-0.02^0.03) -orientation[-2,-1]
-  -_cross3d {-2,[^]},{[^]} -_cross3d {[^]},{-3,[^]} -rm[-3] -y[-3--1] x -mv[-2,-1] -3
+  -_cross3d {-2,^},{^} -_cross3d {^},{-3,^} -rm[-3] -y[-3--1] x -mv[-2,-1] -3
   -a[-3--1] y
 
   # Rotate and translate the arrow at specified coordinates.
@@ -10223,7 +10223,7 @@ pca_patch3d : -check "isint(${1=7}) && $1>0 && isint(${2=1000}) && $2>0 && isint
     s={s}
 
     # Pick set of M random located patchs.
-    1,$2 -rand[-1] 0,{0,w-1} --rand[-1] 0,{0,h-1} --f[-1] 0 -a[-3--1] x -round[-1] 1 --patches[0] $1,$1,1,{[^]} -y[2--1] -a[2--1] x
+    1,$2 -rand[-1] 0,{0,w-1} --rand[-1] 0,{0,h-1} --f[-1] 0 -a[-3--1] x -round[-1] 1 --patches[0] $1,$1,1,{^} -y[2--1] -a[2--1] x
     -z[1] 0,1 -transpose[1] -*[1] $6 -a[1,2] y -s[^0] x
 
     # Normalize patch coordinates by using average and standard deviation.
@@ -11433,8 +11433,8 @@ img2ascii : -skip "${1= !\042\#$%&\047()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQ
 imagegrid : -skip ${2=$1}
   -e[^-1] "Create $1x$2 image grid from image$?."
   -v - -repeat $! -l[$>]
-    ({w},{h}) ($1,$2) -/[-2,-1] -round[-1] 1 -r[-2] {[^]},[-2],[-2],2 -rm[-1]
-    ({w},{h}) ($1,$2) -*[-2,-1] -r[-2] {[^]},[-2],[-2],2 -rm[-1]
+    ({w},{h}) ($1,$2) -/[-2,-1] -round[-1] 1 -r[-2] {^},[-2],[-2],2 -rm[-1]
+    ({w},{h}) ($1,$2) -*[-2,-1] -r[-2] {^},[-2],[-2],2 -rm[-1]
     $1,$2,1,[-1],1 -shift[-1] 1,1 -r[-1] [-2],0,2 -*
   -endl -done -v +
 
@@ -12704,7 +12704,7 @@ cracks : -skip ${1=0.2},${2=40},${3=0}
   -v - -repeat $! -l[$>]
     ({im},{iM}) [-2],[-2],1,1 -noise[-1] $1,2 -distance[-1] 1 -sharpen[-1] 10000
     -if $3 -g[-1] xy -+[-2,-1] -n[-1] -1,1 -else -n[-1] 0,1 -endif
-    -*[-1] $2 -+[-3,-1] -c[-2] {[^]} -rm[-1]
+    -*[-1] $2 -+[-3,-1] -c[-2] {^} -rm[-1]
   -endl -done -v +
 
 #@gmic light_patch : _density>0,_darkness>=0,_lightness>=0
@@ -13072,7 +13072,7 @@ blend_seamless : -check "${2=0}>=0 && ${3=100%}>=0" -skip ${1=0}
     -repeat {$!-1} -l[0,1]
 
       # Get background average color.
-      --r[0] 1,1,1,100%,2 avg={[^]} -rm[-1]
+      --r[0] 1,1,1,100%,2 avg={^} -rm[-1]
 
       # Compute mixed gradients of background and top layer.
       -split_opacity[-1] -!=[-1] 0 -*[-2] [-1] -erode[-1] 3
@@ -13408,7 +13408,7 @@ register_rigid : -check ${-is_image_arg\ $1}" && ${2=1}>=0 && isint(${3=0}) && $
   -repeat {$!-1}
     --equalize[$>] -b[-1] $2 -n[-1] 0,255
     --phase_correlation[-1] [-2] -rm[-2]
-    -shift[$>] {[^]},0,$3 -rm[-1]
+    -shift[$>] {^},0,$3 -rm[-1]
   -done -rm[-1] -v +
 
 #@gmic transition : [transition_shape],nb_added_frames>=0,100>=shading>=0,_single_frame_only={ -1=disabled | >=0 }
@@ -13843,7 +13843,7 @@ arg :
 #@gmic at : _x,_y,_z
 #@gmic : Return a specified vector-valued point (x,y,z) from the latest of the selected images.
 at : -skip ${1=0},${2=0},${3=0}
-  -v - --z[-1] ${1-3},${1-3} -u {[^]} -rm[-1] -v +
+  -v - --z[-1] ${1-3},${1-3} -u {^} -rm[-1] -v +
 
 #@gmic autocrop_coords : value1,value2,... | auto
 #@gmic : Return coordinates (x0,y0,z0,x1,y1,z1) of the autocrop that could be performed on the latest of the selected images.
@@ -14140,7 +14140,7 @@ img2str :
     -repeat {d} z=$>
       -repeat {h} y=$>
         --z[-1] 0,$y,$z,$c,100%,$y,$z,$c
-        -u ${}{[^]}
+        -u ${}{^}
         -rm[-1]
         -if {$y!=h-1} -u ${}; -endif
         -e ${}
@@ -15033,7 +15033,7 @@ _x_color_curves :
     -elif {{*,b}&1} viewmode={x={*,x};if(x<w/3,1,if(x<2*w/3,2,3))} # Change viewmode.
     -elif {{*,b}&2" && "$x>=0" && "$y>=0} # Add control point from picked color.
       xc={$x*w/{*,w}} yc={$y*h/{*,h}} --z[0] $xc,$yc,$xc,$yc
-      -repeat {s} (${__C$>},{i[$>]/255%},{i[$>]/255%}) -r[-1] 2,{w/2},1,1,-1 -sort[-1] +,y __C$>={[^]} -rm[-1] -done
+      -repeat {s} (${__C$>},{i[$>]/255%},{i[$>]/255%}) -r[-1] 2,{w/2},1,1,-1 -sort[-1] +,y __C$>={^} -rm[-1] -done
       -rm[-1] -wait -1
     -else viewmode=0
     -endif
@@ -16243,7 +16243,7 @@ x_mandelbrot : -skip ${1=0},${2=0.317},${3=0.03}
   # Start event loop.
   -do
     siz={min({*,w},{*,h})}                                                                          # Desired window dimension.
-    $siz,$siz -mandelbrot[-1] {0,[^]},256,$1,{if($1,$2,0)},{if($1,$3,0)} -map[-1] [1]               # Render fractal.
+    $siz,$siz -mandelbrot[-1] {0,^},256,$1,{if($1,$2,0)},{if($1,$3,0)} -map[-1] [1]               # Render fractal.
     -if $1 -w[-1] $siz,$siz,0,"[G"{`39`}"MIC] Julia set c=("{0,[0-1]}")-("{0,[2-3]}"), c0=($2,$3)"  # Display on window.
     -else -w[-1] $siz,$siz,0,"[G"{`39`}"MIC] Mandelbrot set c=("{0,[0-1]}")-("{0,[2-3]}")" -endif
     w={w} h={h} -round[-1] -select[-1] 2                                                            # Get the user selection.
@@ -16448,7 +16448,7 @@ x_minimal_path :
     -endif
 
     --gradient_norm -b[-1] 1 -f[-1] exp(-i/10)
-    -to_rgb[0] --select[0] 0 P0={[^]}
+    -to_rgb[0] --select[0] 0 P0={^}
     -ellipse[0] {[0,1]},3,3,0,1,255,0,255
     -ellipse[0] {[0,1]},3,3,0,1,0xFFFFFFFF,255,255,255
     -rm[-1]
@@ -16463,7 +16463,7 @@ x_minimal_path :
           -o[0] gmic_minimal_path.png
           -wait -1
         -else
-          P1={[^]}
+          P1={^}
           -ellipse[0] {[0,1]},3,3,0,1,255,0,255
           -ellipse[0] {[0,1]},3,3,0,1,0xFFFFFFFF,255,255,255
           -rm[-1]
@@ -17037,7 +17037,7 @@ x_quantize_rgb : -check "isint(${1=16}) && $1>1"
         --channels[colors] 0 ->>[-1] 8 -map[-1] 2 -permute[-1] cxyz -y[-1] -j[-2] [-1],0,{{-2,h}-$_N-h} -rm[-1]
       -endif
 
-      -pose3d[-1] {pose3d,[^]} 300,300,1,3 -j3d[-1] [-2],50%,50%,100,1,2,0,0,300 -rm[-2]
+      -pose3d[-1] {pose3d,^} 300,300,1,3 -j3d[-1] [-2],50%,50%,100,1,2,0,0,300 -rm[-2]
       -j[-1] [clustering$clustering],2,0,0,0,1,[mclustering$clustering],255
       -nm[-1] visu_3d -j[visu] [visu_3d],5,5
     -endif
@@ -17639,7 +17639,7 @@ x_select_function1d : -skip ${1=xsf_variable},${2=220},${3=$2},${4=$2}
       --z[baseview] 24,24,{baseview,w-25},{baseview,h-25} -r[-1] 200%,200%
 
       # Draw curve.
-      -function1d[] 1,{points,[^]}
+      -function1d[] 1,{points,^}
       -l[-1] -c 0,100 -transpose
         -i[0] ({'CImg3d'},{h},{h-1})
         -i[-2] 1,100%,1,1,y 1,100% -a[-3--1] x
@@ -17678,7 +17678,7 @@ x_select_function1d : -skip ${1=xsf_variable},${2=220},${3=$2},${4=$2}
     -elif {$is_ctrl" && "{*,-D}} ww={view,w*125%} wh={view,h*125%} # Increase window size.
     -elif {$is_ctrl" && "{*,-C}} ww={view,w*75%} wh={view,h*75%} # Decrease window size.
     -elif {$is_ctrl" && "{*,R}} ww=$reset_w wh=$reset_h # Reset window size.
-    -elif {!$is_ctrl" && "{*,R}} -rm[points] -i[points] (0,0;100,100) $1={points,[^]} -rm[view] # Reset keypoints.
+    -elif {!$is_ctrl" && "{*,R}} -rm[points] -i[points] (0,0;100,100) $1={points,^} -rm[view] # Reset keypoints.
     -elif {$b&3} # Add/move/delete point.
       is_inside={$X>=0" && "$Y>=0" && "$X<=100" && "$Y<=100}
 
@@ -17689,12 +17689,12 @@ x_select_function1d : -skip ${1=xsf_variable},${2=220},${3=$2},${4=$2}
         -if {points,$selected>0" && "$selected<h-1}
           -=[points] {points,max(min($X,i(0,$selected+1)-0.5),i(0,$selected-1)+0.5)},0,$selected
         -endif
-        -=[points] {min(100,max(0,$Y))},1,$selected $1={points,[^]} -rm[view]
+        -=[points] {min(100,max(0,$Y))},1,$selected $1={points,^} -rm[view]
       -elif {$b&1" && "$is_inside} # Create new point.
         ($X,$Y) -a[points,-1] y -sort[points] +,y
-        --f[points] 'sqrt((i-$X)^2+(j(1)-$Y)^2)*{*,w}%' -z[-1] 0,0 selected={if(im>8,-1,ym)} $1={points,[^]} -rm[view,-1]
+        --f[points] 'sqrt((i-$X)^2+(j(1)-$Y)^2)*{*,w}%' -z[-1] 0,0 selected={if(im>8,-1,ym)} $1={points,^} -rm[view,-1]
       -elif {$b&2" && "$selected>0" && "$selected<{points,h-1}" && "$is_inside} # Delete an existing point.
-        -l[points] -s y -rm[$selected] -a y -endl -wait -1 selected=-1 $1={points,[^]} -rm[view]
+        -l[points] -s y -rm[$selected] -a y -endl -wait -1 selected=-1 $1={points,^} -rm[view]
       -endif
     -elif {!($b&1)} selected=-1
     -endif
@@ -17706,10 +17706,10 @@ x_select_function1d : -skip ${1=xsf_variable},${2=220},${3=$2},${4=$2}
 
     # Check points variable modification from another thread.
     -if {$$1'=='-1} -break -endif # Close request.
-    -if {$$1'!='{points,[^]}} -rm[points] -i[points] ($$1) -y[-1] x -r[-1] 2,{w/2},1,1,-1 -l -rm[view] -onfail -endl -endif # Keypoints changed.
+    -if {$$1'!='{points,^}} -rm[points] -i[points] ($$1) -y[-1] x -r[-1] 2,{w/2},1,1,-1 -l -rm[view] -onfail -endl -endif # Keypoints changed.
 
   -while {{*}" && "!{*,ESC}" && "!{*,Q}}
-  -w[] 0 -u {points,[^]}
+  -w[] 0 -u {points,^}
   -if $is_additional_data -rm[^0] -else -rm -endif
   -v +
 
@@ -17906,7 +17906,7 @@ x_spline :
 
     # Display curve, control points, polygon and tangents.
     --r[0] {*,w},{*,h},1,3
-    -if {$visuflags&4} -polygon[-1] {2,h},{2,[^]},0.3,128,200,255 -endif
+    -if {$visuflags&4} -polygon[-1] {2,h},{2,^},0.3,128,200,255 -endif
     -repeat {1,h}
       -line[-1] {2,[0-3]},0.3,255,255,0
       -if {$visuflags&1} -spline[-1] {2,[0-1]},{3,[0-1]},{2,[2-3]},{3,[2-3]},32,1,255 -endif
@@ -18358,7 +18358,7 @@ _gimp_merge_layers :
   res=""
   ({'{0,n}'})
   -l[-1]
-    ({'"$1("'}) l={w} str={[^]} -rm[-1]
+    ({'"$1("'}) l={w} str={^} -rm[-1]
     -s +,$str
     -if {$!>1}
       -repeat $!
@@ -19094,7 +19094,7 @@ _survey_bool : -skip ${3=0}
   (${_answers$1}) -histogram[-1] 2,0,1 -normalize_sum[-1] val0={round(i[0]*100)} val1={100-$val0} -rm[-1]
   0 -t[-1] "$2",0,0,20,1,0,0,0,255
 
-  RGB1={?(60,90)},{?(60,90)},{?(60,90)} ($RGB1) -*[-1] 2 -c[-1] 0,255 RGB2={[^]} -rm[-1]
+  RGB1={?(60,90)},{?(60,90)},{?(60,90)} ($RGB1) -*[-1] 2 -c[-1] 0,255 RGB2={^} -rm[-1]
   128,1,1,3 -fc[-1] $RGB1 -line[-1] 0,0,$val1%,0,1,$RGB2
   0 -t[-1] $val1%,0,0,16,1,1
   -r[-2] 100%,{h+8},1,3 -r[-1] [-2],[-2],1,1,0,0,0.5,0.5
@@ -20968,7 +20968,7 @@ _gimp_apply_curve_preview :
 gimp_curves_interactive :
   -nm "Color curves"
   -repeat 4 __xcc_C$>=0,0,100,100 -done
-  -if {$4==$1} -l[] (${5--1}) -s -,-1 -repeat $! __xcc_C$>={$>,[^]} -done -rm -endl -endif
+  -if {$4==$1} -l[] (${5--1}) -s -,-1 -repeat $! __xcc_C$>={$>,^} -done -rm -endl -endif
   -if $3 _xcc_colorbase=${-arg\ {$4+1},rgb,cmy,cmyk,hsi,hsl,hsv,lab,lch,ycbcr} -x_color_curves last # Apply transformation from previously defined curves.
   -else # Run interactive curve builder.
     -x_color_curves ${-arg\ {$1+1},rgb,cmy,cmyk,hsi,hsl,hsv,lab,lch,ycbcr}
@@ -21084,17 +21084,17 @@ _gimp_apply_RGBcurve :
 gimp_apply_Rcurve_preview :
   -gimp_apply_RGBcurve_configfile
   -sh[-1] 0,0,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_RGBcurve_preview[^-1] {[^]},0,${-2,-1} -rm[-1]
+  -gimp_apply_RGBcurve_preview[^-1] {^},0,${-2,-1} -rm[-1]
 
 gimp_apply_Gcurve_preview :
   -gimp_apply_RGBcurve_configfile
   -sh[-1] 1,1,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_RGBcurve_preview[^-1] {[^]},1,${-2,-1} -rm[-1]
+  -gimp_apply_RGBcurve_preview[^-1] {^},1,${-2,-1} -rm[-1]
 
 gimp_apply_Bcurve_preview :
   -gimp_apply_RGBcurve_configfile
   -sh[-1] 2,2,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_RGBcurve_preview[^-1] {[^]},2,${-2,-1} -rm[-1]
+  -gimp_apply_RGBcurve_preview[^-1] {^},2,${-2,-1} -rm[-1]
 
 gimp_apply_RGBcurve_configfile :
   filename=${-path_tmp}.gmic_RGBcurve.dlm
@@ -21261,17 +21261,17 @@ _gimp_apply_YCbCrcurve :
 gimp_apply_Ycurve_preview :
   -gimp_apply_YCbCrcurve_configfile
   -sh[-1] 0,0,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_YCbCrcurve_preview[^-1] {[^]},0,${-2,-1} -rm[-1]
+  -gimp_apply_YCbCrcurve_preview[^-1] {^},0,${-2,-1} -rm[-1]
 
 gimp_apply_Cbcurve_preview :
   -gimp_apply_YCbCrcurve_configfile
   -sh[-1] 1,1,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_YCbCrcurve_preview[^-1] {[^]},1,${-2,-1} -rm[-1]
+  -gimp_apply_YCbCrcurve_preview[^-1] {^},1,${-2,-1} -rm[-1]
 
 gimp_apply_Crcurve_preview :
   -gimp_apply_YCbCrcurve_configfile
   -sh[-1] 2,2,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_YCbCrcurve_preview[^-1] {[^]},2,${-2,-1} -rm[-1]
+  -gimp_apply_YCbCrcurve_preview[^-1] {^},2,${-2,-1} -rm[-1]
 
 gimp_apply_YCbCrcurve_configfile :
   filename=${-path_tmp}.gmic_YCbCrcurve.dlm
@@ -21439,17 +21439,17 @@ _gimp_apply_Labcurve :
 gimp_apply_Lcurve_preview :
   -gimp_apply_Labcurve_configfile
   -sh[-1] 0,0,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_Labcurve_preview[^-1] {[^]},0,${-2,-1} -rm[-1]
+  -gimp_apply_Labcurve_preview[^-1] {^},0,${-2,-1} -rm[-1]
 
 gimp_apply_acurve_preview :
   -gimp_apply_Labcurve_configfile
   -sh[-1] 1,1,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_Labcurve_preview[^-1] {[^]},1,${-2,-1} -rm[-1]
+  -gimp_apply_Labcurve_preview[^-1] {^},1,${-2,-1} -rm[-1]
 
 gimp_apply_bcurve_preview :
   -gimp_apply_Labcurve_configfile
   -sh[-1] 2,2,0,0 -f[-1] ${1--3} -rm[-1]
-  -gimp_apply_Labcurve_preview[^-1] {[^]},2,${-2,-1} -rm[-1]
+  -gimp_apply_Labcurve_preview[^-1] {^},2,${-2,-1} -rm[-1]
 
 gimp_apply_Labcurve_configfile :
   filename=${-path_tmp}.gmic_Labcurve.dlm
@@ -21864,7 +21864,7 @@ _gimp_select_color :
   -endif
 
 gimp_select_color :
-  ($5^$6^$7^$8) -_gimp_select_color[-1] $1 color={[^]} -rm[-1]
+  ($5^$6^$7^$8) -_gimp_select_color[-1] $1 color={^} -rm[-1]
   -repeat $! -l[$>] -to_rgba
     --_gimp_select_color $1
     -select_color[1] $2%,$color
@@ -22588,7 +22588,7 @@ gimp_map_sphere :
   -shift $5%,0,0,0,2 -to_rgba
   -if $9
     -repeat $!
-      --rows[$>] 0 -r[-1] 1,1,1,4,2 RGBA$>={[^]}
+      --rows[$>] 0 -r[-1] 1,1,1,4,2 RGBA$>={^}
       -r[-1] [$>],[$>],1,4 --[$>,-1]
     -done
   -endif
@@ -26146,19 +26146,19 @@ gimp_random3d :
   -repeat $! -l[$>]
     f3d={0.5*max(w,h)/tan($5*pi/360)} -f3d $f3d -l3d {$6*$f3d},{$7*$f3d},{$8*$f3d} -sl3d $9 -ss3d $10
     -to_rgb ({w},{h},{d},{s}) -/[-1] 2 -repeat $2
-    ({1,[0]}) -+[-1] {1,[1]} -*[-1] $3 -/[-1] 100 -_gimp_random3d$1 {[^]} -rm[-2]
+    ({1,[0]}) -+[-1] {1,[1]} -*[-1] $3 -/[-1] 100 -_gimp_random3d$1 {^} -rm[-2]
     -r3d[-1] 1,1,0,{?(0,360)}
     ({?(-1,1)}) -*[-1] {1,[0]} ({?(-1,1)}) -*[-1] {1,[1]}
-    -+3d[-3] {-2,[^]},{[^]},{?(-$4,$4)} -rm[-2,-1]
+    -+3d[-3] {-2,^},{^},{?(-$4,$4)} -rm[-2,-1]
     -col3d[-1] {?(255)},{?(255)},{?(255)} -done -+3d[2--1] -j3d[0] [-1],50%,50%,0,$12,$11,0,1
     -k[0]
   -endl -done
 
 _gimp_random3d0 : -box3d $1
-_gimp_random3d1 : ($1) -/[-1] 2 -cone3d {[^]},$1 -rm[-2]
-_gimp_random3d2 : ($1) -/[-1] 2 -cylinder3d {[^]},$1 -rm[-2]
+_gimp_random3d1 : ($1) -/[-1] 2 -cone3d {^},$1 -rm[-2]
+_gimp_random3d2 : ($1) -/[-1] 2 -cylinder3d {^},$1 -rm[-2]
 _gimp_random3d3 : -sphere3d $1,2
-_gimp_random3d4 : ($1) -/[-1] 3 -torus3d $1,{[^]} -rm[-2]
+_gimp_random3d4 : ($1) -/[-1] 3 -torus3d $1,{^} -rm[-2]
 
 #@gimp Ball : gimp_ball, gimp_ball_preview(0)
 #@gimp : Radius = int(128,1,1024)
@@ -26295,7 +26295,7 @@ gimp_equation_plot :
 gimp_corner_gradient :
   -repeat $!
     ({w},{h}) -rm[-2]
-    ($1,$5;$9,$13^$2,$6;$10,$14^$3,$7;$11,$15^$4,$8;$12,$16) -r[-1] {-2,[^]},1,4,3 -rm[-2]
+    ($1,$5;$9,$13^$2,$6;$10,$14^$3,$7;$11,$15^$4,$8;$12,$16) -r[-1] {-2,^},1,4,3 -rm[-2]
   -mv[-1] 0 -done
 
 #@gimp Gradient [custom shape] : gimp_custom_gradient, gimp_custom_gradient_preview(1)
@@ -26470,7 +26470,7 @@ gimp_linear_gradient :
     ({w},{h}) -rm[-2]
     ($1^$2^$3^$4) ($5^$6^$7^$8)
     -if $9 -rv[-2,-1] -endif
-    -r[-2,-1] {-3,[^]} -rm[-3]
+    -r[-2,-1] {-3,^} -rm[-3]
     -fade_linear $10,$11,$12
   -mv[-1] 0 -done
 
@@ -26488,7 +26488,7 @@ gimp_radial_gradient :
     ({w},{h}) -rm[-2]
     ($1^$2^$3^$4) ($5^$6^$7^$8)
     -if $9 -rv[-2,-1] -endif
-    -r[-2,-1] {-3,[^]} -rm[-3]
+    -r[-2,-1] {-3,^} -rm[-3]
     100%,100% -=[-1] 1,$12%,$13% -distance[-1] 1 -_fade $10,$11
   -mv[-1] 0 -done
 
