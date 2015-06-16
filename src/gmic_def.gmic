@@ -3249,16 +3249,16 @@ update_server : -skip ${1=@.},${2=1}
 
   -repeat $!
     ind={$>-$offset}
-    -if {@{{$ind-1},-1}==10" && "{{`@{$ind,0-5}`}'=='"#@gimp"}" && "(@{$ind,6}==32" || "@{$ind,6}=={'_'})} -l[$ind] # Line starts by '#@gimp[_] '
+    -if {{{$ind-1},[-1]}==10" && "{{`{$ind,[0-5]}`}'=='"#@gimp"}" && "({$ind,[6]}==32" || "{$ind,[6]}=={'_'})} -l[$ind] # Line starts by '#@gimp[_] '
 
       is_folder=0
       -s +,10
-      -if {@{0,6}=={'_'}} --rows[0] 9,100% -rows[0] 0,8 # Treat a localized filter as a regular filter.
+      -if {{0,[6]}=={'_'}} --rows[0] 9,100% -rows[0] 0,8 # Treat a localized filter as a regular filter.
       -else --rows[0] 6,100% -rows[0] 0,5
       -endif
       -autocrop[-1] 32 -mv[-1] 1
 
-      -if {@{1,0}!={':'}} # Found a new filter or folder definition.
+      -if {{1,[0]}!={':'}} # Found a new filter or folder definition.
         -l[1]
 
           # Format string by removing special character sequences.
@@ -3281,7 +3281,7 @@ update_server : -skip ${1=@.},${2=1}
 
           -else # Found new folder (opt. parent(s)).
             -if {i=={'_'}} # Folder has parents before creating it.
-              -do path=@{"-parent[] "$path} -shift 0,-1,0,0 -while {i=={'_'}}
+              -do path=${"-parent[] "$path} -shift 0,-1,0,0 -while {i=={'_'}}
               -autocrop 0 -autocrop 32
               -if {w} -calibrate_name -replace 32,{'~'} path=$path{0,t}/ -endif # Folder name specified after the underscore(s).
             -else # Folder name don't start with '_'.
@@ -3299,7 +3299,7 @@ update_server : -skip ${1=@.},${2=1}
 
         -if {$!>=3} -l[1]
           -s +,{'='}
-          -if {$!>=3} -if {@{1,0}=={'='}}
+          -if {$!>=3} -if {{1,[0]}=={'='}}
             -rows[0] 1,100% -calibrate_name[0]
             -i[0] ({':'};32) -i[2] (32)
           -endif -endif
@@ -3324,9 +3324,9 @@ update_server : -skip ${1=@.},${2=1}
 
   # Force filters to move if necessary.
   -v + -e[] "\n> Force filters to move, if necessary." -v -
-  -repeat $! ind=$> -repeat $_nbm -if {@{$ind,n}'=='${_to_move$>}}
-    -v + -e[] "  "$ind". Move '"@{$ind,n}"' to '"${_move_to$>}"'." -v -
-    -nm[$ind] ${_move_to$>}/@{$ind,b}
+  -repeat $! ind=$> -repeat $_nbm -if {{$ind,n}'=='${_to_move$>}}
+    -v + -e[] "  "$ind". Move '"{$ind,n}"' to '"${_move_to$>}"'." -v -
+    -nm[$ind] ${_move_to$>}/{$ind,b}
   -endif -done -done
 
   # Sort filter code by lexicographical order.
@@ -3336,7 +3336,7 @@ update_server : -skip ${1=@.},${2=1}
   # Remove duplicate filters.
   # -v + -e[] "\n> Remove duplicate filters." -v -
   # pname={-1,n}
-  # -repeat {$!-1} cname=@{$<,n}
+  # -repeat {$!-1} cname={$<,n}
   #   -if {$cname'=='$pname}
   #     -v + -e[] "  "$<". Remove duplicate '"$cname"'." -v -
   #     -rm[$<]
@@ -3349,22 +3349,22 @@ update_server : -skip ${1=@.},${2=1}
 
   path=/
   -repeat $! -l[$>]
-    npath=@{"-parent "{0,n}}
+    npath=${"-parent "{0,n}}
 
     -if {$path'!='$npath} # Need to change the path.
-      nc=@{"-nb_levels[] "$path}
-      nn=@{"-nb_levels[] "$npath}
+      nc=${"-nb_levels[] "$path}
+      nn=${"-nb_levels[] "$npath}
 
       # Get the minimal basis path in common and the number of up/down operations.
       nb_up=0
       nb_down=0
       basis=$path nbasis=$npath
       -do
-        nc=@{"-nb_levels[] "$basis}
-        nn=@{"-nb_levels[] "$nbasis}
-        -if {$nc>$nn} basis=@{"-parent[] "$basis} nb_up={$nb_up+1}
-        -elif {$nn>$nc} nbasis=@{"-parent[] "$nbasis} nb_down={$nb_down+1}
-        -elif {$nbasis'!='$basis} basis=@{"-parent[] "$basis} nb_up={$nb_up+1} nbasis=@{"-parent[] "$nbasis} nb_down={$nb_down+1}
+        nc=${"-nb_levels[] "$basis}
+        nn=${"-nb_levels[] "$nbasis}
+        -if {$nc>$nn} basis=${"-parent[] "$basis} nb_up={$nb_up+1}
+        -elif {$nn>$nc} nbasis=${"-parent[] "$nbasis} nb_down={$nb_down+1}
+        -elif {$nbasis'!='$basis} basis=${"-parent[] "$basis} nb_up={$nb_up+1} nbasis=${"-parent[] "$nbasis} nb_down={$nb_down+1}
         -endif
       -while {$nbasis'!='$basis}
 
@@ -3373,8 +3373,8 @@ update_server : -skip ${1=@.},${2=1}
       -if $nb_up 1,$nb_up,1,1,{'_'} command="#@gimp "{t}"\n" -rm[-1] -endif
       -if $nb_down -l[]
         ({'$npath'}) -s -,{'/'} -k[-$nb_down--1] -replace {'~'},32
-        level={@{"-nb_levels "$path}-$nb_up}
-        balise=@{"-if "{$level<=0" && "{$npath'!='/About/}}" -u b -else -u i -endif"}
+        level={${"-nb_levels "$path}-$nb_up}
+        balise=${"-if "{$level<=0" && "{$npath'!='/About/}}" -u b -else -u i -endif"}
         -repeat $!
           command=$command"#@gimp <"$balise">"{$>,t}"</"$balise">\n"
           balise="i"
@@ -3504,15 +3504,15 @@ update_server : -skip ${1=@.},${2=1}
 # String sorting algorithm (quicksort).
 _update_server_sort :
   mid={int(($1+$2)/2)}
-  -if @{"-_max[] "@{$1,n},@{$mid,n}} -rv[$1,$mid] -endif
-  -if @{"-_max[] "@{$mid,n},@{$2,n}} -rv[$2,$mid] -endif
-  -if @{"-_max[] "@{$1,n},@{$mid,n}} -rv[$1,$mid] -endif
+  -if ${"-_max[] "{$1,n},{$mid,n}} -rv[$1,$mid] -endif
+  -if ${"-_max[] "{$mid,n},{$2,n}} -rv[$2,$mid] -endif
+  -if ${"-_max[] "{$1,n},{$mid,n}} -rv[$1,$mid] -endif
   -if {$2-$1>=3}
-    pivot=@{$mid,n}
+    pivot={$mid,n}
     i=$1 j=$2
     -do
-      -if @{"-_max[] "$pivot,@{$i,n}} -do i={$i+1} -while @{"-_max[] "$pivot,@{$i,n}} -endif
-      -if @{"-_max[] "@{$j,n},$pivot} -do j={$j-1} -while @{"-_max[] "@{$j,n},$pivot} -endif
+      -if ${"-_max[] "$pivot,{$i,n}} -do i={$i+1} -while ${"-_max[] "$pivot,{$i,n}} -endif
+      -if ${"-_max[] "{$j,n},$pivot} -do j={$j-1} -while ${"-_max[] "{$j,n},$pivot} -endif
       -if {$i<=$j} -rv[$i,$j] i={$i+1} j={$j-1} -endif
     -while {$i<=$j}
     -if {$1<$j} -_update_server_sort $1,$j -endif
@@ -3525,8 +3525,8 @@ _update_server_move :
 
 _update_server_upload : -skip "${2=""}"
   -if {narg("$2")} out="$2" -else -basename "$1" out=${} -endif
-  -l[] GMIC_LOGIN=@{-gmic_ftp\ 0} -onfail GMIC_LOGIN="" -endl
-  -l[] GMIC_PASSWD=@{-gmic_ftp\ 1} -onfail GMIC_PASSWD="" -endl
+  -l[] GMIC_LOGIN=${-gmic_ftp\ 0} -onfail GMIC_LOGIN="" -endl
+  -l[] GMIC_PASSWD=${-gmic_ftp\ 1} -onfail GMIC_PASSWD="" -endl
   -if {narg($GMIC_LOGIN)}
     -x "lftp ftp://"$GMIC_LOGIN":"$GMIC_PASSWD"@ftp.gmic.eu -e \"put -O /www/gmic/ \\\"$1\\\" -o \\\""$out"\\\"; quit\" >/dev/null"
   -endif
@@ -3707,7 +3707,7 @@ __update_tutorial_html : -skip ${3=""},${4=""},${5=""}
   ({'"$1"'}) -s -,{'/'}
   output_base=""
   -if $! output_base={t} -endif
-  -if {$!>2" && "i[0]!={'-'}} output_base=@{-2,t}_{t} -endif
+  -if {$!>2" && "i[0]!={'-'}} output_base={-2,t}_{t} -endif
   -rm
   -if {narg($output_base)}
     ({'$output_base'}) -if {i=={'-'}} -=[-1] {'_'} output_base={t} -endif -rm[-1] # Replace first '-' by underscore if necessary.
@@ -3769,7 +3769,7 @@ _update_tutorial_html :
 
   # Search and replace links to 'internal' pages.
   -s +,{'"<a "'}
-  -repeat $! -if {$>>0" && "{@{{$>-1},t}'=='"<a "}} -l[$>] -s +,{'href=\"'} -l[-1]
+  -repeat $! -if {$>>0" && "{{{$>-1},t}'=='"<a "}} -l[$>] -s +,{'href=\"'} -l[-1]
     -s +,{'\"'}
     -if {$!>0}
       link={0,t}
@@ -3780,7 +3780,7 @@ _update_tutorial_html :
         # Retrieve anchor if any.
         -l[] anchor="" ({'$link'}) -s +,{"'\#'"} -if {$!>1} anchor=#{t} link={0,t} -endif -rm -endl
         ({'$link'}) -autocrop[-1] {'/'}
-        -l[-1] -s -,{'/'} -if {$!>6" && "{@{-2,t}'!='command-guide}" && "{@{-3,t}'!='command-guide}} relink=@{-2,t}_{t}.shtml -else relink={t}.shtml -endif -rm -endl
+        -l[-1] -s -,{'/'} -if {$!>6" && "{{-2,t}'!='command-guide}" && "{{-3,t}'!='command-guide}} relink={-2,t}_{t}.shtml -else relink={t}.shtml -endif -rm -endl
         ({'$relink'}) -if {i=={'-'}} -=[-1] {'_'} relink={t} -endif -rm[-1] # Replace first '-' by underscore if necessary.
 
         -if $relink # If the relinked page exists.
@@ -3789,7 +3789,7 @@ _update_tutorial_html :
           -rm[0] -i[0] ({'$relink'}) -y[0]
         -else # Else try to relink to reference page if link to a command.
           ({'$relink'}) -if {i=={'_'}}
-            -l[-1] -z 1,100% -s -,{'.'} command=@{-basename\ {0,t}} -k[0] -endl
+            -l[-1] -z 1,100% -s -,{'.'} command=${-basename\ {0,t}} -k[0] -endl
             relink="http://gmic.eu/reference.shtml#"$command
             -v + -e[] "    > Local link '"$link$anchor"' relinked to '"$relink"' "${_gmic_g}"(reference command)."${_gmic_n} -v -
             -rm[0] -i[0] ({'$relink'}) -y[0]
@@ -3804,10 +3804,10 @@ _update_tutorial_html :
 #         relink=$link
 #         -v + -e[] "    > Local (media) link '"$link"' found." -v -
        -else -l # External link.
-         0 -nm[-1] $link ext=@{-1,x} -rm[-1]
-         -if {narg($ext)} ext=@{-struncase\ $ext} -endif
+         0 -nm[-1] $link ext={x} -rm[-1]
+         -if {narg($ext)} ext=${-struncase\ $ext} -endif
          -if {{$ext'=='png}||{$ext'=='jpg}||{$ext'=='jpeg}}  # Check for an image link.
-           relink=img/$5_@{-basename\ $link} 0 -nm[-1] $relink relink=@{-1,f}@{-1,b}.jpg -rm[-1]
+           relink=img/$5_${-basename\ $link} 0 -nm[-1] $relink relink={f}{b}.jpg -rm[-1]
            -if $relink -v + -e[] "    > External image link '"$link"' relinked to '"$relink"'." -v -
            -else
              -l[] -i $link -k[0] is_opaque=0
@@ -3833,12 +3833,12 @@ _update_tutorial_html :
 
   # Manage embedded images.
   -s +,{'"<img"'}
-  -repeat $! -if {$>>0" && "{@{{$>-1},t}'=='"<img"}}
+  -repeat $! -if {$>>0" && "{{{$>-1},t}'=='"<img"}}
     -l[$>]
       -s +,{'"src=\""'}
       -l[2]
         -s +,{'\"'} link={0,t}
-        relink=img/$5_@{-basename\ $link} 0 -nm[-1] $relink relink=@{-1,f}@{-1,b}.jpg -rm[-1]
+        relink=img/$5_${-basename\ $link} 0 -nm[-1] $relink relink={f}{b}.jpg -rm[-1]
         -if $relink -v + -e[] "    > Image '"$link"' relinked to '"$relink"'." -v -
         -else
           -l[] -i $link -k[0] is_opaque=0
@@ -4001,7 +4001,7 @@ remove_duplicates :
 #@gmic : Remove empty images in the selected image list.
 remove_empty :
   -e[^-1] "Remove empty images in selected list of image$?."
-  -v - -repeat $! -if {!@{$<,whds}} -rm[$<] -endif -done -v +
+  -v - -repeat $! -if {$<,!whds} -rm[$<] -endif -done -v +
 
 #@gmic rv : eq. to '-reverse'. : (+)
 
@@ -4035,7 +4035,7 @@ sort_str :
       --rows $y,{$y+3} -f[1] 'if(i>=97&&i<=122,i-32,i)' --[-1] 32 -c[-1] 0,63 -s[-1] y -*[-2] 64 -*[-3] 4096 -*[-4] 262144 -+[-4--1]
       -rv -a y -sort +,x --rows 0 -rows[0] 1,100% -label[1] -%[1] 2
       -s[1] +,0 N={$!-1}
-      x0=0 -repeat {$!-1} x1={$x0+@{{1+$>},h}} --z[0] $x0,{$x1-1} x0=$x1 -done
+      x0=0 -repeat {$!-1} x1={$x0+{{1+$>},h}} --z[0] $x0,{$x1-1} x0=$x1 -done
       -rm[0-$N]
     -endl -done
   -done -s x -v +
@@ -4384,7 +4384,7 @@ balance_gamma : -skip ${1=128}
   -e[^-1] "Apply color balance transformation on image$?, with gamma curve and reference color ("${^0}")."
   -v - -repeat $! -l[$>]
     (${^0}) -r[-1] {-2,s},1,1,1,0,1 -s[-2] c -/[-1] 255
-    -repeat {$!-1} -/[$>] 255 -^[$>] {log(@{-1,$>})/log(@{$>,a})} -*[$>] 255 -done
+    -repeat {$!-1} -/[$>] 255 -^[$>] {log({[$>]})/log({$>,ia})} -*[$>] 255 -done
     -rm[-1] -a c -c 0,255
   -endl -done -v +
 
