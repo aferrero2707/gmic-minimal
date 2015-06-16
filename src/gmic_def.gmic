@@ -166,7 +166,7 @@ _help : -skip ${1=""}
   -v -1 -use_vt100
   -if {!narg("$1")} _is_example=0 -__help ascii -v + -e[] "" -v - -rm -u "" -return -endif # Global help.
   ({'"$1"'}) -autocrop[-1] {'-'}
-  -if {@{-1,100%}=={']'}" && "i!={'['}} -l[-1] -s -,{'['} -k[0] -endl -endif
+  -if {{[100%]}=={']'}" && "i!={'['}} -l[-1] -s -,{'['} -k[0] -endl -endif
   command={t} -rm[-1]
 
   # Help requested for a specific command.
@@ -188,11 +188,11 @@ _help : -skip ${1=""}
   stopflag=0
   _is_example=0
   -_document_gmic_header_ascii[] 0
-  -repeat $! -l[$>] -if {h>7" && "{@{-1,0-5}'=='{'"#@gmic"'}}}
+  -repeat $! -l[$>] -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}}
     -rows 7,100% -autocrop {'" "'}  # Discard '#@gmic'.
     -if {i!={':'}} # Command declaration.
       -s -,{'": "'} -autocrop {'" "'} -autocrop {':'} -autocrop {'" "'}
-      -if {@{0,t}'=='$command}
+      -if {{0,t}'=='$command}
         -_document_gmic_declaration_ascii
         -if $_shortcut  # Found shortcut command.
           -v + -e[] "\n    "$_gmic_m$_gmic_b"-"$command":"$_gmic_n$_gmic_m" Equivalent to '"$_gmic_b$_shortcutlink0$_gmic_n"'." -v -
@@ -211,7 +211,7 @@ _help : -skip ${1=""}
           -if {i=={'$'}} # Tutorial page.
              -v + -e[] "" -v -
              -if {h==1&&i=={'$'}} tuturl=http://gmic.eu/tutorial/_$command.shtml
-             -else -autocrop {'$'} -autocrop {'" "'} tuturl=http://gmic.eu/tutorial/@{0,t}.shtml
+             -else -autocrop {'$'} -autocrop {'" "'} tuturl=http://gmic.eu/tutorial/{0,t}.shtml
              -endif
              -rm ({'$_gmic_c${_gmic_b}"Tutorial:"$_gmic_n$_gmic_c" "$tuturl'}) -y
              _is_tutorial=1
@@ -470,7 +470,7 @@ _help_usage :
 \n    . '"$c"$|"$n"' is substituted by the current value (expressed in seconds) of a "${g}"millisecond
 \n       precision timer"$n".
 \n    . '"$c"@/"$n"' is substituted by the current "${g}"number of levels in the command scope"$n".
-\n    . '"$c"@{/}"$n"' or '"$c"@{/,subset}"$n"' are substituted by the content of the "${g}"global scope"$n", or a
+\n    . '"$c"$/"$n"' is substituted by the content of the "${g}"global scope"$n", or a
 \n       subset of it. If specified subset refers to multiple scope items, they are separated
 \n       by slashes '"$g"/"$n"'.
 \n    . '"$c"@>"$n"' and '"$c"@<"$n"' are equivalent. They are both substituted by "${g}"the number of nested
@@ -1035,7 +1035,7 @@ _help_paragraph_man :
   -replace_str "__N","\\\\fR"
   -replace_str "__B","\\\\fB"
   -v +
-  -e[] @{0,t}
+  -e[] {0,t}
   -v -
   -rm -endl
 
@@ -1187,7 +1187,7 @@ _display_array : -check ${1=13}>0" && "${2=$1}>0
     wmax={0.9*{*,u}} hmax={0.9*{*,v}}
     -do
       -if {w>=$wmax||h>=$hmax}
-        n={-1,n} -nm[-1] "Image "'@{-1,b}.@{-1,x}'" is too large, please select a sub-image."
+        n={-1,n} -nm[-1] "Image "'{-1,b}.{-1,x}'" is too large, please select a sub-image."
         --select[-1] 2 x0={i[0]} y0={i[1]} w={1+i[3]-i[0]} h={1+i[4]-i[1]}
         -rm[-1] -nm[-1] $n
       -endif
@@ -1198,7 +1198,7 @@ _display_array : -check ${1=13}>0" && "${2=$1}>0
     x2=-1 y2=-1 c2=0 ox2=-1 oy2=-1 oc2=-1
     x3=-1 y3=-1 c3=0 ox3=-1 oy3=-1 oc3=-1
     c0=0 oxm=-1 oym=-1
-    -w[-1] -1,-1,0,0,-1,-1,@{-2,b}.@{-2,x}
+    -w[-1] -1,-1,0,0,-1,-1,{-2,b}.{-2,x}
     -do  # Enter event loop.
 
       # Manage user interactions.
@@ -1217,7 +1217,7 @@ _display_array : -check ${1=13}>0" && "${2=$1}>0
       -if {$xm>=0" && "{*,b}&4} x3=$xm y3=$ym -endif
 
       # Generate main image view.
-      -if {$xm>=0" && "($oxm!=$xm" || "$oym!=$ym)} -w[] -1,-1,-1,-1,-1,-1,@{-2,b}.@{-2,x}" - ("$xm,$ym")" -endif
+      -if {$xm>=0" && "($oxm!=$xm" || "$oym!=$ym)} -w[] -1,-1,-1,-1,-1,-1,{-2,b}.{-2,x}" - ("$xm,$ym")" -endif
       -if {$x1!=$ox1" || "$y1!=$oy1" || "$x2!=$ox2" || "$y2!=$oy2" || "$x3!=$ox3" || "$y3!=$oy3}
         [-1]
         -if {$x1>=0}
@@ -1243,21 +1243,21 @@ _display_array : -check ${1=13}>0" && "${2=$1}>0
         --z[-2] {$x1-$dxb},{$y1-$dyb},0,$c1,{$x1+$dxf},{$y1+$dyf},0,$c1
         --z[-2] {$x1-$dxb},{$y1-$dyb},0,{$x1+$dxf},{$y1+$dyf},0
         -__display_array[-2,-1] $1,$2,0,255,255
-        -w1[-1] {w},{h},0,0,-1,-1,@{-3,b}" - ("$x1,$y1,c=$c1")"
+        -w1[-1] {w},{h},0,0,-1,-1,{-3,b}" - ("$x1,$y1,c=$c1")"
         -rm[-1] ox1=$x1 oy1=$y1 oc1=$c1
       -endif
       -if {$x2>=0" && "($ox2!=$x2" || "$oy2!=$y2" || "$oc2!=$c2)}
         --z[-2] {$x2-$dxb},{$y2-$dyb},0,$c2,{$x2+$dxf},{$y2+$dyf},0,$c2
         --z[-2] {$x2-$dxb},{$y2-$dyb},0,{$x2+$dxf},{$y2+$dyf},0
         -__display_array[-2,-1] $1,$2,255,32,255
-        -w2[-1] {w},{h},0,0,-1,-1,@{-3,b}" - ("$x2,$y2,c=$c2")"
+        -w2[-1] {w},{h},0,0,-1,-1,{-3,b}" - ("$x2,$y2,c=$c2")"
         -rm[-1] ox2=$x2 oy2=$y2 oc2=$c2
       -endif
       -if {$x3>=0" && "($ox3!=$x3" || "$oy3!=$y3" || "$oc3!=$c3)}
         --z[-2] {$x3-$dxb},{$y3-$dyb},0,$c3,{$x3+$dxf},{$y3+$dyf},0,$c3
         --z[-2] {$x3-$dxb},{$y3-$dyb},0,{$x3+$dxf},{$y3+$dyf},0
         -__display_array[-2,-1] $1,$2,255,255,0
-        -w3[-1] {w},{h},0,0,-1,-1,@{-3,b}" - ("$x3,$y3,c=$c3")"
+        -w3[-1] {w},{h},0,0,-1,-1,{-3,b}" - ("$x3,$y3,c=$c3")"
         -rm[-1] ox3=$x3 oy3=$y3 oc3=$c3
       -endif
     -while {{*}" && "\
@@ -1275,7 +1275,7 @@ __display_array :
   -rectangle[-2] $xb,$yb,$xe,$ye,1,0xFFFFFFFF,$3,$4,$5
   -repeat $2 yg=$>
     -repeat $1 xg=$>
-      -t[-2] @{-3,($xg,$yg)},{5+$xg*24},{5+$yg*24},13,0.8,{if(@{-1,($xg,$yg)}>128,0,255)}
+      -t[-2] {-3,i($xg,$yg)},{5+$xg*24},{5+$yg*24},13,0.8,{if(i($xg,$yg)>128,0,255)}
     -done
   -done
   -rm[-3,-1]
@@ -1320,8 +1320,8 @@ _display_graph : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},
     dx={$xmax-$xmin} dy={$ymax-$ymin}
 
     # Determine number of axes tick marks.
-    u=@{"-_axes[] "$xmin,$xmax",{0.3*$1/14}"} offx={arg(1,$u)} deltax={arg(2,$u)}
-    u=@{"-_axes[] "$ymin,$ymax",{0.3*$2/14}"} offy={arg(1,$u)} deltay={arg(2,$u)}
+    u=${"-_axes[] "$xmin,$xmax",{0.3*$1/14}"} offx={arg(1,$u)} deltax={arg(2,$u)}
+    u=${"-_axes[] "$ymin,$ymax",{0.3*$2/14}"} offy={arg(1,$u)} deltay={arg(2,$u)}
 
     # Create plot canvas.
     gw={$1-32} gh={$2-32} gg={($gw-$one)/($siz-$one)}
@@ -1332,12 +1332,12 @@ _display_graph : -check "${1=640}>32 && ${2=480}>32" -skip ${3=1},${4=0},${5=0},
     -if {{-2,s}==1} (120,120,200)
     -elif {{-2,s}<=3} (220,10,10;10,220,10;10,10,220)
     -else
-      (0,255) -r[-1] 256,1,1,1,3 -map[-1] 2 -z[-1] 2,100% -permute[-1] cxyz -r[-1] 3,{max(3,@{-3,s})},1,1,0,2
+      (0,255) -r[-1] 256,1,1,1,3 -map[-1] 2 -z[-1] 2,100% -permute[-1] cxyz -r[-1] 3,{-3,max(3,s)},1,1,0,2
       -sh[-1] 0,2,0,0 -f[-1] 255,0,0,0,255,0,0,0,255 -rm[-1]
     -endif
 
     # Draw plot for each channel.
-    -repeat @{-3,s} -sh[-3] $>,$> -graph[-3] [-1],$3,$4,$ymax,$ymin,1,@{-2,0-2} -rm[-1] -shift[-1] 0,-1 -done
+    -repeat {-3,s} -sh[-3] $>,$> -graph[-3] [-1],$3,$4,$ymax,$ymin,1,{-2,[0-2]} -rm[-1] -shift[-1] 0,-1 -done
     -rm[-3,-1]
     -line[-1] 0,0,100%,0,1,110 -line[-1] 100%,0,100%,100%,1,110
     -line[-1] 100%,100%,0,100%,1,255 -line[-1] 0,100%,0,0,1,255
@@ -1437,7 +1437,7 @@ display_parametric : -check "${1=512}>0 && ${2=$1}>0 && ${4=0}>=0" -skip ${3=3},
 
     -if $3 -l[0] -s3d -f[1] 'i-y' -rm[3] -i[3] (2,0,1;2,{$N-2},{$N-1}) -r[3] 3,{$N-1},1,1,3 -round[3]  # Convert point cloud to connected segments.
       -r[5] 1,{h-1},1,1,0
-      -if {$3>1} -r[4] 3,@{4,h/3},1,1,-1 -r[4] 3,@{4,h-1},1,1,2 -else -rm[4] -i[4] 3,{$N-1} -endif
+      -if {$3>1} -r[4] 3,{4,h/3},1,1,-1 -r[4] 3,{4,h-1},1,1,2 -else -rm[4] -i[4] 3,{$N-1} -endif
       -y -a y -endl -j3d[1] [0],50%,50%,0,{if($3>1,$3-1,$3)},2,0,0
     -endif
 
@@ -1623,7 +1623,7 @@ document_gmic : -skip ${1="ascii"},${2=""},${3=1}
   -v -1
 
   # Concatenate command data and split them into lines.
-  _name=@{0,b} # Basename for the commands definition file.
+  _name={0,b} # Basename for the commands definition file.
   -if {$!>1} -i[1--2] (10) -endif -a y -m {t} -s -,10
 
   # Output header.
@@ -1638,7 +1638,7 @@ document_gmic : -skip ${1="ascii"},${2=""},${3=1}
   ks0="0" ks1="-k[0]"
 
   # Parse lines of the commands file.
-  -repeat $! -l[$>] -if {h>7" && "{@{-1,0-5}'=='{'"#@gmic"'}}" && "(i[6]=={'" "'}" || "i[6]=={':'})} # Process only lines starting with '#@gmic'.
+  -repeat $! -l[$>] -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}" && "(i[6]=={'" "'}" || "i[6]=={':'})} # Process only lines starting with '#@gmic'.
     -rows 7,100% -autocrop {'" "'}  # Discard '#@gmic'.
     _is_example=0
     -if {i!={':'}}
@@ -1685,26 +1685,26 @@ _document_gmic_header_ascii : -skip $1
 
 _document_gmic_subsection_ascii :
   -v +
-  -e[] "\n "$_gmic_r$_gmic_b"** "@{0,t}":"$_gmic_n
+  -e[] "\n "$_gmic_r$_gmic_b"** "{0,t}":"$_gmic_n
   -v -
 
 _document_gmic_declaration_ascii :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
-  -if {$!>1" && "{@{-1,0-6}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
-    _shortcut$_shortcut=@{0,t}
+    _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
     _shortcutqualifier$_shortcut=$qualifier
     _shortcut={$_shortcut+1}
   -else                                         # Declaration of a regular command.
-    -v + -e[] "\n    "$_gmic_m${_gmic_b}"-"@{0,t}${qualifier}":"$_gmic_n -v - -rm[0]
+    -v + -e[] "\n    "$_gmic_m${_gmic_b}"-"{0,t}${qualifier}":"$_gmic_n -v - -rm[0]
     -if $!
       s="                        "
       -y x
       -repeat {$!-1} ({'" |"'}) -a[$>,-1] x -done  # Insert ' |'.
       -repeat $! -l[$>] -_document_gmic_split_ascii 80,0
         -repeat {$!-1} ({'\n$s"  "'}) -a[$>,-1] x -done
-        -a x -v + -e[] $_gmic_g$s@{0,t}$_gmic_n -v -
+        -a x -v + -e[] $_gmic_g$s{0,t}$_gmic_n -v -
       -endl -done
     -endif
     -v + -e[] "" -v -
@@ -1713,7 +1713,7 @@ _document_gmic_declaration_ascii :
 _document_gmic_description_ascii :
   s="        " bs0="\n" bs1="\\\\\n         "
   -y x -if {!narg($_is_tutorial)} -_document_gmic_split_ascii 96 -endif
-  -if {$!==1" && "narg($_vt100)" && "{@{0,0-7}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
+  -if {$!==1" && "narg($_vt100)" && "{{0,[0-7]}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
   -repeat {$!-1} ({'${bs$_is_example}$s"  "'}) -a[$>,-1] x -done -a x
   -if {narg($_vt100)}
     -replace_str "Default values:","\n"$s${_gmic_b}"Default values:"$_gmic_n
@@ -1772,31 +1772,31 @@ _document_gmic_description_bash :
 _document_gmic_example_bash :
 
 _document_gmic_declaration_bash :
-  _opts$_nbopts=-@{0,t}" "--@{0,t}
+  _opts$_nbopts=-{0,t}" "--{0,t}
   _nbopts={$_nbopts+1}
 
-  _coms$_nbcoms=@{0,t}
+  _coms$_nbcoms={0,t}
   _nbcoms={$_nbcoms+1}
 
-  -if {{@{0,t}'=='"input"}" || "{@{0,t}'=='"i"}" || "\ # Manage special commands (remove arguments).
-       {@{0,t}'=='"output"}" || "{@{0,t}'=='"o"}" || "\
-       {@{0,t}'=='"command"}" || "{@{0,t}'=='"m"}} -return -endif
-  -repeat $! -if {@{$<,t}'=='"(+)"} -rm[$<] -endif -done # Discard '(+)' qualifier.
-  -if {$!==2" && "{@{-1,0-6}'=='{'"eq. to "'}}} # Command is a shortcut.
+  -if {{{0,t}'=='"input"}" || "{{0,t}'=='"i"}" || "\ # Manage special commands (remove arguments).
+       {{0,t}'=='"output"}" || "{{0,t}'=='"o"}" || "\
+       {{0,t}'=='"command"}" || "{{0,t}'=='"m"}} -return -endif
+  -repeat $! -if {{$<,t}'=='"(+)"} -rm[$<] -endif -done # Discard '(+)' qualifier.
+  -if {$!==2" && "{{[0-6]}'=='{'"eq. to "'}}} # Command is a shortcut.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39 -autocrop[-1] {'-'}
-    _shortcut$_shortcut=@{0,t}
-    _shortcutlink$_shortcut=@{-str2hex\ @{1,t}}
+    _shortcut$_shortcut={0,t}
+    _shortcutlink$_shortcut=${-str2hex\ {1,t}}
     -rm[-1]
     _shortcut={$_shortcut+1}
   -elif {$!>1} # Command is regular and has arguments.
-    _command$_argcommand=@{0,t}
-    -if {@{0,t}'=='"help"} _argument$_argcommand="$coms\" -- \"$cur"  # Manage help command.
+    _command$_argcommand={0,t}
+    -if {{0,t}'=='"help"} _argument$_argcommand="$coms\" -- \"$cur"  # Manage help command.
     -else
       -if {$!==2} ({'>'}) -endif # Add shadow parameter when single argument.
       -discard[^0] {'" "'} -i[2--2] ({'" "'}) -a[^0] y
-      _argument$_argcommand=@{1,t}
+      _argument$_argcommand={1,t}
     -endif
-    _argumentlink@{-str2hex\ @{0,t}}=${_argument$_argcommand}
+    _argumentlink${-str2hex\ {0,t}}=${_argument$_argcommand}
     _argcommand={$_argcommand+1}
   -endif
 
@@ -1891,28 +1891,28 @@ _document_gmic_ex_off_html :
 
 _document_gmic_subsection_html :
   -v +
-  -e[] @{-eoff}@{-doff}"<br/><h2><a href=\"#toc\"><img alt=\"\" border=\"0\" src=\"img/back_top.png\" /></a>&nbsp;&nbsp;"\
-       "<a id=\"subsection"$_subsection"\"><font color=\"#B00000\">"@{0,t}"</font></a></h2>"
+  -e[] ${-eoff}${-doff}"<br/><h2><a href=\"#toc\"><img alt=\"\" border=\"0\" src=\"img/back_top.png\" /></a>&nbsp;&nbsp;"\
+       "<a id=\"subsection"$_subsection"\"><font color=\"#B00000\">"{0,t}"</font></a></h2>"
   -v -
 
 _document_gmic_declaration_html :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
   s1="\n" s0=" |<br/>"
-  -if {$!>1" && "{@{-1,0-6}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
-    _shortcut$_shortcut=@{0,t}
+    _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
     _shortcutqualifier$_shortcut=$qualifier
     _shortcut={$_shortcut+1}
   -else                                         # Declaration of a regular command.
-    _command_name=@{0,t}
+    _command_name={0,t}
     -v +
-    -e[] @{-eoff}@{-doff}"<p style=\"margin-left:20px\"><a id=\""@{0,t}"\"><font color=\"#005090\">&nbsp;&nbsp;<b>-"@{0,t}$qualifier"</b>:</font></a>"
+    -e[] ${-eoff}${-doff}"<p style=\"margin-left:20px\"><a id=\""{0,t}"\"><font color=\"#005090\">&nbsp;&nbsp;<b>-"{0,t}$qualifier"</b>:</font></a>"
     -if {$!>1}
       -e[] "<p style=\"margin-left:120px\"><tt><i><font color=\"#900090\">"
       -repeat {$!-1} -l[{1+$>}]
         -if {h>48} -v - -replace_str ",",", " -v + -endif
-        -e[] @{0,t}${s{$<==0}}
+        -e[] {0,t}${s{$<==0}}
       -endl -done
       -e[] "</font></i></tt></p>"
     -else -e[] ""
@@ -1921,20 +1921,20 @@ _document_gmic_declaration_html :
   -endif
 
 _document_gmic_description_html :
-  -if {@{-1,0-12}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
+  -if {{[0-12]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
     -s +,{':'} -l[^0] -a y -endl -autocrop {':'} -autocrop {'" "'}
     -v +
-    -if {$!>1} -e[] @{-don}"<br/><b>"@{0,t}"</b>: "{t}
-    -else -e[] @{-don}"<br/>"@{0,t}
+    -if {$!>1} -e[] ${-don}"<br/><b>"{0,t}"</b>: "{t}
+    -else -e[] ${-don}"<br/>"{0,t}
     -endif
     -v -
 
-  -elif {@{-1,0-7}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to -shortcut)'.
-    -v + -e[] @{-don}"<i><font color=\"blue\">"{t}"</font></i>" -v -
+  -elif {{[0-7]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to -shortcut)'.
+    -v + -e[] ${-don}"<i><font color=\"blue\">"{t}"</font></i>" -v -
 
   -else                                    # Reached line as '#@gmic : description'.
-    -if {(i<{'A'}" || "i>{'Z'})" && "i!=40" && "i!=39} -v + -e[] @{-don}"&nbsp;"{t} -v -
-    -else -v + -e[] @{-don}{t} -v -
+    -if {(i<{'A'}" || "i>{'Z'})" && "i!=40" && "i!=39} -v + -e[] ${-don}"&nbsp;"{t} -v -
+    -else -v + -e[] ${-don}{t} -v -
     -endif
 
   -endif
@@ -1942,10 +1942,10 @@ _document_gmic_description_html :
 _document_gmic_example_html :
   -if {i=={'$'}} # Link to a tutorial page.
     -if {h==1&&i=={'$'}} tuturl=http://gmic.eu/tutorial/_$_command_name.shtml
-    -else -autocrop {'$'} -autocrop {'" "'} tuturl=http://gmic.eu/tutorial/@{0,t}.shtml
+    -else -autocrop {'$'} -autocrop {'" "'} tuturl=http://gmic.eu/tutorial/{0,t}.shtml
     -endif
     -v +
-    -e[] @{-eon}"<tr><td width=\"24\" align=\"center\"><a target=\"_blank\" href=\""$tuturl"\"><img alt=\"\" border=\"0\" src=\"img/moreinfos.png\" /></td>"\
+    -e[] ${-eon}"<tr><td width=\"24\" align=\"center\"><a target=\"_blank\" href=\""$tuturl"\"><img alt=\"\" border=\"0\" src=\"img/moreinfos.png\" /></td>"\
                 "<td><a target=\"_blank\" href=\""$tuturl"\">A tutorial page exists for this command.</a></td></tr>"
     -v -
   -else # Regular example.
@@ -1955,7 +1955,7 @@ _document_gmic_example_html :
        -uncommand foo
     -endif
     -v +
-    -e[] @{-eon}"<tr><td width=\"24\" align=\"center\"><div><a href=\""$_filename"\" class=\"highslide\" onclick=\"return hs.expand(this)\">"\
+    -e[] ${-eon}"<tr><td width=\"24\" align=\"center\"><div><a href=\""$_filename"\" class=\"highslide\" onclick=\"return hs.expand(this)\">"\
          "<font color=\"blue\"><img alt=\"\" border=\"0\" src=\"img/zoom.png\" /></font></a><div class=\"highslide-caption\">"{t}"</div></div></td><td><tt>"{t}"</tt></td></tr>"
     -v -
   -endif
@@ -1972,7 +1972,7 @@ _document_gmic_footer_html : -skip $1
     -e[] "</p>" -v -
   -endif
   -v +
-  -e[] @{-eoff}@{-doff}"<p style=\"margin-left:100px\"><font color=\"blue\"><b>[ Total number of commands: "$_command" ]</b></font>"
+  -e[] ${-eoff}${-doff}"<p style=\"margin-left:100px\"><font color=\"blue\"><b>[ Total number of commands: "$_command" ]</b></font>"
   -v -
   -uncommand don,doff,eon,eoff
 
@@ -1984,9 +1984,9 @@ _document_gmic_header_images : -skip $1
 
 _document_gmic_subsection_images :
   -v +
-  -e[] "\n ** Section \#"$_subsection": "@{0,t}".\n"
+  -e[] "\n ** Section \#"$_subsection": "{0,t}".\n"
   -v -
-_document_gmic_declaration_images : _command_name=@{0,t}
+_document_gmic_declaration_images : _command_name={0,t}
 _document_gmic_description_images :
 
 _document_gmic_example_images :
@@ -2063,30 +2063,30 @@ _document_gmic_ex_off_latex :
 _document_gmic_subsection_latex :
   _is_desc=0
   -_document_gmic_replace_latex
-  -v + -e[] @{-eoff}"\n\\section{"@{0,t}"}" -v -
+  -v + -e[] ${-eoff}"\n\\section{"{0,t}"}" -v -
 
 _document_gmic_declaration_latex :
   _is_desc=0
   -if {{t}'=='"(+)"} qualifier={t} -rm[-1] -else qualifier="" -endif
   e1="\\\\~\\\\" e0="~~~$|$\\\\"
   s1="\\hspace*{2.2cm}" s0=""
-  -if {$!>1" && "{@{-1,0-6}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -_document_gmic_replace_latex
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
-    _shortcut$_shortcut=@{0,t}
+    _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
     _shortcutqualifier$_shortcut=$qualifier
     _shortcut={$_shortcut+1}
   -else                                         # Declaration of a regular command.
     -_document_gmic_replace_latex[0]
-    _command_name=@{0,t}
-    -v + -e[] @{-eoff}"\n\n\\subsection{\\emph{-"@{0,t}"\\index{-"@{0,t}"}} "$qualifier"}\\vspace*{-0.5em}"
+    _command_name={0,t}
+    -v + -e[] ${-eoff}"\n\n\\subsection{\\emph{-"{0,t}"\\index{-"{0,t}"}} "$qualifier"}\\vspace*{-0.5em}"
     -if {$!>1}
       -e[] "~\\\\\\textbf{\\Cb{Arguments: }} "
       -repeat {$!-1} -l[{1+$>}]
         -v - -s y,-60 -if {$!>1} -i[1--2] ({'\\-'}) -endif -y -a y
         -_document_gmic_replace_latex -v +
-        -e[] ${s{$>!=0}}"{\\small \\Cb{\\texttt{"@{0,t}"}}}"${e{$<==0}}
+        -e[] ${s{$>!=0}}"{\\small \\Cb{\\texttt{"{0,t}"}}}"${e{$<==0}}
       -endl -done
     -endif
     -v -
@@ -2095,19 +2095,19 @@ _document_gmic_declaration_latex :
 _document_gmic_description_latex :
   s0="" s1="~\\\\" s=${s$_is_desc}
   -_document_gmic_replace_latex
-  -if {@{-1,0-12}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
+  -if {{[0-12]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
     -s +,{':'} -l[^0] -a y -endl -autocrop {':'} -autocrop {'" "'}
     -if {$!>1}
       -replace_str[1] " and ","} and \\\\texttt{"
-      -v + -e[] @{-eoff}$s"~\\\\\\Cc{\\textbf{"@{0,t}"}: {\\small \\texttt{"{t}"}}}" -v -
-    -else -v + -e[] @{-eoff}$s"~\\\\"@{0,t} -v -
+      -v + -e[] ${-eoff}$s"~\\\\\\Cc{\\textbf{"{0,t}"}: {\\small \\texttt{"{t}"}}}" -v -
+    -else -v + -e[] ${-eoff}$s"~\\\\"{0,t} -v -
     -endif
-  -elif {@{-1,0-7}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to '-shortcut').'.
+  -elif {{[0-7]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to '-shortcut').'.
     -rows[-1] 8,100% -autocrop[-1] {'.'} -autocrop[-1] {')'} -autocrop[-1] {'" "'}
-    -v + -e[] @{-eoff}$s"(\\emph{eq. to} {\\small \\texttt{"{t}"}})." -v -
+    -v + -e[] ${-eoff}$s"(\\emph{eq. to} {\\small \\texttt{"{t}"}})." -v -
   -else                                    # Reached line as '#@gmic : description'.
-    -if {(i<{'A'}" || "i>{'Z'})" && "i!=40" && "i!=39} -v + -e[] @{-eoff}{t} -v -
-    -else -v + -e[] @{-eoff}$s{t} -v -
+    -if {(i<{'A'}" || "i>{'Z'})" && "i!=40" && "i!=39} -v + -e[] ${-eoff}{t} -v -
+    -else -v + -e[] ${-eoff}$s{t} -v -
     -endif
   -endif
   _is_desc=1
@@ -2115,13 +2115,13 @@ _document_gmic_description_latex :
 _document_gmic_example_latex :
   -if {i=={'$'}} # Link to a tutorial page.
     -if {h==1&&i=={'$'}} tuturl=http://gmic.eu/tutorial/\\_$_command_name.shtml
-    -else -autocrop {'$'} -autocrop {'" "'} tuturl=http://gmic.eu/tutorial/@{0,t}.shtml
+    -else -autocrop {'$'} -autocrop {'" "'} tuturl=http://gmic.eu/tutorial/{0,t}.shtml
     -endif
     -l[] ({'$tuturl'}) -replace_str "_","\\_"
     -s x,-60 -if {$!>1} -i[1--2] ({'\\\\-'}) -endif -a x
     -replace_str[-1] "_","\\_" tuturl={t} -rm -endl
     -v +
-    -e[] @{-eoff}
+    -e[] ${-eoff}
     -if {!$_is_ex} -e[] "~\\\\" -endif
     -e[] "~\\textbf{Tutorial page: }\\\\\\tt{"$tuturl"}"
     -v -
@@ -2134,7 +2134,7 @@ _document_gmic_example_latex :
     -endif
     -_document_gmic_replace_latex
     -v +
-    -e[] @{-eon}"\\includegraphics[keepaspectratio=true,height=7cm,width=\\textwidth]{"$_filename"}\\\\"
+    -e[] ${-eon}"\\includegraphics[keepaspectratio=true,height=7cm,width=\\textwidth]{"$_filename"}\\\\"
     -e[] "{\\footnotesize \\textbf{Example "$_example"~:} \\texttt{"{t}"}}"
     -v -
   -endif
@@ -2178,26 +2178,26 @@ _document_gmic_header_man : -skip $1
 
 _document_gmic_subsection_man :
   -v +
-  -e[] "\n "$_gmic_b"** "@{0,t}":"$_gmic_n
+  -e[] "\n "$_gmic_b"** "{0,t}":"$_gmic_n
   -v -
 
 _document_gmic_declaration_man :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
-  -if {$!>1" && "{@{-1,0-6}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
-    _shortcut$_shortcut=@{0,t}
+    _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
     _shortcutqualifier$_shortcut=$qualifier
     _shortcut={$_shortcut+1}
   -else                                         # Declaration of a regular command.
-    -v + -e[] "\n    "${_gmic_b}"-"@{0,t}${qualifier}":"$_gmic_n -v - -rm[0]
+    -v + -e[] "\n    "${_gmic_b}"-"{0,t}${qualifier}":"$_gmic_n -v - -rm[0]
     -if $!
       s="                        "
       -y x
       -repeat {$!-1} ({'" |"'}) -a[$>,-1] x -done  # Insert ' |'.
       -repeat $! -l[$>] -_document_gmic_split_ascii 80,0
         -repeat {$!-1} ({'\n$s"  "'}) -a[$>,-1] x -done
-        -a x -v + -e[] $s@{0,t} -v -
+        -a x -v + -e[] $s{0,t} -v -
       -endl -done
     -endif
     -v + -e[] "" -v -
@@ -2361,7 +2361,7 @@ input_gpl :
     colors=0
     -repeat $! -l[$>]
       -s -,32
-      -if {$!>=3" && "isint(@{0,t})" && "isint(@{1,t})" && "isint(@{2,t})} colors=$colors;@{0,t},@{1,t},@{2,t} -endif
+      -if {$!>=3" && "isint({0,t})" && "isint({1,t})" && "isint({2,t})} colors=$colors;{0,t},{1,t},{2,t} -endif
       -rm 0
     -onfail -rm 0 -endl -done
     -rm ($colors) -rows 1,100% -nm "$1" -permute yzcx
@@ -2382,7 +2382,7 @@ output_ggr : -skip "${2=}"
  -v - N=$!
   -repeat $N --l[$>] -r 1,{w*h*d},1,100%,-1 -to_rgba -/ 255
     -if {narg("$2")} name="$2"
-    -else -l[] 1 -nm[-1] "$1" ({'@{-1,b}'}) -f "if(x==0&&i>="{'a'}"&&i<="{'z'}",i-"{'a'}"+"{'A'}",i)" name={t} -rm -endl
+    -else -l[] 1 -nm[-1] "$1" ({'{-1,b}'}) -f "if(x==0&&i>="{'a'}"&&i<="{'z'}",i-"{'a'}"+"{'A'}",i)" name={t} -rm -endl
     -endif
     ({'"GIMP Gradient\nName: "$name\n{0,h}\n'})
     -repeat {0,h}
@@ -2394,7 +2394,7 @@ output_ggr : -skip "${2=}"
       ({'$start" "$mid" "$end" "$r" "$g" "$b" "$a" "$r" "$g" "$b" "$a" 0 0\n"'})
     -done
     -rm[0] -a x
-    -if {$N>1} -o raw:@{"-filename \"$1\",$>"},char -else -o raw:"$1",char -endif
+    -if {$N>1} -o raw:${"-filename \"$1\",$>"},char -else -o raw:"$1",char -endif
     -rm
   -endl -done -v +
 
@@ -2411,7 +2411,7 @@ outputn :
   -_$0 $*
 
 _outputn :
-  -v - filename=@{-filename\ "$1",@{>}} -v +
+  -v - filename=${-filename\ "$1",$>} -v +
   -e[0--3] "Output image"$_gmic_s" as file '"$filename"'."
   -v - -o $filename -v +
 
@@ -2479,7 +2479,7 @@ _outputx :
     -else -e[0--4] "Output image"$_gmic_s" at same location, with same base filename but extension"${s{$N>1}}" '$*'."
     -endif
     -v -  -repeat $! -l[$>]
-      -repeat $N -o @{0,f}@{0,b}.${arg{1+$>}} -done
+      -repeat $N -o {0,f}{0,b}.${arg{1+$>}} -done
     -endl -done
   -else
     -v +
@@ -2487,7 +2487,7 @@ _outputx :
     -else -e[0--4] "Output image"$_gmic_s" with same base filename but extension"${s{$N>1}}" '$*'."
     -endif
     -v -  -repeat $! -l[$>]
-      -repeat $N -o @{0,b}.${arg{1+$>}} -done
+      -repeat $N -o {0,b}.${arg{1+$>}} -done
     -endl -done
   -endif
   -v +
@@ -2633,7 +2633,7 @@ _update :
   -v -
   out=${-path_rc}cli_update@..gmic
   -l[] cimgz:http://gmic.eu/cli_update@..gmic
-    -if {h>7" && "{@{-1,0-5}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
+    -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
     -rm
   -onfail -error[0--3] "Command '-update' : Unreachable update file."
   -endl
@@ -2658,7 +2658,7 @@ update_film_emulation_html :
   nb_presets=0
   -repeat {narg($categories)}
     category=${-arg\ {1+$>},$categories}
-    presets=@{-_gimp_emulate_film_$category}
+    presets=${-_gimp_emulate_film_$category}
     nb_presets={$nb_presets+narg($presets)}
   -done
 
@@ -2687,10 +2687,10 @@ update_film_emulation_html :
   nb_samples=$!
   -to_rgb -repeat $nb_samples -l[$<]
     -nm[0] sample_{1+$<}
-    basename=@{0,b} basename$<=$basename
+    basename={0,b} basename$<=$basename
     -v + -e[] "    - "$basename -v -
     --r2dx $thumb_width
-    --text_outline[0] "Reference",4,@{0,h-28},20,2 -frame[-1] 1,1,0
+    --text_outline[0] "Reference",4,{0,h-28},20,2 -frame[-1] 1,1,0
     -o[-1] original/$basename.jpg,$jpeg_quality -rm[-1]
     --_thumb[1] -o[-1] original/thumb_$basename.jpg,$jpeg_quality -rm[-1]
     --r2dy[0] $thumb_height -_thumb[-1] -o[-1] original/minithumb_$basename.jpg,$jpeg_quality -rm[-1]
@@ -2700,7 +2700,7 @@ update_film_emulation_html :
   ind_preset=0
   -repeat {narg($categories)}
     category=${-arg\ {1+$>},$categories}
-    presets=@{-_gimp_emulate_film_$category}
+    presets=${-_gimp_emulate_film_$category}
 
     -v + -e[] "\n  * Category \#"{1+$>}": "$category" ***\n" -v -
     -if $category -else -x "mkdir "$category -endif
@@ -2722,11 +2722,11 @@ update_film_emulation_html :
       -rm[-1]
 
       -repeat $nb_samples -l[{2*$>},{2*$>+1},-1]
-        basename=@{0,b}
+        basename={0,b}
         -if $category/$basename/$preset.jpg -else
           -if $category/$basename -else -x "mkdir \""$category/$basename"\"" -endif
           --map_clut[^-1] [-1]
-          -text_outline[-2] @{-_title\ $preset},4,@{-2,h-28},20,2 -frame[-2] 1,1,0
+          -text_outline[-2] ${-_title\ $preset},4,{-2,h-28},20,2 -frame[-2] 1,1,0
           -o[-2] $category/$basename/$preset.jpg,$jpeg_quality
           -_thumb[-1] -o[-1] $category/$basename/thumb_$preset.jpg,$jpeg_quality
           -rm[-2,-1]
@@ -2749,7 +2749,7 @@ update_film_emulation_html :
     category=${-arg\ {1+$>},$categories}
     -arg {1+$>},$category_names
     category_name=${}
-    presets=@{-_gimp_emulate_film_$category}
+    presets=${-_gimp_emulate_film_$category}
 
     -repeat $nb_samples
       width={$>,64+w} height={$>,64+h}
@@ -2837,7 +2837,7 @@ with or endorsed by the companies that own the trademarks.</i></font></p>\n\n
 
         ({'$preset'}) -replace_seq[-1] 39,"92,92,39" preset_esc={t} -rm[-1]
 
-        title=@{-_title\ $preset}
+        title=${-_title\ $preset}
         -if {$>%4==0} -if $> ({'"</tr>\n"'}) -endif ({'"<tr>"'}) -endif
 
         ({'"
@@ -3069,8 +3069,8 @@ update_gallery_html :
   -repeat $_nb_coms
 
     ind={$>%$nb_imgs}
-    out_img=@{"-filename "img/gallery.jpg,$>}
-    out_thumb=@{"-filename "img/gallery_thumb.png,$>}
+    out_img=${"-filename "img/gallery.jpg,$>}
+    out_thumb=${"-filename "img/gallery_thumb.png,$>}
 
     # Start new row.
     -if {!$ind} ({'"<tr>\n"'}) -endif
@@ -3085,7 +3085,7 @@ update_gallery_html :
 
     iind={$ind%5}
 
-    width=@{$iind,w} height=@{$iind,h}
+    width={$iind,w} height={$iind,h}
     -o[-1] $out_img,75
     -r2dy[-1] $thumb_size -if {w>${width$ind}} -r[-1] ${width$ind},100%,100%,100%,2 -endif
     -l[-1] -frame 3%,3%,255 -to_rgba -drop_shadow 2,2,3 -endl
@@ -3094,7 +3094,7 @@ update_gallery_html :
     ({'"<td width=\""${width$>}"\"><center><div>\
         <a href=\""$out_img"\" class=\"highslide\" onclick=\"return hs.expand(this)\">\
 	<img alt=\"\" border=\"0\" src=\""$out_thumb"\"/></a>\
-        <div class=\"highslide-caption\">gmic "@{$ind,b}.@{$ind,x}" "${displayed_com$ind}"</div>\
+        <div class=\"highslide-caption\">gmic "{$ind,b}.{$ind,x}" "${displayed_com$ind}"</div>\
         </div></center></td>\n"'})
 
     -if {$ind==$nb_imgs-1" || "$>==$_nb_coms-1} # End row.
@@ -3170,14 +3170,14 @@ update_server : -skip ${1=@.},${2=1}
   -_update_server_move[] "/Finger~paint","/Artistic"
 
   # Define useful sub-commands.
-  -m "parent : -l[] ({'$""1'}) -s -,{'/'} -if $! -rm[-1] -endif -i[0--1] (47) -a y -u @{0,t} -rm -endl" # Command to return parent of a path.
+  -m "parent : -l[] ({'$""1'}) -s -,{'/'} -if $! -rm[-1] -endif -i[0--1] (47) -a y -u {0,t} -rm -endl" # Command to return parent of a path.
   -m "_max : ({'\"$""1\"'}) ({'\"$""2\"'}) -f[-2,-1] 'if(i>=97&&i<=122,i-32,i)' -r[-2,-1] {max(w,{-2,w})},1,1,1,0 --[-2,-1] -autocrop[-1] 0 "\
      "-u {i>0} -rm[-1]" # Command to compare two strings (eq. to strcasecmp).
   -m "load_gmic : "\
-     "_nb_sources={$_nb_sources+1} filename=@{\"-basename $""1\"} "\
+     "_nb_sources={$_nb_sources+1} filename=${\"-basename $""1\"} "\
      "-v + -e[] \"  \"$_nb_sources\". \"$filename\"  \" -v - "\
      "-l[] "\
-     "  -i raw:$""1,char -nm @{0,b} -v + -e[] \"      [retrieved from source '$""1']\" -v - "\
+     "  -i raw:$""1,char -nm {0,b} -v + -e[] \"      [retrieved from source '$""1']\" -v - "\
      "  -l "\
      "    -o raw:/tmp/$filename,char "\
      "    -_update_server_upload /tmp/$filename,include/$filename "\
@@ -3283,9 +3283,9 @@ update_server : -skip ${1=@.},${2=1}
             -if {i=={'_'}} # Folder has parents before creating it.
               -do path=@{"-parent[] "$path} -shift 0,-1,0,0 -while {i=={'_'}}
               -autocrop 0 -autocrop 32
-              -if {w} -calibrate_name -replace 32,{'~'} path=$path@{0,t}/ -endif # Folder name specified after the underscore(s).
+              -if {w} -calibrate_name -replace 32,{'~'} path=$path{0,t}/ -endif # Folder name specified after the underscore(s).
             -else # Folder name don't start with '_'.
-              -autocrop 32 -calibrate_name -replace 32,{'~'} path=$path@{0,t}/
+              -autocrop 32 -calibrate_name -replace 32,{'~'} path=$path{0,t}/
             -endif
             is_folder=1
 
@@ -3404,7 +3404,7 @@ update_server : -skip ${1=@.},${2=1}
     --rows 0,6 head={t} -rm[-1]
     -if {$head'=='"#@gimp "} -s -,{':'}
       -if {$!>=1} -l[1] -s -,{','}
-        -if $! -autocrop[0] 32 command_name$>=@{0,t} -endif
+        -if $! -autocrop[0] 32 command_name$>={0,t} -endif
       -endl -endif
     -endif
   -rm -endl -done
@@ -3700,7 +3700,7 @@ __update_tutorial_html : -skip ${3=""},${4=""},${5=""}
   # Determine parent id for toc.
   -if {narg("$5")} _tocid$_N="$5"
   -else
-    ({'"$1"'}) -s -,{'/'} -if $! _tocid$_N=@{0,t} -rm -else _tocid$_N=index -endif
+    ({'"$1"'}) -s -,{'/'} -if $! _tocid$_N={0,t} -rm -else _tocid$_N=index -endif
   -endif
 
   # Determine output filenames.
@@ -3772,13 +3772,13 @@ _update_tutorial_html :
   -repeat $! -if {$>>0" && "{@{{$>-1},t}'=='"<a "}} -l[$>] -s +,{'href=\"'} -l[-1]
     -s +,{'\"'}
     -if {$!>0}
-      link=@{0,t}
+      link={0,t}
       ({'$link'}) -z[-1] 0,48 baselink={t} -rm[-1]
 
       -if {$baselink'=='"http://www.particularart.com/tools-and-toys/gmic/"}  # Check for a 'local' link.
 
         # Retrieve anchor if any.
-        -l[] anchor="" ({'$link'}) -s +,{"'\#'"} -if {$!>1} anchor=#{t} link=@{0,t} -endif -rm -endl
+        -l[] anchor="" ({'$link'}) -s +,{"'\#'"} -if {$!>1} anchor=#{t} link={0,t} -endif -rm -endl
         ({'$link'}) -autocrop[-1] {'/'}
         -l[-1] -s -,{'/'} -if {$!>6" && "{@{-2,t}'!='command-guide}" && "{@{-3,t}'!='command-guide}} relink=@{-2,t}_{t}.shtml -else relink={t}.shtml -endif -rm -endl
         ({'$relink'}) -if {i=={'-'}} -=[-1] {'_'} relink={t} -endif -rm[-1] # Replace first '-' by underscore if necessary.
@@ -3789,7 +3789,7 @@ _update_tutorial_html :
           -rm[0] -i[0] ({'$relink'}) -y[0]
         -else # Else try to relink to reference page if link to a command.
           ({'$relink'}) -if {i=={'_'}}
-            -l[-1] -z 1,100% -s -,{'.'} command=@{-basename\ @{0,t}} -k[0] -endl
+            -l[-1] -z 1,100% -s -,{'.'} command=@{-basename\ {0,t}} -k[0] -endl
             relink="http://gmic.eu/reference.shtml#"$command
             -v + -e[] "    > Local link '"$link$anchor"' relinked to '"$relink"' "${_gmic_g}"(reference command)."${_gmic_n} -v -
             -rm[0] -i[0] ({'$relink'}) -y[0]
@@ -3837,7 +3837,7 @@ _update_tutorial_html :
     -l[$>]
       -s +,{'"src=\""'}
       -l[2]
-        -s +,{'\"'} link=@{0,t}
+        -s +,{'\"'} link={0,t}
         relink=img/$5_@{-basename\ $link} 0 -nm[-1] $relink relink=@{-1,f}@{-1,b}.jpg -rm[-1]
         -if $relink -v + -e[] "    > Image '"$link"' relinked to '"$relink"'." -v -
         -else
@@ -14162,7 +14162,7 @@ img2str :
 #@gmic : Return text contained in a multi-line image.
 #@gmic : Default value: 'line_separator= '.
 img2text : -skip "${1= }"
-  -v - --l -s y -s -,0 -y x -if {$!>1} -i[1--2] ({'"$1"'}) -endif -a x -u @{0,t} -rm -endl -v +
+  -v - --l -s y -s -,0 -y x -if {$!>1} -i[1--2] ({'"$1"'}) -endif -a x -u {0,t} -rm -endl -v +
 
 #@gmic img82hex
 #@gmic : Convert selected 8bits-valued vectors into their hexadecimal representations (ascii-encoded).
@@ -18369,7 +18369,7 @@ _gimp_merge_layers :
     -if {$!>1}
       -repeat $!
         -if {$>!=$!-1" && "{@{$>,0-@{$>,min($l,h)-1}}'=='$str}}
-          -l[{$>+1}] -s +,{')'} -if {$!>1} res=@{0,t} -endif -a y -endl
+          -l[{$>+1}] -s +,{')'} -if {$!>1} res={0,t} -endif -a y -endl
         -endif
         -if {narg({'$res'})} -break -endif
       -done
@@ -18435,7 +18435,7 @@ gimp_print_preview : -skip "${1=},${3=}" -check "${2=32}>=0 && ${4=20}>=0 && ${5
   -l[] # Render message.
     ({'"$3"'}) --f[-1] '>if(i>32||j(-1)<$5,j(-1)+1,0)' -==[-1] 0 -*[-1] 256 -max[-2,-1] -s -,256
     -s y,-{round(1.3*$5)}
-    -repeat $! -l[$>] 0 -t[-1] @{0,t},0,0,$4,1,255 -rm[0] -endl -done
+    -repeat $! -l[$>] 0 -t[-1] {0,t},0,0,$4,1,255 -rm[0] -endl -done
     -a y -i[0] 100%,100%,1,3,255 -a c
   -onfail -rm
   -endl
@@ -18727,8 +18727,8 @@ gimp_manage_filter_sources_preview :
       -l[]
         -i cimgz:${-path_rc}gimp_filter_sources
         -repeat $! -l[$>]
-          -if {@{0,t}'=='$_url_jayprich} b0=1 -endif
-          -if {@{0,t}'=='$_url_zonderr} b1=1 -endif
+          -if {{0,t}'=='$_url_jayprich} b0=1 -endif
+          -if {{0,t}'=='$_url_zonderr} b1=1 -endif
         -endl -done
       -onfail
       -endl
