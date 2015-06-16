@@ -5589,7 +5589,8 @@ to_colormode : -skip ${1=0}
       -if {$>,s>4} -error "Command '-to_colormode': Image ["$>"] is not a G,GA,RGB or RGBA image."
       -else s={$>,max($s,s)}
       -endif
-    -done -to_colormode $s
+    -done
+    -to_colormode $s
   -endif
 
 #@gmic to_gray
