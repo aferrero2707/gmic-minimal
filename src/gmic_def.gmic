@@ -477,7 +477,7 @@ _help_usage :
 \n       . '"$c"$^"$n"': The current "${g}"verbosity level"$n".
 \n       . '"$c"$_cpus"$n"': The number of "${g}"computation cores"$n" available on your machine.
 \n       . '"$c"$_pid"$n"': The current "${g}"process identifier"$n", as an integer.
-\n       . '"$c"$_prerelease"$n"': For pre-releases only, the "${g}"date of the pre-release"$n" as "${g}"yyyymmdd"$n".
+\n       . '"$c"$_prerelease"$n"': For pre-releases only, the "${g}"date of the pre-release"$n" as "${g}"mmddyy"$n".
 \n          For stable releases, this variable is not defined.
 \n       . '"$c"$_version"$n"': A 4-digits number telling about the current "${g}"version"$n" of the "${-GMIC}" interpreter.
 \n          (currently '"$g$_version$n"').
