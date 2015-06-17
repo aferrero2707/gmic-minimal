@@ -469,24 +469,19 @@ _help_usage :
 \n     If no image has this name, the expression is substituted by the value of the
 \n     "${g}"OS environment variable"$n" with same name (it may be an empty string).
 \n     The following variables are predefined by the "${-GMIC}" interpreter:
-\n       . '"$c"$_cpus"$n"': The number of "${g}"computation cores"$n" available on your machine.
-\n          This variable can be reassigned.
-\n       . '"$c"$_pid"$n"': The current "${g}"process identifier"$n", as an integer.
-\n          This variable can be reassigned.
-\n       . '"$c"$_prerelease"$n"': For pre-releases only, the "${g}"date of the pre-release"$n" as "${g}"yyyymmdd"$n".
-\n          For stable releases, this variable is not defined. This variable can be reassigned.
-\n       . '"$c"$_version"$n"': A 4-digits number telling about the current "${g}"version"$n" of the "${-GMIC}" interpreter.
-\n          This variable can be reassigned (currently '"$g$_version$n"').
-\n       . '"$c"$_vt100"$n"': Set to "${g}"1"$n" (default value) if "${g}"colored text output"$n" is allowed on the console.
-\n          This variable can be reassigned.
-\n       . '"$c"$!"$n"': The current "${g}"number of images"$n" in the list. This variable cannot be reassigned.
-\n       . '"$c"$^"$n"': The current "${g}"verbosity level"$n". This variable cannot be reassigned.
-\n       . '"$c"$|"$n"': The current value (expressed in seconds) of a "${g}"millisecond precision timer."$n"
-\n          This variable cannot be reassigned.
-\n       . '"$c"$/"$n"': The current "${g}"call stack"$n". Stack items are separated by slashes '"$g"/"$n"'.
-\n          This variable cannot be reassigned.
+\n       . '"$c"$!"$n"': The current "${g}"number of images"$n" in the list.
 \n       . '"$c"$>"$n"' and '"$c"$<"$n"': The "${g}"increasing/decreasing indice"$n" of the latest (currently running)
-\n          '"${c}"repeat..done"$n"' loop. These variable cannot be reassigned.
+\n          '"${c}"repeat..done"$n"' loop.
+\n       . '"$c"$/"$n"': The current "${g}"call stack"$n". Stack items are separated by slashes '"$g"/"$n"'.
+\n       . '"$c"$|"$n"': The current value (expressed in seconds) of a "${g}"millisecond precision timer."$n"
+\n       . '"$c"$^"$n"': The current "${g}"verbosity level"$n".
+\n       . '"$c"$_cpus"$n"': The number of "${g}"computation cores"$n" available on your machine.
+\n       . '"$c"$_pid"$n"': The current "${g}"process identifier"$n", as an integer.
+\n       . '"$c"$_prerelease"$n"': For pre-releases only, the "${g}"date of the pre-release"$n" as "${g}"yyyymmdd"$n".
+\n          For stable releases, this variable is not defined.
+\n       . '"$c"$_version"$n"': A 4-digits number telling about the current "${g}"version"$n" of the "${-GMIC}" interpreter.
+\n          (currently '"$g$_version$n"').
+\n       . '"$c"$_vt100"$n"': Set to "${g}"1"$n" (default value) if "${g}"colored text output"$n" is allowed on the console.
 \n  - '"$c"${\"command line\"}"$n"' is substituted by the "${g}"status value"$n" set by the execution of the
 \n     specified command line (see command '"$c"-status"$n"' to learn more about status).
 \n     Expression '"$c"${}"$n"' thus stands for the "${g}"current status value"$n".
@@ -517,7 +512,7 @@ _help_usage :
 \n          the image "$c"[image]"$n" and is substituted by the result of its evaluation (float value).
 \n          For instance, expression '"$c"{0,w+h}"$n"' is substituted by the sum of the width and height
 \n          of the first image (see section '"${c}"Mathematical expressions"$n"' for more details).
-\n          If a mathematical expression starts with an underscore '"$g"_"$n", the resulting value is
+\n          If a mathematical expression starts with an underscore '"${g}"_"$n"', the resulting value is
 \n          truncated to a readable format. For instance, item '"$c"{_pi}"$n"' is substituted by '"${c}"3.14159"$n"'
 \n          (while '"$c"{pi}"$n"' is '"${c}"3.141592653589793"$n"').
 \n  - '"$c"{*}"$n"' is substituted by the "${g}"visibility state"$n" of the instant display window "$c"[0]"$n"
@@ -3224,6 +3219,7 @@ update_server : -skip ${1=$_version},${2=1}
   -load_gmic ${HOME}/work/src/gmic-community/garryosgood.gmic
   -load_gmic ${HOME}/work/src/gmic-community/gentlemanbeggar.gmic
   -load_gmic ${HOME}/work/src/gmic-community/iainfergusson.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/jayprich.gmic
   -load_gmic ${HOME}/work/src/gmic-community/jboulanger.gmic
   -load_gmic ${HOME}/work/src/gmic-community/karos.gmic
   -load_gmic ${HOME}/work/src/gmic-community/naggobot.gmic
@@ -3231,6 +3227,7 @@ update_server : -skip ${1=$_version},${2=1}
   -load_gmic ${HOME}/work/src/gmic-community/ronounours.gmic
   -load_gmic ${HOME}/work/src/gmic-community/tomkeil.gmic
   -load_gmic ${HOME}/work/src/gmic-community/samj.gmic
+  -load_gmic ${HOME}/work/src/gmic-community/zonder.gmic
 
   # Merge them together.
   -i[0] (10) -i[2--1] ({"'\n#@gimp ________________\n'"}) -y -a y -discard 13 -replace 9,32
@@ -11076,9 +11073,9 @@ parallel :
 #@gmic : Quit interpreter.
 #@gmic : (eq. to '-q').
 
-#@gmic repeat : nb_iterations : (+)
+#@gmic repeat : nb_iterations,_variable_name : (+)
 #@gmic : Start iterations of a 'repeat..done' block.
-#@gmic : $ image.jpg -split y -repeat $! -shift[$>] $<,0,0,0,2 -done -append y
+#@gmic : $ image.jpg -split y -repeat $!,n -shift[$n] $<,0,0,0,2 -done -append y
 #@gmic : $ image.jpg -mode3d 2 -repeat 4 -imagecube3d -rotate3d 1,1,0,40 -snapshot3d 400,1.4 -done
 #@gmic : $$
 
@@ -18692,16 +18689,17 @@ gimp_logo_ca :
 #@gimp : </small>"}
 #@gimp : sep = separator()
 #@gimp : note = note{"Enable filters from:"}
-#@gimp : Jayprich = _bool(0)
-#@gimp : Zonderr = _bool(0)
+#@gimp : note = note{"<b>No external sources to activate yet</b>"}
+##@gimp : Jayprich = _bool(0)
+##@gimp : Zonderr = _bool(0)
 #@gimp : sep = separator()
 #@gimp : Select/unselect all = button()
 #@gimp : first_time = const(0)
 gimp_manage_filter_sources :
   -l[]
     -_gimp_manage_filter_sources
-    -if $1 ({'$_url_jayprich'}) -endif
-    -if $2 ({'$_url_zonderr'}) -endif
+#    -if $1 ({'$_url_jayprich'}) -endif
+#    -if $2 ({'$_url_zonderr'}) -endif
     -o cimgz:${-path_rc}gimp_filter_sources,uchar
     -rm
   -endl
