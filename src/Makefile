@@ -341,7 +341,7 @@ static:
 	$(MAKE) "CFLAGS+=$(STATIC_CLI_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STATIC_CLI_LIBS)" gmic
 	strip gmic$(EXE)
 
-minimal:
+debug:
 	$(MAKE) "CFLAGS+=$(STD_CLI_CFLAGS) $(DEBUG_CFLAGS)" "LIBS+=$(STD_CLI_LIBS)" gmic
 
 zart: lib

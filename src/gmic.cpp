@@ -3506,7 +3506,7 @@ CImg<char> gmic::substitute_item(const char *const source,
       // If not starting with '{', or '$'.
       const char *const nsource0 = nsource;
       do { ++nsource; } while (*nsource && *nsource!='{' && *nsource!='$');
-      CImg<char>(nsource0,(unsigned int)(nsource - nsource0)).move_to(substituted_items);
+      CImg<char>(nsource0,(unsigned int)(nsource - nsource0),1,1,1,true).move_to(substituted_items);
     } else { // '{...}' or '${...}' expression found.
       bool is_braces = false, is_substituted = false;
       int ind = 0, l_inbraces = 0;
@@ -3556,10 +3556,6 @@ CImg<char> gmic::substitute_item(const char *const source,
             if (*(++feature)=='-' &&
                 feature[1]!='w' && feature[1]!='h' && feature[1]!='d' && feature[1]!='e' &&
                 feature[1]!='u' && feature[1]!='v' && feature[1]!='n') { flush_request = true; ++feature; }
-            if (!*feature)
-              error(images,0,0,
-                    "Item substitution '{%s}': Empty feature.",inbraces.data());
-
             if (!feature[1]) switch (*feature) { // Single-char features.
               case 'w' : // Display width.
                 cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].width());
@@ -3693,8 +3689,8 @@ CImg<char> gmic::substitute_item(const char *const source,
             } catch (CImgException &e) {
               const char *const e_ptr = std::strstr(e.what(),": ");
               error(images,0,0,
-                    "Item substitution '{`value1,..,valueN`}': %s",
-                    e_ptr?e_ptr + 2:e.what());
+                    "Item substitution '{`%s`}': %s",
+                    inbraces.data() + 1,e_ptr?e_ptr + 2:e.what());
             }
           }
           *substr = 0; is_substituted = true;
@@ -3750,7 +3746,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           *substr = 0;
           if (!*feature)
             error(images,0,0,
-                  "Item substitution '{%s}': Invalid empty feature.",
+                  "Item substitution '{%s}': Request for empty feature.",
                   inbraces.data());
 
           if (!feature[1]) switch (*feature) { // Single-char feature.
@@ -3852,9 +3848,10 @@ CImg<char> gmic::substitute_item(const char *const source,
                 values.assign(1,inds.height());
                 cimg_foroff(inds,p) values[p] = img[inds(p)];
               } catch (gmic_exception &e) {
+                const char *const e_ptr = std::strstr(e.what(),": ");
                 error(images,0,0,
-                      "Item substitution '{%s}': Invalid value subset (%s).",
-                      inbraces.data(),e.what());
+                      "Item substitution '{%s}': %s",
+                      inbraces.data(),e_ptr?e_ptr + 2:e.what());
               }
               _status.move_to(status);
               verbosity = _verbosity; is_debug = _is_debug;
@@ -3878,14 +3875,13 @@ CImg<char> gmic::substitute_item(const char *const source,
             } catch (CImgException& e) {
               const char *const e_ptr = std::strstr(e.what(),": ");
               error(images,0,0,
-                    "Item substitution '{expression}': %s",
-                    e_ptr?e_ptr + 2:e.what());
+                    "Item substitution '{%s}': %s",
+                    inbraces.data(),e_ptr?e_ptr + 2:e.what());
             }
           }
         }
         if (is_substituted && *substr)
           CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-
         continue;
 
         //  '${..}' expressions.
