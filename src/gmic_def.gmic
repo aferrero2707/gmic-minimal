@@ -2251,7 +2251,7 @@ _document_gmic :
 #@gmic echo : message : (+)
 #@gmic : Output specified message, on the error output.
 #@gmic : (eq. to '-e').
-#@gmic : Command selection (if any) stands for displayed scope indices instead of image indices.
+#@gmic : Command selection (if any) stands for displayed call stack subset instead of image indices.
 
 #@gmic echo_file : filename,message
 #@gmic : Output specified message, appending it to specified output file.
@@ -3909,7 +3909,7 @@ _update_tutorial_html :
 
 #@gmic warn : _force_visible={ 0 | 1 },_message : (+)
 #@gmic : Print specified warning message, on the standard error (stderr).
-#@gmic : Command selection (if any) stands for displayed scope indices instead of image indices.
+#@gmic : Command selection (if any) stands for displayed call stack subset instead of image indices.
 
 #@gmic w : eq. to '-window'. : (+)
 
@@ -11011,7 +11011,7 @@ apply_timeout :
 #@gmic error : message : (+)
 #@gmic : Print specified error message on the standard error (stderr) and exit interpreter, except
 #@gmic : if error is caught by a '-onfail' command.
-#@gmic : Command selection (if any) stands for displayed scope indices instead of image indices.
+#@gmic : Command selection (if any) stands for displayed call stack subset instead of image indices.
 
 #@gmic x : eq. to '-exec'. : (+)
 
