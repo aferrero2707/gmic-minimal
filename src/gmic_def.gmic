@@ -3907,7 +3907,7 @@ _update_tutorial_html :
 #@gmic : in a 'hard' sleep during specified delay.
 #@gmic : Default value: 'delay=0'.
 
-#@gmic warn : message : (+)
+#@gmic warn : _force_visible={ 0 | 1 },_message : (+)
 #@gmic : Print specified warning message, on the standard error (stderr).
 #@gmic : Command selection (if any) stands for displayed scope indices instead of image indices.
 
