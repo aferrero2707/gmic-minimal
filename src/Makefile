@@ -379,7 +379,7 @@ gmic_def.h: gmic_def.gmic
 	@touch gmic_def.h
 
 CImg.h:
-	@if [ -f ../../CImg/CImg.h ]; then if [ ! -f ./CImg.h ]; then ln -s ../../CImg/CImg.h .; fi; else wget --quiet -O CImg.h https://sourceforge.net/p/cimg/source/ci/master/tree/CImg.h?format=raw; touch CImg.h; fi
+	@if [ -f ../../CImg/CImg.h ]; then if [ ! -f ./CImg.h ]; then ln -s ../../CImg/CImg.h .; fi; else wget --quiet -O CImg.h https://github.com/dtschump/CImg/blob/master/CImg.h?raw=true; touch CImg.h; fi
 
 # Generate gmic_def.h file (requires 'gmic' to be installed first).
 def:
