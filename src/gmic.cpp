@@ -3746,7 +3746,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             while (*feature!=',') ++feature; ++feature;
           } else ind = images.size() - 1;
 
-          const CImg<T>& img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
+          const CImg<T> &img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
           *substr = 0;
           if (!*feature)
             error(images,0,0,
@@ -3762,18 +3762,22 @@ CImg<char> gmic::substitute_item(const char *const source,
               gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
-            case 'c' : { // Coordinates of minimal value.
-              CImg<unsigned int> st;
-              if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
-              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
+            case 'c' : // Coordinates of minimal value.
+              if (img) _ind = img.get_stats(); else _ind.assign(8,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",
+                            _ind[4],_ind[5],_ind[6],_ind[7]);
               is_substituted = true;
-            } break;
-            case 'C' : { // Coordinates of maximal value.
-              CImg<unsigned int> st;
-              if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
-              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
+              break;
+            case 'C' : // Coordinates of maximal value.
+              if (img) _ind = img.get_stats(); else _ind.assign(12,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",
+                            _ind[8],_ind[9],_ind[10],_ind[11]);
               is_substituted = true;
-            } break;
+              break;
+            case 'd' : // Image depth.
+              cimg_snprintf(substr,substr.width(),"%d",img.depth());
+              is_substituted = true;
+              break;
             case 'f' : { // Image folder name.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               std::strcpy(substr,images_names[ind]);
@@ -3782,10 +3786,18 @@ CImg<char> gmic::substitute_item(const char *const source,
               gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
+            case 'h' : // Image height.
+              cimg_snprintf(substr,substr.width(),"%d",img.height());
+              is_substituted = true;
+              break;
             case 'n' : // Image name.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
               gmic_strreplace_bw(substr);
+              is_substituted = true;
+              break;
+            case 's' : // Number of image channels.
+              cimg_snprintf(substr,substr.width(),"%d",img.spectrum());
               is_substituted = true;
               break;
             case 't' : { // Ascii string from image values.
@@ -3808,6 +3820,10 @@ CImg<char> gmic::substitute_item(const char *const source,
               cimg_snprintf(substr,substr.width(),"%s",
                             cimg::split_filename(images_names[ind].data()));
               gmic_strreplace_bw(substr);
+              is_substituted = true;
+              break;
+            case 'w' : // Image width.
+              cimg_snprintf(substr,substr.width(),"%d",img.width());
               is_substituted = true;
               break;
             case '^' : { // Sequence of all pixel values.
