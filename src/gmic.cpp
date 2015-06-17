@@ -3507,7 +3507,7 @@ CImg<char> gmic::substitute_item(const char *const source,
       const char *const nsource0 = nsource;
       do { ++nsource; } while (*nsource && *nsource!='{' && *nsource!='$');
       CImg<char>(nsource0,(unsigned int)(nsource - nsource0)).move_to(substituted_items);
-    } else { // '{}' or '$' expression found.
+    } else { // '{...}' or '${...}' expression found.
       bool is_braces = false, is_substituted = false;
       int ind = 0, l_inbraces = 0;
       char sep = 0;
@@ -3720,7 +3720,8 @@ CImg<char> gmic::substitute_item(const char *const source,
         // Image feature.
         if (!is_substituted) {
           const char *feature = inbraces;
-          if (std::sscanf(inbraces,"%d%c",&ind,&(sep=0))==2 && sep==',') {
+          if (!inbraces[1]) ind = images.size() - 1; // Single-char case.
+          else if (std::sscanf(inbraces,"%d%c",&ind,&(sep=0))==2 && sep==',') {
             if (ind<0) ind+=images.width();
             if (ind<0 || ind>=images.width()) {
               if (images.width())
@@ -3744,6 +3745,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             ind = (int)*_ind;
             while (*feature!=',') ++feature; ++feature;
           } else ind = images.size() - 1;
+
           const CImg<T>& img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
           *substr = 0;
           if (!*feature)
@@ -3752,12 +3754,6 @@ CImg<char> gmic::substitute_item(const char *const source,
                   inbraces.data());
 
           if (!feature[1]) switch (*feature) { // Single-char feature.
-            case 'n' : // Image name.
-              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-              cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
-              gmic_strreplace_bw(substr);
-              is_substituted = true;
-              break;
             case 'b' : { // Image basename.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               cimg::split_filename(images_names[ind].data(),substr);
@@ -3766,13 +3762,18 @@ CImg<char> gmic::substitute_item(const char *const source,
               gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
-            case 'x' : // Image extension.
-              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-              cimg_snprintf(substr,substr.width(),"%s",
-                            cimg::split_filename(images_names[ind].data()));
-              gmic_strreplace_bw(substr);
+            case 'c' : { // Coordinates of minimal value.
+              CImg<unsigned int> st;
+              if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
               is_substituted = true;
-              break;
+            } break;
+            case 'C' : { // Coordinates of maximal value.
+              CImg<unsigned int> st;
+              if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
+              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
+              is_substituted = true;
+            } break;
             case 'f' : { // Image folder name.
               substr.assign(cimg::max(substr.width(),images_names[ind].width()));
               std::strcpy(substr,images_names[ind]);
@@ -3781,6 +3782,12 @@ CImg<char> gmic::substitute_item(const char *const source,
               gmic_strreplace_bw(substr);
               is_substituted = true;
             } break;
+            case 'n' : // Image name.
+              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+              cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
+              gmic_strreplace_bw(substr);
+              is_substituted = true;
+              break;
             case 't' : { // Ascii string from image values.
               const unsigned int siz = (unsigned int)img.size();
               if (siz) {
@@ -3796,18 +3803,13 @@ CImg<char> gmic::substitute_item(const char *const source,
               }
               *substr = 0; is_substituted = true;
             } break;
-            case 'c' : { // Coordinates of minimal value.
-              CImg<unsigned int> st;
-              if (img) st = img.get_stats(); else st.assign(8,1,1,1,0);
-              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[4],st[5],st[6],st[7]);
+            case 'x' : // Image extension.
+              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+              cimg_snprintf(substr,substr.width(),"%s",
+                            cimg::split_filename(images_names[ind].data()));
+              gmic_strreplace_bw(substr);
               is_substituted = true;
-            } break;
-            case 'C' : { // Coordinates of maximal value.
-              CImg<unsigned int> st;
-              if (img) st = img.get_stats(); else st.assign(12,1,1,1,0);
-              cimg_snprintf(substr,substr.width(),"%u,%u,%u,%u",st[8],st[9],st[10],st[11]);
-              is_substituted = true;
-            } break;
+              break;
             case '^' : { // Sequence of all pixel values.
               CImg<char> vs = img.value_string(',');
               if (vs && *vs) vs.resize(vs.width() - 1,1,1,1,0).move_to(substituted_items);
@@ -3884,110 +3886,105 @@ CImg<char> gmic::substitute_item(const char *const source,
         is_braces = true;
       }
 
-      // '${...}' expressions.
-      if (*nsource=='$') {
+      // Substitute '$!' -> Number of images in the list.
+      if (nsource[1]=='!') {
+        cimg_snprintf(substr,substr.width(),"%u",images.size());
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+        nsource+=2;
 
-        // Substitute '$!' -> Number of images in the list.
-        if (nsource[1]=='!') {
-          cimg_snprintf(substr,substr.width(),"%u",images.size());
-          CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-          nsource+=2;
+        // Substitute '$^' -> Verbosity level.
+      } else if (nsource[1]=='^') {
+        cimg_snprintf(substr,substr.width(),"%d",verbosity);
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+        nsource+=2;
 
-          // Substitute '$^' -> Verbosity level.
-        } else if (nsource[1]=='^') {
-          cimg_snprintf(substr,substr.width(),"%d",verbosity);
-          CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-          nsource+=2;
+        // Substitute '$|' -> Timer value.
+      } else if (nsource[1]=='|') {
+        cimg_snprintf(substr,substr.width(),"%g",(cimg::time() - reference_time)/1000.);
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+        nsource+=2;
 
-          // Substitute '$|' -> Timer value.
-        } else if (nsource[1]=='|') {
-          cimg_snprintf(substr,substr.width(),"%g",(cimg::time() - reference_time)/1000.);
-          CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-          nsource+=2;
+        // Substitute '$/' -> Current call stack.
+      } else if (nsource[1]=='/') {
+        cimglist_for(scope,i) substituted_items.insert(scope[i]).back().back() = '/';
+        nsource+=2;
 
-          // Substitute '$/' -> Current call stack.
-        } else if (nsource[1]=='/') {
-          cimglist_for(scope,i) substituted_items.insert(scope[i]).back().back() = '/';
-          nsource+=2;
+        // Substitute '$>' and '$<' -> Forward/backward indice of current loop.
+      } else if (nsource[1]=='>' || nsource[1]=='<') {
+        if (!repeatdones)
+          error(images,0,0,
+                "Item substitution '$%c': There is no loop currently running.",
+                nsource[1]);
+        const CImg<unsigned int> &rd = repeatdones.back();
+        cimg_snprintf(substr,substr.width(),"%u",nsource[1]=='>'?rd[2]:rd[1] - 1);
+        CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
+        nsource+=2;
 
-          // Substitute '$>' and '$<' -> Forward/backward indice of current loop.
-        } else if (nsource[1]=='>' || nsource[1]=='<') {
-          if (!repeatdones)
-            error(images,0,0,
-                  "Item substitution '$%c': There is no loop currently running.",
-                  nsource[1]);
-          const CImg<unsigned int> &rd = repeatdones.back();
-          cimg_snprintf(substr,substr.width(),"%u",nsource[1]=='>'?rd[2]:rd[1] - 1);
-          CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-          nsource+=2;
-
-          // Substitute '$name' and '${name}' -> Variable, image indice or environment variable.
-        } else if ((((is_braces && std::sscanf(inbraces,"%255[a-zA-Z0-9_]",
-                                               substr.data())==1)) ||
-                    (std::sscanf(nsource + 1,"%255[a-zA-Z0-9_]",substr.data())==1)) &&
-                   (*substr<'0' || *substr>'9')) {
-          const CImg<char>& name = is_braces?inbraces:substr;
-          const unsigned int
-            hashcode = gmic_hashcode(name,true),
-            l_name = is_braces?l_inbraces + 3:std::strlen(name) + 1;
-          const bool
-            is_global = *name=='_',
-            is_thread_global = is_global && name[1]=='_';
-          const int lind = is_global?0:(int)variables_sizes[hashcode];
-          if (is_thread_global) cimg::mutex(30);
-          const CImgList<char>
-            &__variables = *variables[hashcode],
-            &__variables_names = *variables_names[hashcode];
-          bool is_name_found = false;
-          for (int l = __variables.width() - 1; l>=lind; --l)
-            if (!std::strcmp(__variables_names[l],name)) {
+        // Substitute '$name' and '${name}' -> Variable, image indice or environment variable.
+      } else if ((((is_braces && std::sscanf(inbraces,"%255[a-zA-Z0-9_]",
+                                             substr.data())==1)) ||
+                  (std::sscanf(nsource + 1,"%255[a-zA-Z0-9_]",substr.data())==1)) &&
+                 (*substr<'0' || *substr>'9')) {
+        const CImg<char>& name = is_braces?inbraces:substr;
+        const unsigned int
+          hashcode = gmic_hashcode(name,true),
+          l_name = is_braces?l_inbraces + 3:std::strlen(name) + 1;
+        const bool
+          is_global = *name=='_',
+          is_thread_global = is_global && name[1]=='_';
+        const int lind = is_global?0:(int)variables_sizes[hashcode];
+        if (is_thread_global) cimg::mutex(30);
+        const CImgList<char>
+          &__variables = *variables[hashcode],
+          &__variables_names = *variables_names[hashcode];
+        bool is_name_found = false;
+        for (int l = __variables.width() - 1; l>=lind; --l)
+          if (!std::strcmp(__variables_names[l],name)) {
+            is_name_found = true; ind = l; break;
+          }
+        if (is_name_found) {
+          if (__variables[ind].size()>1)
+            CImg<char>(__variables[ind].data(),__variables[ind].size() - 1).
+              move_to(substituted_items);
+        } else {
+          for (int l = images.width() - 1; l>=0; --l)
+            if (images_names[l] && !std::strcmp(images_names[l],name)) {
               is_name_found = true; ind = l; break;
             }
           if (is_name_found) {
-            if (__variables[ind].size()>1)
-              CImg<char>(__variables[ind].data(),__variables[ind].size() - 1).
-                move_to(substituted_items);
+            cimg_snprintf(substr,substr.width(),"%d",ind);
+            CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
           } else {
-            for (int l = images.width() - 1; l>=0; --l)
-              if (images_names[l] && !std::strcmp(images_names[l],name)) {
-                is_name_found = true; ind = l; break;
-              }
-            if (is_name_found) {
-              cimg_snprintf(substr,substr.width(),"%d",ind);
-              CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).move_to(substituted_items);
-            } else {
-              const char *const s_env = std::getenv(name);
-              if (s_env) CImg<char>(s_env,(unsigned int)std::strlen(s_env)).move_to(substituted_items);
+            const char *const s_env = std::getenv(name);
+            if (s_env) CImg<char>(s_env,(unsigned int)std::strlen(s_env)).move_to(substituted_items);
+          }
+        }
+        if (is_thread_global) cimg::mutex(30,0);
+        nsource+=l_name;
+
+        // Substitute '${"-command"}' -> Status value after command execution.
+      } else if (is_braces) {
+        nsource+=l_inbraces + 3;
+        if (l_inbraces>0) {
+          const CImgList<char>
+            ncommands_line = commands_line_to_CImgList(gmic_strreplace_fw(inbraces));
+          unsigned int nposition = 0;
+          CImg<char>::string("*substitute").move_to(scope);
+          CImg<unsigned int> nvariables_sizes(256);
+          for (unsigned int l = 0; l<256; ++l) nvariables_sizes[l] = variables[l]->size();
+          _run(ncommands_line,nposition,images,images_names,parent_images,parent_images_names,nvariables_sizes,0);
+          for (unsigned int l = 0; l<254; ++l) if (variables[l]->size()>nvariables_sizes[l]) {
+              variables_names[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
+              variables[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
             }
-          }
-          if (is_thread_global) cimg::mutex(30,0);
-          nsource+=l_name;
+          scope.remove();
+          is_return = false;
+        }
+        if (status.width()>1)
+          CImg<char>(status.data(),(unsigned int)std::strlen(status)).move_to(substituted_items);
 
-          // Substitute '${"-command"}' -> Status value after command execution.
-        } else if (is_braces) {
-          nsource+=l_inbraces + 3;
-          if (l_inbraces>0) {
-            const CImgList<char>
-              ncommands_line = commands_line_to_CImgList(gmic_strreplace_fw(inbraces));
-            unsigned int nposition = 0;
-            CImg<char>::string("*substitute").move_to(scope);
-            CImg<unsigned int> nvariables_sizes(256);
-            for (unsigned int l = 0; l<256; ++l) nvariables_sizes[l] = variables[l]->size();
-            _run(ncommands_line,nposition,images,images_names,parent_images,parent_images_names,nvariables_sizes,0);
-            for (unsigned int l = 0; l<254; ++l) if (variables[l]->size()>nvariables_sizes[l]) {
-                variables_names[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
-                variables[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
-              }
-            scope.remove();
-            is_return = false;
-          }
-          if (status.width()>1)
-            CImg<char>(status.data(),(unsigned int)std::strlen(status)).move_to(substituted_items);
-
-          // Replace '$' by itself.
-        } else CImg<char>(nsource++,1).move_to(substituted_items);
-
-      }
+        // Replace '$' by itself.
+      } else CImg<char>(nsource++,1).move_to(substituted_items);
     }
   CImg<char>::vector(0).move_to(substituted_items);
   return substituted_items>'x';

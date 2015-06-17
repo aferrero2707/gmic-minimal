@@ -460,8 +460,14 @@ _help_usage :
 
   -_help_section "Substitution rules"
 
-  -_help_paragraph "  - "${-GMIC}" items containing '"$g"@"$n"', '"$g"$"$n"' or '"$g"{}"$n"' may be substituted before being interpreted. Use
-\n     the substituting expressions below to access data from the interpreter environment:
+  -_help_paragraph "  - "${-GMIC}" items containing '"$g"$"$n"' or '"$g"{}"$n"' are substituted before being interpreted. Use
+\n     the substituting expressions below to access various data from the interpreter environment:
+\n  - '"$c"$name"$n"' and '"$c"${name}"$n"' are both substituted by the "${g}"value of the specified named variable"$n"
+\n     (set previously by the item '"${c}"name=value"$n"'), or by the current positive "${g}"indice of the named
+\n     image '[name]'"$n", or by the value of the named "${g}"OS environment variable"$n" (evaluated in this order).
+\n  - '"$c"$>"$n"' and '"$c"$<"$n"' (resp. '"$c"${>}"$n"' and '"$c"${<}"$n"') are shortcuts respectively for '"$c"@{>,-1}"$n"' and
+\n     '"$c"@{<,-1}"$n"'. They refer to the "${g}"increasing/decreasing indice"$n" of the latest (currently running)
+\n     '"${c}"repeat..done"$n"' loop.
 \n    . '"$c"$!"$n"' is substituted by the current "${g}"number of images"$n" in the list.
 \n    . '"$c"@*"$n"' is substituted by the number of "${g}"available cpus"$n".
 \n    . '"$c"@."$n"' is substituted by the current "${g}"version number"$n" of the "${-GMIC}" interpreter
@@ -526,12 +532,6 @@ _help_usage :
 \n    . '"$c"@{\"command line\"}"$n"' is substituted by the "${g}"status value"$n" set by the execution of the
 \n       specified command line (see command '"$c"-status"$n"' to learn more about status).
 \n    . Expression '"$c"${}"$n"' stands thus for the "${g}"current status value"$n".
-\n  - '"$c"$name"$n"' and '"$c"${name}"$n"' are both substituted by the "${g}"value of the specified named variable"$n"
-\n     (set previously by item '"${c}"name=value"$n"'), or by the current positive "${g}"indice of the named
-\n     image '[name]'"$n", or by the value of the named "${g}"OS environment variable"$n" (evaluated in this order).
-\n  - '"$c"$>"$n"' and '"$c"$<"$n"' (resp. '"$c"${>}"$n"' and '"$c"${<}"$n"') are shortcuts respectively for '"$c"@{>,-1}"$n"' and
-\n     '"$c"@{<,-1}"$n"'. They refer to the "${g}"increasing/decreasing indice"$n" of the latest (currently running)
-\n     '"${c}"repeat..done"$n"' loop.
 \n  - Any other expression inside braces (as in '"$c"{expression}"$n"') is considered as a "${g}"mathematical
 \n     expression"$n", and is evaluated, except for the three following cases:
 \n    . If expression starts and ends by "${g}"single quotes"$n", it is substituted by the "${g}"sequence of
