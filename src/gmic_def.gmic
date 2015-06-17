@@ -13367,11 +13367,11 @@ files2video : -check "isint(${3=25}) && $3>0" -skip "${2=output.avi}",${4=mp4v}
   -endl -done
   -o $"$2",0,0,0 -v +
 
-#@gmic morph : nb_frames>0,_smoothness>=0,_precision>0
+#@gmic morph : nb_frames>0,_smoothness>=0,_precision>=0
 #@gmic : Create morphing sequence between selected images.
 #@gmic : Default values: 'smoothness=0.1' and 'precision=5'.
 #@gmic : $ image.jpg --rotate 20,1,1,50%,50% -morph 9
-morph : -check "$1>=0 && ${2=0.1}>=0 && ${3=5}>0"
+morph : -check "$1>=0 && ${2=0.1}>=0 && ${3=5}>=0"
   -e[^-1] "Create morphing sequence between image$?, with $1 added frames, smoothness $2 and precision $3.\n"
   -if {!$1} -return -endif
   -v - -r[^0] [0],3 -repeat {$!-1} -l[$<,{$<+1}]
@@ -18941,7 +18941,7 @@ gimp_gmicky_preview :
 #@gimp : - <b>05/14/2014</b> : version <i>1.5.9.0</i>.\n
 #@gimp : - <b>08/20/2014</b> : version <i>1.6.0.0</i>.\n
 #@gimp : - <span foreground="purple"><b>05/23/2015</b> : version <i>1.6.3.1</i> (Current stable).</span>\n
-#@gimp : - <b>06/03/2015</b> : version <i>1.6.4.0</i> (Current pre-release).\n
+#@gimp : - <b>06/17/2015</b> : version <i>1.6.5.0</i> (Current pre-release).\n
 #@gimp : "}
 #@gimp : sep = separator()
 #@gimp : link = link("View latest changelog","https://www.flickr.com/groups/gmic/discuss/72157652079823575/")
@@ -20712,7 +20712,7 @@ gimp_sketchbw_preview :
 #@gimp : sep = separator(), Preview type = choice("Full","Forward horizontal","Forward vertical","Backward horizontal","Backward vertical","Duplicate horizontal","Duplicate vertical")
 #@gimp : sep = separator(), note = note("<small>Authors: <i>Antaron</i>, <i>Mahvin</i> and <i>David Tschumperl&#233;</i>.             Latest update: <i>03/16/2015</i>.</small>")
 gimp_stamp :
-  -repeat $! -l[$>] -split_opacity
+  -repeat $! -l[$>] -split_opacity -l[0]
     wh={w},{h}
     -norm
     -if $7 -r 150%,150%,1,1,3 -endif
@@ -20722,7 +20722,7 @@ gimp_stamp :
     -apply_curve 1,0,0,101,33,170,229,255,255
     -if $7 -r $wh,1,1,2 -endif
     -if $6 -negative -endif
-  -a c -endl -done
+  -endl -a c -endl -done
 
 gimp_stamp_preview :
   -gimp_split_preview "-gimp_stamp $*",$-1
@@ -25766,6 +25766,7 @@ gimp_tv_smoothing_preview :
 #@gimp : sep = separator(), Preview type = choice("Full","Forward horizontal","Forward vertical","Backward horizontal","Backward vertical","Duplicate horizontal","Duplicate vertical")
 #@gimp : sep = separator(), note = note("<small>Author: <i>J&#233;rome Boulanger and David Tschumperl&#233;</i>.      Latest update: <i>08/27/2013</i>.</small>")
 gimp_haar_smoothing :
+  -remove_opacity
   -ac "-gimp_parallel_overlap \"-denoise_haar $1,$3,$2 -c 0,255\",$5,$6",$4
 
 gimp_haar_smoothing_preview :
