@@ -3196,6 +3196,7 @@ void gmic::_gmic(const char *const commands_line,
   CImg<char> str(8);
   cimg_snprintf(str,str.width(),"%u",cimg::nb_cpus());
   set_variable("_cpus",str);
+
 #if cimg_OS==1
   cimg_snprintf(str,str.width(),"%u",(unsigned int)getpid());
 #elif cimg_OS==2 // #if cimg_OS==1
@@ -3204,11 +3205,14 @@ void gmic::_gmic(const char *const commands_line,
   cimg_snprintf(str,str.width(),"0");
 #endif // #if cimg_OS==1
   set_variable("_pid",str);
-  cimg_snprintf(str,str.width(),"%u",gmic_version);
-  set_variable("_version",str);
+
 #ifdef gmic_prerelease
   set_variable("_prerelease",gmic_prerelease);
 #endif // #if gmic_prerelease==1
+
+  cimg_snprintf(str,str.width(),"%u",gmic_version);
+  set_variable("_version",str);
+
 #ifdef cimg_use_vt100
   set_variable("_vt100","1");
 #endif // # if cimg_use_vt100

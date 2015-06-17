@@ -188,7 +188,7 @@ _help : -skip ${1=""}
   stopflag=0
   _is_example=0
   -_document_gmic_header_ascii[] 0
-  -repeat $! -l[$>] -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}}
+  -repeat $! -l[$>] -if {h>7" && "{{[0-{min(h-1,5)}]}'=='{'"#@gmic"'}}}
     -rows 7,100% -autocrop {'" "'}  # Discard '#@gmic'.
     -if {i!={':'}} # Command declaration.
       -s -,{'": "'} -autocrop {'" "'} -autocrop {':'} -autocrop {'" "'}
@@ -262,8 +262,8 @@ _help_usage :
 \n  - Negative indices are treated in a periodic way: '"$c"[-1]"$n"' refers to the last image of the
 \n     list, '"$c"[-2]"$n"' to the penultimate one, etc. Thus, if the list has 4 images, '"$c"[1]"$n"' and '"$c"[-3]"$n"'
 \n     both designate the second image of the list.
-\n  - A named image may be indicated by '"$c"[name]"$n"', if 'name' uses the characters set [a-zA-Z0-9_] and
-\n     does not start with a number. Image names can be set or reassigned at any moment during
+\n  - A named image may be indicated by '"$c"[name]"$n"', if 'name' uses the characters set [a-zA-Z0-9_]
+\n     and does not start with a number. Image names can be set or reassigned at any moment during
 \n     the processing pipeline (see commands '"$c"-name"$n"' and '"$c"-input"$n"' for this purpose).
 \n  - "${-GMIC}" defines a set of various commands and substitution mechanisms to allow the design
 \n     of complex pipelines managing this list of images, in a very flexible way:
@@ -283,8 +283,8 @@ _help_usage :
 \n        The depth is equal to 1 for usual 2d color or grayscale images.
 \n    . '"${g}"spectrum"$n"', the number of image channels (size along the "$g"'c'-axis"$n").
 \n        The spectrum is respectively equal to 3 and 4 for usual RGB and RGBA color images.
-\n  - There are no limitations on the size of each image dimension. For instance, the number of image
-\n     slices or channels can be of arbitrary size within the limits of available memory.
+\n  - There are no limitations on the size of each image dimension. For instance, the number of
+\n     image slices or channels can be of arbitrary size within the limits of available memory.
 \n  - The "${g}"width, height"$n" and "${g}"depth"$n" of an image are considered as '"${g}"spatial"$n"' dimensions, while the
 \n     "${g}"spectrum"$n" has a '"${g}"multi-spectral"$n"' meaning. Thus, a 4d image in "${-GMIC}" should be most often
 \n     regarded as a 3d dataset of multi-spectral voxels. Most of the "${-GMIC}" commands will stick
@@ -304,8 +304,8 @@ _help_usage :
 \n     right. For instance, the expression:
 \n\n       "${c}"input.jpg -blur 3,0 -sharpen 10 -resize 200%,200% -output output.jpg"$n"\n
 \n     defines a valid pipeline composed of nine "${-GMIC}" items.
-\n  - Each "${-GMIC}" item is a string which represents either a command, a sequence of command arguments,
-\n     a filename, or a special input string.
+\n  - Each "${-GMIC}" item is a string which represents either a command, a sequence of
+\n     command arguments, a filename, or a special input string.
 \n  - Escape characters '"$g"\\"$n"' and double quotes '"$g"\""$n"' can be used to define items containing
 \n     spaces or special characters. For instance, the two strings
 \n     '"${c}"single\\ item"$n"' and '"${c}"\"single item\""$n"' define the same item, with a space in it."
@@ -319,7 +319,8 @@ _help_usage :
 \n  - The following special input strings may be used as "${-GMIC}" items to create and insert new
 \n     images with prescribed values, at the end of the image list:
 \n    . '"$g"[selection]"$n"' or '"$g"[selection]xN"$n"': Insert 1 or N copies of selected existing images.
-\n       '"${g}"selection"$n"' may contain one or several images (see next section for details).
+\n       '"${g}"selection"$n"' may contain one or several images
+\n       (see section '"${c}"Command items and selection"$n"' to learn more about selections).
 \n    . '"${g}"width[%],_height[%],_depth[%],_spectrum[%],_values"$n"': Insert a new image with
 \n       specified size and values (adding '"$g"%"$n"' to a dimension means 'percentage of the size
 \n       along the same axis, taken from the last image '"$g"[-1]"$n"''). Any specified dimension
@@ -341,7 +342,7 @@ _help_usage :
 \n     by any command invoked outside the current command scope (global variable).
 \n  - If the name of a variable starts with two underscores '"${g}"__"$n"', the global variable is also shared
 \n     among different threads and can be read/set by commands running in parallel (see command
-\n     '-parallel'). Otherwise, it remains local to the thread that defined it."
+\n     '"${c}"-parallel"$n"'). Otherwise, it remains local to the thread that defined it."
 
   -_help_section "Command items and selections"
 
@@ -354,17 +355,17 @@ _help_usage :
 \n     arguments when required.
 \n  - The execution of a "${-GMIC}" command may be restricted only to a "${g}"subset"$n" of the image list, by
 \n     appending '"$c"[selection]"$n"' to the command name. Examples of valid syntaxes for '"${g}"selection"$n"' are:
-\n    . '"$c"-com[0,1,3]"$n"': Apply command only on images "$g"[0],[1]"$n" and "$g"[3]"$n".
-\n    . '"$c"-com[3-5]"$n"': Apply command only on images "$g"[3]"$n" to "$g"[5]"$n" (i.e, "$g"[3],[4]"$n" and "$g"[5]"$n").
-\n    . '"$c"-com[50%-100%]"$n"': Apply command only on the second half of the image list.
-\n    . '"$c"-com[0,-4--1]"$n"': Apply command only on the first and the four latest images.
-\n    . '"$c"-com[0-9:3]"$n"': Apply command only on images "$g"[0]"$n" to "$g"[9]"$n", with a step of 3
+\n    . '"$c"-command[0,1,3]"$n"': Apply command only on images "$g"[0],[1]"$n" and "$g"[3]"$n".
+\n    . '"$c"-command[3-5]"$n"': Apply command only on images "$g"[3]"$n" to "$g"[5]"$n" (i.e, "$g"[3],[4]"$n" and "$g"[5]"$n").
+\n    . '"$c"-command[50%-100%]"$n"': Apply command only on the second half of the image list.
+\n    . '"$c"-command[0,-4--1]"$n"': Apply command only on the first and the four latest images.
+\n    . '"$c"-command[0-9:3]"$n"': Apply command only on images "$g"[0]"$n" to "$g"[9]"$n", with a step of 3
 \n                      (i.e. on images "$g"[0], [3], [6]"$n" and "$g"[9]"$n").
-\n    . '"$c"-com[0--1:2]"$n"': Apply command only on images of the list with even indices.
-\n    . '"$c"-com[0,2-4,50%--1]"$n"': Apply command on images "$g"[0],[2],[3],[4]"$n" and on the second half
+\n    . '"$c"-command[0--1:2]"$n"': Apply command only on images of the list with even indices.
+\n    . '"$c"-command[0,2-4,50%--1]"$n"': Apply command on images "$g"[0],[2],[3],[4]"$n" and on the second half
 \n                             of the image list.
-\n    . '"$c"-com[^0,1]"$n"': Apply command on all images except the first two.
-\n    . '"$c"-com[name1,name2]"$n"': Apply command on named images '"${g}"name1"$n"' and '"${g}"name2"$n"'.
+\n    . '"$c"-command[^0,1]"$n"': Apply command on all images except the first two.
+\n    . '"$c"-command[name1,name2]"$n"': Apply command on named images '"${g}"name1"$n"' and '"${g}"name2"$n"'.
 \n  - Indices in selections are always sorted in "${g}"increasing order"$n", and duplicate indices are
 \n     discarded. For instance, selections '"$c"[3-1,1-3]"$n"' and '"$c"[1,1,1,3,2]"$n"' are both equivalent to
 \n     '"$c"[1-3]"$n"'. If you want to repeat a single command multiple times on an image, use a
@@ -386,8 +387,8 @@ _help_usage :
 \n       expressions '"$c"-flower ,,,100,,2"$n"' or '"$c"-flower ,"$n"' are correct.
 \n  - Most of the existing commands available in "${-GMIC}" are actually "${g}"custom commands"$n".
 \n  - A user may easily add its own custom commands to the "${-GMIC}" interpreter (see section
-\n     "${c}"'Adding custom commands"$n"'). Native commands cannot be added unless you modify the "${-GMIC}"
-\n     interpreter source code."
+\n     "${c}"'Adding custom commands"$n"' for more details). New native commands cannot be added unless you
+\n     modify the "${-GMIC}" interpreter source code."
 
   -_help_section "Input/output properties"
 
@@ -400,8 +401,8 @@ _help_usage :
 \n  - When dealing with color images, "${-GMIC}" generally reads, writes and displays data using the
 \n     usual RGB color space.
 \n  - "${-GMIC}" is able to manage "${g}"3d objects"$n" that may be read from files or generated by "${-GMIC}"
-\n     commands. A 3d object is stored as a one-column scalar image containing the object data, in the
-\n     following order: "$g"{ magic_number; sizes; vertices; primitives; colors; opacities }"$n".
+\n     commands. A 3d object is stored as a one-column scalar image containing the object data,
+\n     in the following order: "$g"{ magic_number; sizes; vertices; primitives; colors; opacities }"$n".
 \n     These 3d representations can be processed as regular images.
 \n     (see command '"$c"-split3d"$n"' for accessing each of these 3d object data separately).
 \n  - Be aware that usual file formats may be sometimes not adapted to store all the available
@@ -436,10 +437,10 @@ _help_usage :
 \n      '"${c}"filename.yuv,width,height[,first_frame[,last_frame[,step]]]"$n"'.
 \n    . "$g".tiff files:"$n" Only sub-images of multi-pages tiff files can be loaded, using the input
 \n       expression '"${c}"filename.tif,[first_frame,[last_frame,[step]]]"$n"'.
-\n       Output expression '"${c}"filename.tiff,[datatype[,compression[,force_multipage]]"$n"' can be used to specify the
-\n       output pixel type, as well as the compression method. '"${c}"compression"$n"' can be "$c"{ none | lzw | jpeg }"$n"
-\n       and '"${c}"force_multipage"$n" can be { 0=no | 1=yes }.
-\n      '"${c}"datatype"$n"' can be "$c"{ uchar | char | ushort | short | uint | int | ulong | long | float | double }"$n".
+\n       Output expression '"${c}"filename.tiff,[datatype[,compression[,force_multipage]]"$n"' can be used to
+\n       specify the output pixel type, as well as the compression method.
+\n       '"${c}"datatype"$n"' can be "$c"{ uchar | char | ushort | short | uint | int | ulong | long | float | double }"$n".
+\n       '"${c}"compression"$n"' can be "$c"{ none | lzw | jpeg }"$n" and '"${c}"force_multipage"$n" can be "$c"{ 0=no | 1=yes }"$n".
 \n    . "$g".gif files:"$n" Animated gif files can be saved, using the input expression
 \n      '"${c}"filename.gif,fps,nb_loops"$n"'.
 \n       Specify '"${c}"nb_loops=0"$n"' to get an infinite number of animation loops.
@@ -460,97 +461,96 @@ _help_usage :
 
   -_help_section "Substitution rules"
 
-  -_help_paragraph "  - "${-GMIC}" items containing '"$g"$"$n"' or '"$g"{}"$n"' are substituted before being interpreted. Use
-\n     the substituting expressions below to access various data from the interpreter environment:
+  -_help_paragraph "  - "${-GMIC}" items containing '"$g"$"$n"' or '"$g"{}"$n"' are substituted before being interpreted.
+\n     Use these substituting expressions to access various data from the interpreter environment.
 \n  - '"$c"$name"$n"' and '"$c"${name}"$n"' are both substituted by the "${g}"value of the specified named variable"$n"
-\n     (set previously by the item '"${c}"name=value"$n"'), or by the current positive "${g}"indice of the named
-\n     image '[name]'"$n", or by the value of the named "${g}"OS environment variable"$n" (evaluated in this order).
-\n  - '"$c"$>"$n"' and '"$c"$<"$n"' (resp. '"$c"${>}"$n"' and '"$c"${<}"$n"') are shortcuts respectively for '"$c"@{>,-1}"$n"' and
-\n     '"$c"@{<,-1}"$n"'. They refer to the "${g}"increasing/decreasing indice"$n" of the latest (currently running)
-\n     '"${c}"repeat..done"$n"' loop.
-\n    . '"$c"$!"$n"' is substituted by the current "${g}"number of images"$n" in the list.
-\n    . '"$c"@*"$n"' is substituted by the number of "${g}"available cpus"$n".
-\n    . '"$c"@."$n"' is substituted by the current "${g}"version number"$n" of the "${-GMIC}" interpreter
-\n    . '"$c"@^"$n"' is substituted by the current "${g}"verbosity level"$n".
-\n    . '"$c"@%"$n"' is substituted by the "${g}"pid"$n" of the current process.
-\n    . '"$c"$|"$n"' is substituted by the current value (expressed in seconds) of a "${g}"millisecond
-\n       precision timer"$n".
-\n    . '"$c"@/"$n"' is substituted by the current "${g}"number of levels in the command scope"$n".
-\n    . '"$c"$/"$n"' is substituted by the content of the "${g}"global scope"$n", or a
-\n       subset of it. If specified subset refers to multiple scope items, they are separated
-\n       by slashes '"$g"/"$n"'.
-\n    . '"$c"@>"$n"' and '"$c"@<"$n"' are equivalent. They are both substituted by "${g}"the number of nested
-\n       'repeat-done' loops"$n" that are currently running.
-\n    . '"$c"@{>}"$n"' or '"$c"@{>,subset}"$n"' are substituted by the indice values (or a subset of them) of
-\n       the running 'repeat-done' loops, expressed in the ascending order, starting from 0.
-\n       If specified subset refers to multiple indices, they are separated by commas '"$g","$n"'.
-\n    . '"$c"@{<}"$n"' or '"$c"@{<,subset}"$n"' do the same but in descending order.
-\n    . '"$c"@indice"$n"' or '"$c"@{indice,feature}"$n"' are substituted by the "${g}"list of pixel values"$n" of the
-\n       image "$c"[indice]"$n" (separated by commas), or by a "${g}"specific feature (or subset)"$n" of it.
-\n       '"${g}"indice"$n"' denotes either a numbered image indice or an image name. Requested '"${g}"feature"$n"' can be one of:
-\n         . '"${g}"n"$n"': image name or filename (if the image has been read from a file).
-\n         . '"${g}"b"$n"': image basename (i.e. filename without the folder path nor extension).
-\n         . '"${g}"x"$n"': image extension (i.e last characters after the last '.' in the filename).
-\n         . '"${g}"f"$n"': image folder name.
-\n         . '"${g}"t"$n"': text string built from the image values, regarded as ascii codes.
-\n         . '"${g}"c"$n"': (x,y,z,c) coordinates of the minimum value, separated by commas ','.
-\n         . '"${g}"C"$n"': (x,y,z,c) coordinates of the maximum value, separated by commas ','.
-\n         . '"$g"(x[%],_y[%],_z[%],_c[%],_boundary)"$n"': pixel value at "$g"(x[%],y[%],z[%],c[%])"$n", with
-\n            specified boundary conditions "$c"{ 0=dirichlet | 1=neumann | 2=periodic }"$n".
-\n         . Any other '"${g}"feature"$n"' is considered either as a specified "${g}"subset of image values"$n", or
-\n            as a "${g}"mathematical expression"$n" which is evaluated (associated to the selected image).
-\n            For instance, '"$c"@{-1,0-50%}"$n"' is substituted by the sequence of numerical values
-\n            coming from the first half data of the last image, separated by commas '"$g","$n"'.
-\n            Expression '"$c"@{0,w+h}"$n"' is substituted by the sum of the width and height of the
-\n            first image.
-\n    . '"$c"{*}"$n"' is substituted by the "${g}"visibility state"$n" of the instant display window "$c"[0]"$n"
-\n       (can be "$c"{ 0=closed | 1=visible }"$n").
-\n    . '"$c"{*,feature}"$n"' or '"$c"@{*indice,feature}"$n"' is substituted by a "${g}"specific feature"$n" of the
-\n       instant display window "$c"[0]"$n" (or "$c"[indice]"$n", if specified). Requested '"${g}"feature"$n"' can be:
-\n         . '"${g}"w"$n"': display width (i.e. width of the display area managed by the window).
-\n         . '"${g}"h"$n"': display height (i.e. height of the display area managed by the window).
-\n         . '"${g}"wh"$n"': display width x display height.
-\n         . '"${g}"d"$n"': window width (i.e. width of the window widget).
-\n         . '"${g}"e"$n"': window height (i.e. height of the window widget).
-\n         . '"${g}"de"$n"': window width x window height.
-\n         . '"${g}"u"$n"': screen width (actually independent on the window size).
-\n         .' "${g}"v"$n"': screen height (actually independent on the window size).
-\n         . '"${g}"uv"$n"': screen width x screen height.
-\n         . '"${g}"n"$n"': current normalization type of the instant display.
-\n         . '"${g}"x"$n"': X-coordinate of the mouse position (or -1, if outside the display area).
-\n         . '"${g}"y"$n"': Y-coordinate of the mouse position (or -1, if outside the display area).
-\n         . '"${g}"b"$n"': state of the mouse buttons { 1=left-but. | 2=right-but. | 4=middle-but. }.
-\n         . '"${g}"o"$n"': state of the mouse wheel.
-\n         . '"${g}"k"$n"': decimal code of the pressed key if any, 0 otherwise.
-\n         . '"${g}"c"$n"': boolean (0 or 1) telling if the instant display has been closed recently.
-\n         . '"${g}"r"$n"': boolean telling if the instant display has been resized recently.
-\n         . '"${g}"m"$n"': boolean telling if the instant display has been moved recently.
-\n         . Any other '"${g}"feature"$n"' stands for a "${g}"keycode name"$n" (in capital letters), and is substi-
-\n            tuted by a boolean describing the current key state "$c"{ 0=pressed | 1=released }"$n".
-\n         . You can also prepend a dash '"$c"-"$n"' to a '"${g}"feature"$n"' (that supports it) to flush
-\n            the corresponding event immediately after reading its state.
-\n    . '"$c"@{\"command line\"}"$n"' is substituted by the "${g}"status value"$n" set by the execution of the
-\n       specified command line (see command '"$c"-status"$n"' to learn more about status).
-\n    . Expression '"$c"${}"$n"' stands thus for the "${g}"current status value"$n".
-\n  - Any other expression inside braces (as in '"$c"{expression}"$n"') is considered as a "${g}"mathematical
-\n     expression"$n", and is evaluated, except for the three following cases:
-\n    . If expression starts and ends by "${g}"single quotes"$n", it is substituted by the "${g}"sequence of
-\n       ascii codes"$n" that composes the specified string, separated by commas '"$g","$n"'. For instance,
-\n       item '"$c"{'foo'}"$n"' is substituted by '"${c}"102,111,111"$n"'.
-\n    . If expression starts and ends with "${g}"backquotes"$n" '"$g"\47"$n"', it is substituted by the "${g}"string
-\n       whose ascii codes are given by the list of values"$n" in between the backquotes.
-\n       For instance, item '"$c"{`102,111,111`}"$n"' is substituted by '"${c}"foo"$n"'.
-\n    . If expression contains operator '"$c"'=='"$n"' or '"$c"'!='"$n"', it is substituted by "${c}"0"$n" or "${c}"1"$n", whether
-\n       the two strings beside the operator "${g}"are the same or not"$n" (case-sensitive). For instance,
-\n       both items '"$c"{foo'=='foo}"$n"' and '"$c"{foo'!='FOO}"$n"' are substituted by '"${c}"1"$n"'.
-\n    . If expression starts with an underscore '"$g"_"$n"', it is substituted by the mathematical
-\n       evaluation of the expression, but "${g}"truncated to a readable format"$n". For instance,
-\n       item '"$c"{_pi}"$n"' is substituted by '"${c}"3.14159"$n"' (while '"$c"{pi}"$n"' is '"${c}"3.141592653589793"$n"').
+\n     (set previously by the item '"${c}"name=value"$n"'). If this variable has not been already set,
+\n     the expression is substituted by the highest positive "${g}"indice of the named image '[name]'"$n".
+\n     If no image has this name, the expression is substituted by the value of the
+\n     "${g}"OS environment variable"$n" with same name (it may be an empty string).
+\n     The following variables are predefined by the "${-GMIC}" interpreter:
+\n       . '"$c"$_cpus"$n"': The number of "${g}"computation cores"$n" available on your machine.
+\n          This variable can be reassigned.
+\n       . '"$c"$_pid"$n"': The current "${g}"process identifier"$n", as an integer.
+\n          This variable can be reassigned.
+\n       . '"$c"$_prerelease"$n"': For pre-releases only, the "${g}"date of the pre-release"$n" as "${g}"yyyymmdd"$n".
+\n          For stable releases, this variable is not defined. This variable can be reassigned.
+\n       . '"$c"$_version"$n"': A 4-digits number telling about the current "${g}"version"$n" of the "${-GMIC}" interpreter.
+\n          This variable can be reassigned (currently '"$g$_version$n"').
+\n       . '"$c"$_vt100"$n"': Set to "${g}"1"$n" (default value) if "${g}"colored text output"$n" is allowed on the console.
+\n          This variable can be reassigned.
+\n       . '"$c"$!"$n"': The current "${g}"number of images"$n" in the list. This variable cannot be reassigned.
+\n       . '"$c"$^"$n"': The current "${g}"verbosity level"$n". This variable cannot be reassigned.
+\n       . '"$c"$|"$n"': The current value (expressed in seconds) of a "${g}"millisecond precision timer."$n"
+\n          This variable cannot be reassigned.
+\n       . '"$c"$/"$n"': The current "${g}"call stack"$n". Stack items are separated by slashes '"$g"/"$n"'.
+\n          This variable cannot be reassigned.
+\n       . '"$c"$>"$n"' and '"$c"$<"$n"': The "${g}"increasing/decreasing indice"$n" of the latest (currently running)
+\n          '"${c}"repeat..done"$n"' loop. These variable cannot be reassigned.
+\n  - '"$c"${\"command line\"}"$n"' is substituted by the "${g}"status value"$n" set by the execution of the
+\n     specified command line (see command '"$c"-status"$n"' to learn more about status).
+\n     Expression '"$c"${}"$n"' thus stands for the "${g}"current status value"$n".
+\n  - '"$c"{'string'}"$n"' (single quotes) is substituted by the "${g}"sequence of ascii codes"$n" that compose
+\n     the specified string, separated by commas '"$g","$n"'. For instance, item '"$c"{'foo'}"$n"' is substituted
+\n     by '"${c}"102,111,111"$n"'.
+\n  - '"$c"{`value1,...,valueN`}"$n"' (backquotes) is substituted by the "${g}"string whose ascii sequence
+\n    corresponds to the list of values"$n" specified between the backquotes.
+\n    For instance, item '"$c"{`102,111,111`}"$n"' is substituted by '"${c}"foo"$n"'.
+\n  - '"$c"{string1'=='string2}"$n"' and '"$c"{string1'!='string2}"$n"' are substituted by "${c}"0"$n" or "${c}"1"$n",
+\n     whether the two strings beside the operator "${g}"are the same or not"$n" (test is case-sensitive).
+\n     For instance, both items '"$c"{foo'=='foo}"$n"' and '"$c"{foo'!='FOO}"$n"' are substituted by '"${c}"1"$n"'.
+\n  - '"$c"{image,feature}"$n"' is substituted by a specific feature of the image "$c"[image]"$n".
+\n     '"${g}"image"$n"' can be either an image number or an image name. It can be also eluded.
+\n     In which case, the last image '"$c"[-1]"$n"' of the list is considered for the requested feature.
+\n     Specified '"${g}"feature"$n"' can be one of:
+\n       . '"${g}"b"$n"': The image basename (i.e. filename without the folder path nor extension).
+\n       . '"${g}"c"$n"': The (x,y,z,c) coordinates of the minimum value, separated by commas ','.
+\n       . '"${g}"C"$n"': The (x,y,z,c) coordinates of the maximum value, separated by commas ','.
+\n       . '"${g}"f"$n"': The image folder name.
+\n       . '"${g}"n"$n"': The image name or filename (if the image has been read from a file).
+\n       . '"${g}"t"$n"': The text string from the image values regarded as ascii codes.
+\n       . '"${g}"x"$n"': The image extension (i.e last characters after the last '.' in the image name).
+\n       . '"${g}"^"$n" : The sequence of all image values, separated by commas ','.
+\n       . '"${g}"[subset]"$n"': The sequence of image values corresponding to the specified subset,
+\n          and separated by commas ','.
+\n       . Any other '"${g}"feature"$n"' is considered as a "${g}"mathematical expression"$n" associated to
+\n          the image "$c"[image]"$n" and is substituted by the result of its evaluation (float value).
+\n          For instance, expression '"$c"{0,w+h}"$n"' is substituted by the sum of the width and height
+\n          of the first image (see section '"${c}"Mathematical expressions"$n"' for more details).
+\n          If a mathematical expression starts with an underscore '"$g"_"$n", the resulting value is
+\n          truncated to a readable format. For instance, item '"$c"{_pi}"$n"' is substituted by '"${c}"3.14159"$n"'
+\n          (while '"$c"{pi}"$n"' is '"${c}"3.141592653589793"$n"').
+\n  - '"$c"{*}"$n"' is substituted by the "${g}"visibility state"$n" of the instant display window "$c"[0]"$n"
+\n     (can be "$c"{ 0=closed | 1=visible }"$n").
+\n  - '"$c"{*,feature}"$n"' or '"$c"{*indice,feature}"$n"' is substituted by a "${g}"specific feature"$n" of the
+\n     instant display window "$c"\#0"$n" (or "$c"\#indice"$n", if specified). Requested '"${g}"feature"$n"' can be:
+\n       . '"${g}"w"$n"': display width (i.e. width of the display area managed by the window).
+\n       . '"${g}"h"$n"': display height (i.e. height of the display area managed by the window).
+\n       . '"${g}"wh"$n"': display width x display height.
+\n       . '"${g}"d"$n"': window width (i.e. width of the window widget).
+\n       . '"${g}"e"$n"': window height (i.e. height of the window widget).
+\n       . '"${g}"de"$n"': window width x window height.
+\n       . '"${g}"u"$n"': screen width (actually independent on the window size).
+\n       .' "${g}"v"$n"': screen height (actually independent on the window size).
+\n       . '"${g}"uv"$n"': screen width x screen height.
+\n       . '"${g}"n"$n"': current normalization type of the instant display.
+\n       . '"${g}"x"$n"': X-coordinate of the mouse position (or -1, if outside the display area).
+\n       . '"${g}"y"$n"': Y-coordinate of the mouse position (or -1, if outside the display area).
+\n       . '"${g}"b"$n"': state of the mouse buttons { 1=left-but. | 2=right-but. | 4=middle-but. }.
+\n       . '"${g}"o"$n"': state of the mouse wheel.
+\n       . '"${g}"k"$n"': decimal code of the pressed key if any, 0 otherwise.
+\n       . '"${g}"c"$n"': boolean (0 or 1) telling if the instant display has been closed recently.
+\n       . '"${g}"r"$n"': boolean telling if the instant display has been resized recently.
+\n       . '"${g}"m"$n"': boolean telling if the instant display has been moved recently.
+\n       . Any other '"${g}"feature"$n"' stands for a "${g}"keycode name"$n" (in capital letters), and is substituted
+\n          by a boolean describing the current key state "$c"{ 0=pressed | 1=released }"$n".
+\n       . You can also prepend a dash '"$c"-"$n"' to a '"${g}"feature"$n"' (that supports it) to flush the
+\n          corresponding event immediately after reading its state (works for keys, mouse and window events).
 \n  - Item substitution is "${g}"never performed in items between double quotes"$n". One must break the quotes
 \n    to enable substitution if needed, as in "$c"\"3+8 kg = \"{3+8}\" kg\""$n". Using double quotes
 \n    is then a convenient way to "${g}"disable the substitutions mechanism"$n" in items, when necessary.
 \n  - One can also disable the substitution mechanism on items outside double quotes, by
-\n     "${g}"escaping"$n" the '"$g"@"$n"','"$g"{"$n"','"$g"}"$n"' or '"$g"$"$n"' characters, as in '"$c"\\{3+4\\}\\ doesn\47t\\ evaluate"$n"'."
+\n     "${g}"escaping"$n" the '"$g"{"$n"','"$g"}"$n"' or '"$g"$"$n"' characters, as in '"$c"\\{3+4\\}\\ doesn\47t\\ evaluate"$n"'."
 
   -_help_section "Mathematical expressions"
 
@@ -719,8 +719,8 @@ _help_usage :
 \n In this case, the '"$g"[]"$n"' characters are mandatory when writing the item.
 \n A command marked with '"$g"(+)"$n"' is a "${g}"native"$n" command.
 \n Note also that all images that serve as illustrations in this reference documentation are normalized
-\n in "$g"[0,255]"$n" before being displayed. You may need to do this manually (command '"$c"-normalize 0,255"$n"') if you
-\n want to save image files having the same aspect than those illustrated in the example codes."
+\n in "$g"[0,255]"$n" before being displayed. You may need to do this manually (command '"$c"-normalize 0,255"$n"')
+\n if you want to save image files having the same aspect than those illustrated in the example codes."
 
 _help_examples :
   g=$_gmic_g c=$_gmic_c n=$_gmic_n
@@ -1690,7 +1690,7 @@ _document_gmic_subsection_ascii :
 
 _document_gmic_declaration_ascii :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
-  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
@@ -1713,7 +1713,7 @@ _document_gmic_declaration_ascii :
 _document_gmic_description_ascii :
   s="        " bs0="\n" bs1="\\\\\n         "
   -y x -if {!narg($_is_tutorial)} -_document_gmic_split_ascii 96 -endif
-  -if {$!==1" && "narg($_vt100)" && "{{0,[0-7]}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
+  -if {$!==1" && "narg($_vt100)" && "{{0,[0-{min(wh-1,7)}]}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
   -repeat {$!-1} ({'${bs$_is_example}$s"  "'}) -a[$>,-1] x -done -a x
   -if {narg($_vt100)}
     -replace_str "Default values:","\n"$s${_gmic_b}"Default values:"$_gmic_n
@@ -1782,7 +1782,7 @@ _document_gmic_declaration_bash :
        {{0,t}'=='"output"}" || "{{0,t}'=='"o"}" || "\
        {{0,t}'=='"command"}" || "{{0,t}'=='"m"}} -return -endif
   -repeat $! -if {{$<,t}'=='"(+)"} -rm[$<] -endif -done # Discard '(+)' qualifier.
-  -if {$!==2" && "{{[0-6]}'=='{'"eq. to "'}}} # Command is a shortcut.
+  -if {$!==2" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}} # Command is a shortcut.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39 -autocrop[-1] {'-'}
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut=${-str2hex\ {1,t}}
@@ -1898,7 +1898,7 @@ _document_gmic_subsection_html :
 _document_gmic_declaration_html :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
   s1="\n" s0=" |<br/>"
-  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
@@ -1921,7 +1921,7 @@ _document_gmic_declaration_html :
   -endif
 
 _document_gmic_description_html :
-  -if {{[0-12]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
+  -if {{[0-{min(wh-1,12)}]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
     -s +,{':'} -l[^0] -a y -endl -autocrop {':'} -autocrop {'" "'}
     -v +
     -if {$!>1} -e[] ${-don}"<br/><b>"{0,t}"</b>: "{t}
@@ -1929,7 +1929,7 @@ _document_gmic_description_html :
     -endif
     -v -
 
-  -elif {{[0-7]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to -shortcut)'.
+  -elif {{[0-{min(wh-1,7)}]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to -shortcut)'.
     -v + -e[] ${-don}"<i><font color=\"blue\">"{t}"</font></i>" -v -
 
   -else                                    # Reached line as '#@gmic : description'.
@@ -2070,7 +2070,7 @@ _document_gmic_declaration_latex :
   -if {{t}'=='"(+)"} qualifier={t} -rm[-1] -else qualifier="" -endif
   e1="\\\\~\\\\" e0="~~~$|$\\\\"
   s1="\\hspace*{2.2cm}" s0=""
-  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -_document_gmic_replace_latex
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
@@ -2095,14 +2095,14 @@ _document_gmic_declaration_latex :
 _document_gmic_description_latex :
   s0="" s1="~\\\\" s=${s$_is_desc}
   -_document_gmic_replace_latex
-  -if {{[0-12]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
+  -if {{[0-{min(wh-1,12)}]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
     -s +,{':'} -l[^0] -a y -endl -autocrop {':'} -autocrop {'" "'}
     -if {$!>1}
       -replace_str[1] " and ","} and \\\\texttt{"
       -v + -e[] ${-eoff}$s"~\\\\\\Cc{\\textbf{"{0,t}"}: {\\small \\texttt{"{t}"}}}" -v -
     -else -v + -e[] ${-eoff}$s"~\\\\"{0,t} -v -
     -endif
-  -elif {{[0-7]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to '-shortcut').'.
+  -elif {{[0-{min(wh-1,7)}]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to '-shortcut').'.
     -rows[-1] 8,100% -autocrop[-1] {'.'} -autocrop[-1] {')'} -autocrop[-1] {'" "'}
     -v + -e[] ${-eoff}$s"(\\emph{eq. to} {\\small \\texttt{"{t}"}})." -v -
   -else                                    # Reached line as '#@gmic : description'.
@@ -2183,7 +2183,7 @@ _document_gmic_subsection_man :
 
 _document_gmic_declaration_man :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
-  -if {$!>1" && "{{[0-6]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
@@ -2633,7 +2633,7 @@ _update :
   -v -
   out=${-path_rc}cli_update$_version.gmic
   -l[] cimgz:http://gmic.eu/cli_update$_version.gmic
-    -if {h>7" && "{{[0-5]}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
+    -if {h>7" && "{{[0-{min(wh-1,5)}]}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
     -rm
   -onfail -error[0--3] "Command '-update' : Unreachable update file."
   -endl
@@ -3249,7 +3249,7 @@ update_server : -skip ${1=$_version},${2=1}
 
   -repeat $!
     ind={$>-$offset}
-    -if {{{$ind-1},[-1]}==10" && "{{`{$ind,[0-5]}`}'=='"#@gimp"}" && "({$ind,[6]}==32" || "{$ind,[6]}=={'_'})} -l[$ind] # Line starts by '#@gimp[_] '
+    -if {{{$ind-1},[-1]}==10" && "{{`{$ind,[0-{min(wh-1,5)}]}`}'=='"#@gimp"}" && "({$ind,[6]}==32" || "{$ind,[6]}=={'_'})} -l[$ind] # Line starts by '#@gimp[_] '
 
       is_folder=0
       -s +,10
@@ -8434,7 +8434,7 @@ variance_patch : -check "isint(${1=16}) && $1>=1"
 #@gmic : Default values: 'font_height=14', 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ 400,400,1,3,255 -axes -1,1,1,-1
 axes : -check "isint(${5=14}) && $5>=0 && ${6=1}>=0" -skip ${7=0},${8=0}
-  -v - ({'"$7"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1]
+  -v - ({'"$7"'},0) is_pattern={{[0,1]}'=='{'0x'}} -rm[-1]
   -if $is_pattern
     -v + -e[0--3] "Draw xy-axes on image$?, with x-range ($1,$2), y-range ($3,$4), font height $5, opacity $6, pattern $7 and color (${8--1})." -v -
     pattern=$7 color=${8--1}
@@ -8609,7 +8609,7 @@ cie1931 :
 #@gmic : Default values: 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ image.jpg -repeat 300 -circle {?(100)}%,{?(100)}%,{?(30)},0.3,${-RGB} -done -circle 50%,50%,100,0.7,255
 circle : -skip ${4=1},${5=0}
-  -v - ({'"$5"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1] -v +
+  -v - ({'"$5"'},0) is_pattern={{[0,1]}'=='{'0x'}} -rm[-1] -v +
   -if $is_pattern
     -e[0--3] "Draw outlined circle at ($1,$2) with radius $3 on image$?, with opacity $4 and color (${6--1})."
   -else
@@ -8673,7 +8673,7 @@ gaussian : -skip ${1=3},${2=$1},${3=0}
 #@gmic : $ image.jpg -grid 10%,10%,0,0,0.5,255
 #@gmic : $ 400,400,1,3,255 -grid 10%,10%,0,0,0.3,0xCCCCCCCC,128,32,16
 grid : -check "$1>=0 && $2>=0" -skip ${3=0},${4=0},${5=1},${6=0}
-  -v - ({'"$6"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1] -v +
+  -v - ({'"$6"'},0) is_pattern={{[0,1]}'=='{'0x'}} -rm[-1] -v +
   -if $is_pattern
     -e[0--3] "Draw xy-grid on image$?, with sizes ($1,$2), offsets ($3,$4), opacity $5, pattern $6 and color (${7--1})."
     -v - pattern=$6 color=${7--1}
@@ -9040,7 +9040,7 @@ polka_dots : -check $1>=0 -skip ${2=20},${3=50},${4=50},${5=0},${6=10},${7=1},${
 #@gmic : Default values: 'opacity=1', 'pattern=(undefined)' and 'color1=0'.
 #@gmic : $ image.jpg -repeat 30 -rectangle {?(100)}%,{?(100)}%,{?(100)}%,{?(100)}%,0.3,${-RGB} -done
 rectangle : -skip ${5=1},${6=0}
-  -v - ({'"$5"'},0) is_pattern={{[0-1]}'=='{'0x'}} -rm[-1] -v +
+  -v - ({'"$5"'},0) is_pattern={{[0,1]}'=='{'0x'}} -rm[-1] -v +
   -if $is_pattern
     -e[0--3] "Draw outlined rectangle from ($1,$2) to ($3,$4) on image$?, with opacity $5 and color (${7--1})."
   -else
@@ -17109,7 +17109,7 @@ x_quantize_rgb : -check "isint(${1=16}) && $1>1"
       -done -a[-{colors,s}--1] c
       -rm[centroids] -nm[-1] centroids
 
-      # Re-assign ununsed centroids.
+      # Reassign ununsed centroids.
       -->>[colors] 8 -channels[-1] 0 -histogram[-1] {centroids,w},0,{centroids,w-1}
       cmax={xM}
       -repeat {w} -if {!i($>)} -point[centroids] $>,0,0,1,${-at[centroids]\ $cmax} -point[centroids] $>,0,0,-0.001,${-RGB} -endif -done
@@ -18735,7 +18735,7 @@ gimp_manage_filter_sources_preview :
     -gimp_filter_sources
     msg= i=1 -rm[0,1]
     -if $! -repeat $!
-      -if {{$>,[0-3]}'=='{'http'}} -basename {$>,t} msg=$msg"\n["$i"] "${} i={$i+1}
+      -if {{$>,[0-{min(wh-1,3)}]}'=='{'http'}} -basename {$>,t} msg=$msg"\n["$i"] "${} i={$i+1}
       -else
         -if ${-path_rc}{$>,t} msg=$msg"\n["$i"] "{$>,t}" (local user file)" i={$i+1} -endif
       -endif
