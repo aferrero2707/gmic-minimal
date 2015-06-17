@@ -163,8 +163,7 @@ namespace cimg_library {
 #endif // #if cimg_OS==2
 
 // Define some special character codes used for replacement in double quoted strings.
-const char _dollar = 23, _lbrace = 24, _rbrace = 25, _comma = 26, _dquote = 28, _arobace = 29,
-  _newline = 30;
+const char _dollar = 23, _lbrace = 24, _rbrace = 25, _comma = 26, _dquote = 28, _newline = 29;
 
 // Ellipsize a string.
 inline char *gmic_ellipsize(char *const s, const unsigned int l=80,
@@ -206,7 +205,7 @@ inline char *gmic_strreplace_fw(char *const str) {
       const char c = *s;
       if (c<' ')
         *s = c==_dollar?'$':c==_lbrace?'{':c==_rbrace?'}':c==_comma?',':
-          c==_dquote?'\"':c==_arobace?'@':c;
+          c==_dquote?'\"':c;
     }
   return str;
 }
@@ -215,7 +214,7 @@ inline char *gmic_strreplace_bw(char *const str) {
   if (str) for (char *s = str ; *s; ++s) {
       const char c = *s;
       *s = c=='$'?_dollar:c=='{'?_lbrace:c=='}'?_rbrace:c==','?_comma:
-        c=='\"'?_dquote:c=='@'?_arobace:c;
+        c=='\"'?_dquote:c;
     }
   return str;
 }
@@ -318,7 +317,7 @@ struct gmic {
 
   template<typename T>
   gmic& warn(const gmic_list<T>& list, const gmic_image<unsigned int> *const scope_selection,
-             const char *format, ...);
+             const bool force_visible, const char *format, ...);
 
   template<typename T>
   gmic& error(const gmic_list<T>& list, const gmic_image<unsigned int> *const scope_selection,
