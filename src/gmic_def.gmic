@@ -2562,7 +2562,7 @@ roddy :
 #@gmic : unsigned chars (doing so will output a valid .cimg[z] or .gmz file).
 #@gmic : If 'store_names' is set to '1', serialization uses the .gmz format to store data in memory (otherwise the .cimg[z] format).
 #@gmic : Default values: 'datatype=float', 'is_compressed=1' and 'store_names=1'.
-#@gmic : $$ image.jpg --serialize uchar --unserialize[-1]
+#@gmic : $ image.jpg --serialize uchar --unserialize[-1]
 
 #@gmic sh : eq. to '-shared'. : (+)
 
