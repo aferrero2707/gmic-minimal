@@ -281,8 +281,8 @@ struct gmic {
   static const char* path_rc(const char *const custom_path=0, const bool return_parent=false);
   static bool init_rc(const char *const custom_path=0);
 
-  gmic& set_variable(const char *const name, const char *const value,
-                     const unsigned int *const variables_sizes=0);
+  inline gmic& set_variable(const char *const name, const char *const value,
+                            const unsigned int *const variables_sizes=0);
 
   gmic& add_commands(const char *const data_commands, const char *const commands_file=0);
   gmic& add_commands(std::FILE *const file, const char *const filename=0);
