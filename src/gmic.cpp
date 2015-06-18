@@ -12667,7 +12667,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           std::fseek(file,0,SEEK_END);
           siz = std::ftell(file);
           std::rewind(file);
-          file_type = cimg::file_type(file,0);
+          file_type = cimg::ftype(file,0);
           std::fclose(file);
         }
         if (file && siz==0) { // Empty file -> Insert an empty image.
