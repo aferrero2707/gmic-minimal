@@ -3720,7 +3720,7 @@ CImg<char> gmic::substitute_item(const char *const source,
         // Image feature.
         if (!is_substituted) {
           const char *feature = inbraces;
-          if (!inbraces[1]) ind = images.size() - 1; // Single-char case.
+          if (l_inbraces<=2) ind = images.size() - 1; // Single-char case.
           else if (std::sscanf(inbraces,"%d%c",&ind,&(sep=0))==2 && sep==',') {
             if (ind<0) ind+=images.width();
             if (ind<0 || ind>=images.width()) {
