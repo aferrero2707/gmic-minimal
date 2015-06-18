@@ -2642,8 +2642,8 @@ update_film_emulation_html :
   -v -
 
   # Init variables.
-  jpeg_quality=70    # Set JPEG quality of output images.
-  thumb_width=180    # Set thumbnail width.
+  jpeg_quality=70   # Set JPEG quality of output images.
+  thumb_width=180   # Set thumbnail width.
   thumb_height=90   # Set mini thumbnail height.
   categories=bw,instant_consumer,instant_pro,negative_color,negative_new,negative_old,print,colorslide,various
   category_names="Black and White","Instant [consumer]","Instant [pro]","Negative [color]","Negative [new]","Negative [old]","Print films","Slide [color]","Various"
@@ -3736,6 +3736,9 @@ _update_tutorial_html :
   -replace_str "CNTL","CTRL"
   -replace_str "Rashid","Rachid"
   -replace_str "http://gmic.sourceforge.net","http://gmic.eu"
+  -replace_str "@#","$!"
+  -replace_str "@{-1,","{"
+  -replace_str "@{","{"
 
   # Discard original header.
   -s -,{'"<!-- GIMMICKRY! -->"'} -k[1]

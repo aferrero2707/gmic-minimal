@@ -2976,7 +2976,8 @@ gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const scope_
                    "[gmic]-%u%s %s%s*** Warning *** %s%s",
                    list.size(),s_scope.data(),cimg::t_magenta,cimg::t_bold,
                    message.data(),cimg::t_normal);
-  } else std::fprintf(cimg::output(),"%s",message.data());
+  } else std::fprintf(cimg::output(),"%s%s%s%s",
+                      cimg::t_magenta,cimg::t_bold,message.data(),cimg::t_normal);
   std::fflush(cimg::output());
   cimg::mutex(29,0);
   return *this;

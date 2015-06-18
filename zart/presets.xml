@@ -1024,7 +1024,7 @@ Latest update: &lt;i&gt;02/28/2011&lt;/i&gt;.&lt;/small&gt;" />
 <preset name="Color distribution">
   <command>
 --r 33%,33% -b[-1] 1 -distribution3d[-1] -circles3d[-1] 3 -o3d[-1] 0.6
--colorcube3d -p3d[-1] 1 -+3d[-2,-1] --3d[-1] 128,128,128 -n3d[-1] -*3d[-1] @{0,min(w,h)/2} -r3d[-1] 1,2,0,{@|*20}
+-colorcube3d -p3d[-1] 1 -+3d[-2,-1] --3d[-1] 128,128,128 -n3d[-1] -*3d[-1] {0,min(w,h)/2} -r3d[-1] 1,2,0,{$|*20}
 -*[0] 0.5 -j3d[0] [1],50%,50% -rm[1]
   </command>
 </preset>
@@ -1162,7 +1162,7 @@ Latest update: &lt;i&gt;02/28/2011&lt;/i&gt;.&lt;/small&gt;" />
 <!-- /Colors/Histogram -->
 <preset name="Histogram">
   <command>
-time={@|%9}
+time={$|%9}
 -if {$time&lt;3}
   -equalize[-1] 256
   1,1 -text[-1] "Equalized",2,2,24,1,255,255,255 -image[-2] [-1],10,10,0,0,0.3 -rm[-1]
@@ -1182,18 +1182,18 @@ time={@|%9}
 <!-- /Colors/Hue shift -->
 <preset name="Hue shift">
   <command>
--rgb2hsv -sh 0,0 -+[-1] {(@{!,x}-w/2)*360/w} -mod[-1] 360 -rm[-1] -hsv2rgb
+-rgb2hsv -sh 0,0 -+[-1] {({*,x}-w/2)*360/w} -mod[-1] 360 -rm[-1] -hsv2rgb
   </command>
 </preset>
 
 <!-- /Colors/Intensity profile -->
 <preset name="Intensity profile">
   <command>
---rows @{!,y} -s[-1] c
+--rows {*,y} -s[-1] c
 -graph[-4] [-3],1,0,255,0,1,255,200,200
 -graph[-4] [-2],1,0,255,0,1,200,255,200
 -graph[-4] [-1],1,0,255,0,1,200,200,255
--rm[-3--1] -line[-1] 0,@{!,y},100%,@{!,y},0.3,255
+-rm[-3--1] -line[-1] 0,{*,y},100%,{*,y},0.3,255
 -axes[-1] 0,100,100,0,1,255
 -grid[-1] 32,32,0,0,0.1,0xCCCCCCCC,255
   </command>
@@ -1519,14 +1519,14 @@ time={@|%9}
 <preset name="Hough transform">
   <command>
 -r 50%,50% --hough {w},{h},1 -+[-1] 1 -pow[-1] 0.3 -r[-1] 100%,100%,1,3 -n[-1] 0,255
--if @{!,b}
-  x={max(0,@{!,x}-w)}
-  y=@{!,y}
+-if {*,b}
+  x={max(0,{*,x}-w)}
+  y={*,y}
   rhomax={sqrt(w^2+h^2)/2}
   theta={$x*2*pi/w}
   rho={$y*$rhomax/h}
-  x={@{-2,w}/2+$rho*cos($theta)}
-  y={@{-2,h}/2+$rho*sin($theta)}
+  x={{-2,w}/2+$rho*cos($theta)}
+  y={{-2,h}/2+$rho*sin($theta)}
   x0={$x+1000*sin($theta)}
   y0={$y-1000*cos($theta)}
   x1={$x-1000*sin($theta)}
@@ -3107,14 +3107,14 @@ This filter is inspired by the original &lt;i&gt;Unsharp Mask&lt;/i&gt; filter i
       -apply_parallel "-jpeg_action "$Q
       -append_tiles $M,$M
    -endl
-   -resize[-2,-1] @{0,h},@{0,h},1,3,1
+   -resize[-2,-1] {0,h},{0,h},1,3,1
    -append x
 
 jpeg_quantize:
-  -repeat @# -l[$>] [0],[0],1,[0],1+$1*(x+y) -/[0] [1] -round[0] -* -endl -done
+  -repeat $! -l[$>] [0],[0],1,[0],1+$1*(x+y) -/[0] [1] -round[0] -* -endl -done
 
 jpeg_action:
-  -repeat @# -l[$>]
+  -repeat $! -l[$>]
     -rgb2ycbcr
     -dct -round -jpeg_quantize $1 -idct
     -ycbcr2rgb
@@ -3136,7 +3136,7 @@ jpeg_action:
 <preset name="Fourier filtering">
   <command>
 -r[0] 50%,50%
--if {@#==1} 100%,100% _rmin=0 _rmax=200 _is_update=1 -endif
+-if {$!==1} 100%,100% _rmin=0 _rmax=200 _is_update=1 -endif
 -if $_is_update
   -f[1] 0
   _rmax={$_rmax+if($_rmin==$_rmax,1,0)}
@@ -3144,19 +3144,19 @@ jpeg_action:
   -ellipse[1] 50%,50%,$_rmin,$_rmin,0,1,0
   _is_update=0
 -endif
--if {@{!,b}&amp;1}
-  x={@{!,x}-3*w/2}
-  y={@{!,y}-h/2}
+-if {{*,b}&amp;1}
+  x={{*,x}-3*w/2}
+  y={{*,y}-h/2}
   rmax={round((($x)^2+($y)^2)^0.5)}
   _rmin={if($_rmin&gt;$rmax,$rmax,$_rmin)}
   -if {$rmax!=$_rmax} _is_update=1 _rmax=$rmax -endif
--elif {@{!,b}&amp;2}
-  x={@{!,x}-3*w/2}
-  y={@{!,y}-h/2}
+-elif {{*,b}&amp;2}
+  x={{*,x}-3*w/2}
+  y={{*,y}-h/2}
   rmin={round((($x)^2+($y)^2)^0.5)}
   _rmax={if($rmin&gt;$_rmax,$rmin,$_rmax)}
   -if {$rmin!=$_rmin} _is_update=1 _rmin=$rmin -endif
--elif {@{!,b}&amp;4}
+-elif {{*,b}&amp;4}
   _rmin=0 _rmax=200 _is_update=1
 -endif
 -fft[0]
@@ -3174,7 +3174,7 @@ jpeg_action:
 <!-- /Spectral filters/Saturate frequency -->
 <preset name="Saturate frequency">
   <command>
--r 50%,50% -fft -point {@{!,x}/2},{@{!,y}/2},0,1,{iM} -ifft -c 0,255 -rm[-1]
+-r 50%,50% -fft -point {{*,x}/2},{{*,y}/2},0,1,{iM} -ifft -c 0,255 -rm[-1]
   </command>
 </preset>
 
@@ -4208,9 +4208,9 @@ these layers are passed to the filter.&lt;br/&gt;
 <preset name="3d cube">
   <command>
 -r 50%,50%,1,3,3 -imagecube3d[-1] -*3d 256
--r3d 1,1,2,{@|*30} -r3d 2,1,3,{@|*50} -db3d 0 -m3d 3
+-r3d 1,1,2,{$|*30} -r3d 2,1,3,{$|*50} -db3d 0 -m3d 3
 (64;128^0;255^128;255) -r[-1] 640,480,1,3,3
--j3d[-1] [-2],@{!,x},@{!,y} -rm[-2]
+-j3d[-1] [-2],{*,x},{*,y} -rm[-2]
   </command>
 </preset>
 
@@ -4350,7 +4350,7 @@ these layers are passed to the filter.&lt;br/&gt;
 <preset name="3d surface">
   <command>
 --r[-1] 128,128,1,3 -blur[-1] 1 -elevation3d[-1] -0.3 -c3d[-1] -*3d[-1] 3
--r3d[-1] 0,0,1,{(@{!,x}/@{-2,w}-0.5)*360} -r3d[-1] 1,0,0,{(@{!,y}/@{-2,h}-0.5)*180} -m3d 2 -j3d[-2] [-1],50%,75%,0,1
+-r3d[-1] 0,0,1,{({*,x}/{-2,w}-0.5)*360} -r3d[-1] 1,0,0,{({*,y}/{-2,h}-0.5)*180} -m3d 2 -j3d[-2] [-1],50%,75%,0,1
 -rm[-1]
   </command>
 </preset>
@@ -4812,7 +4812,7 @@ Reduce resolution to be able to view&lt;br/&gt;
 <!-- /Various/Region growing -->
 <preset name="Region growing">
   <command>
--flood @{!,x},@{!,y},0,20,1,255,0,255
+-flood {*,x},{*,y},0,20,1,255,0,255
   </command>
 </preset>
 

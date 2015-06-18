@@ -270,8 +270,8 @@ FilterThread::setCommand( const QString & command )
 {
   QByteArray str = command.toLatin1();
   _command = str.constData();
-  _command.replace( "@{!,x}", "$_x" )
-        .replace( "@{!,y}", "$_y" )
-        .replace( "@{!,b}", "$_b" );
+  _command.replace( "{*,x}", "$_x" )
+        .replace( "{*,y}", "$_y" )
+        .replace( "{*,b}", "$_b" );
   _commandUpdated = true;
 }
