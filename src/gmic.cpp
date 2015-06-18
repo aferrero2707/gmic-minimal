@@ -496,10 +496,12 @@ const CImg<T>& gmic_symmetric_eigen(CImg<t>& val, CImg<t>& vec) const {
 }
 
 // Additional geometric and drawing operators.
-template<typename t>
-CImg<T>& append_string_to(CImg<t>& img) const {
-  const int w = img.width();
-  return img.resize(w + width(),1,1,1,0).draw_image(w,*this);
+CImg<T>& append_string_to(CImg<T>& img) const {
+  const unsigned int w = img._width;
+  CImg<T> res(w + _width);
+  std::memcpy(res._data,img._data,w*sizeof(T));
+  std::memcpy(res._data + w,_data,_width*sizeof(T));
+  return res.move_to(img);
 }
 
 template<typename t>
