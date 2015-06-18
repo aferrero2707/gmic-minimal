@@ -2747,14 +2747,14 @@ CImg<unsigned int> gmic::selection2cimg(const char *const string, const unsigned
                                         const CImgList<char>& names,
                                         const char *const command, const bool is_selection,
                                         const bool allow_new_name, CImg<char> &new_name) {
-  if ((string && !*string) || !indice_max) return CImg<unsigned int>(); // Empty selection.
+  if (string && !*string) return CImg<unsigned int>(); // Empty selection.
   if (!string || (*string=='^' && !string[1])) { // Whole selection.
     CImg<unsigned int> res(1,indice_max); cimg_forY(res,y) res[y] = (unsigned int)y; return res;
   }
   const char *const stype = is_selection?"selection":"subset";
   const int
-    ctypel = is_selection?'[':'{',
-    ctyper = is_selection?']':'}';
+    ctypel = is_selection?'[':'\'',
+    ctyper = is_selection?']':'\'';
   CImg<bool> is_selected(1,indice_max,1,1,false);
 
   bool is_inverse = *string=='^';

@@ -188,7 +188,7 @@ _help : -skip ${1=""}
   stopflag=0
   _is_example=0
   -_document_gmic_header_ascii[] 0
-  -repeat $! -l[$>] -if {h>7" && "{{[0-{min(h-1,5)}]}'=='{'"#@gmic"'}}}
+  -repeat $! -l[$>] -if {h>7" && "{${-head\ 6}'=='{'"#@gmic"'}}}
     -rows 7,100% -autocrop {'" "'}  # Discard '#@gmic'.
     -if {i!={':'}} # Command declaration.
       -s -,{'": "'} -autocrop {'" "'} -autocrop {':'} -autocrop {'" "'}
@@ -1633,7 +1633,7 @@ document_gmic : -skip ${1="ascii"},${2=""},${3=1}
   ks0="0" ks1="-k[0]"
 
   # Parse lines of the commands file.
-  -repeat $! -l[$>] -if {h>7" && "{{[0-{min(h-1,5)}]}'=='{'"#@gmic"'}}" && "(i[6]=={'" "'}" || "i[6]=={':'})} # Process only lines starting with '#@gmic'.
+  -repeat $! -l[$>] -if {h>7" && "{${-head\ 6}'=='{'"#@gmic"'}}" && "(i[6]=={'" "'}" || "i[6]=={':'})} # Process only lines starting with '#@gmic'.
     -rows 7,100% -autocrop {'" "'}  # Discard '#@gmic'.
     _is_example=0
     -if {i!={':'}}
@@ -1685,7 +1685,7 @@ _document_gmic_subsection_ascii :
 
 _document_gmic_declaration_ascii :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
-  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{${-head\ 7}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
@@ -1708,7 +1708,7 @@ _document_gmic_declaration_ascii :
 _document_gmic_description_ascii :
   s="        " bs0="\n" bs1="\\\\\n         "
   -y x -if {!narg($_is_tutorial)} -_document_gmic_split_ascii 96 -endif
-  -if {$!==1" && "narg($_vt100)" && "{{0,[0-{min(wh-1,7)}]}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
+  -if {$!==1" && "narg($_vt100)" && "{${-head[0]\ 8}'=='{'"(eq. to "'}}} -i[0] ({'$_gmic_b'}) ({'$_gmic_n\n'}) -a x -endif
   -repeat {$!-1} ({'${bs$_is_example}$s"  "'}) -a[$>,-1] x -done -a x
   -if {narg($_vt100)}
     -replace_str "Default values:","\n"$s${_gmic_b}"Default values:"$_gmic_n
@@ -1777,7 +1777,7 @@ _document_gmic_declaration_bash :
        {{0,t}'=='"output"}" || "{{0,t}'=='"o"}" || "\
        {{0,t}'=='"command"}" || "{{0,t}'=='"m"}} -return -endif
   -repeat $! -if {{$<,t}'=='"(+)"} -rm[$<] -endif -done # Discard '(+)' qualifier.
-  -if {$!==2" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}} # Command is a shortcut.
+  -if {$!==2" && "{${-head\ 7}'=='{'"eq. to "'}}} # Command is a shortcut.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39 -autocrop[-1] {'-'}
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut=${-str2hex\ {1,t}}
@@ -1893,7 +1893,7 @@ _document_gmic_subsection_html :
 _document_gmic_declaration_html :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
   s1="\n" s0=" |<br/>"
-  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{${-head\ 7}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
@@ -1916,7 +1916,7 @@ _document_gmic_declaration_html :
   -endif
 
 _document_gmic_description_html :
-  -if {{[0-{min(wh-1,12)}]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
+  -if {${-head\ 13}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
     -s +,{':'} -l[^0] -a y -endl -autocrop {':'} -autocrop {'" "'}
     -v +
     -if {$!>1} -e[] ${-don}"<br/><b>"{0,t}"</b>: "{t}
@@ -1924,7 +1924,7 @@ _document_gmic_description_html :
     -endif
     -v -
 
-  -elif {{[0-{min(wh-1,7)}]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to -shortcut)'.
+  -elif {${-head\ 8}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to -shortcut)'.
     -v + -e[] ${-don}"<i><font color=\"blue\">"{t}"</font></i>" -v -
 
   -else                                    # Reached line as '#@gmic : description'.
@@ -2065,7 +2065,7 @@ _document_gmic_declaration_latex :
   -if {{t}'=='"(+)"} qualifier={t} -rm[-1] -else qualifier="" -endif
   e1="\\\\~\\\\" e0="~~~$|$\\\\"
   s1="\\hspace*{2.2cm}" s0=""
-  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{${-head\ 7}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -_document_gmic_replace_latex
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
@@ -2090,14 +2090,14 @@ _document_gmic_declaration_latex :
 _document_gmic_description_latex :
   s0="" s1="~\\\\" s=${s$_is_desc}
   -_document_gmic_replace_latex
-  -if {{[0-{min(wh-1,12)}]}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
+  -if {${-head\ 13}'=='{'"Default value"'}}  # Reached line as '#@gmic : Default value(s) : ... '.
     -s +,{':'} -l[^0] -a y -endl -autocrop {':'} -autocrop {'" "'}
     -if {$!>1}
       -replace_str[1] " and ","} and \\\\texttt{"
       -v + -e[] ${-eoff}$s"~\\\\\\Cc{\\textbf{"{0,t}"}: {\\small \\texttt{"{t}"}}}" -v -
     -else -v + -e[] ${-eoff}$s"~\\\\"{0,t} -v -
     -endif
-  -elif {{[0-{min(wh-1,7)}]}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to '-shortcut').'.
+  -elif {${-head\ 8}'=='{'"(eq. to "'}}      # Reached line as '#@gmic : (eq. to '-shortcut').'.
     -rows[-1] 8,100% -autocrop[-1] {'.'} -autocrop[-1] {')'} -autocrop[-1] {'" "'}
     -v + -e[] ${-eoff}$s"(\\emph{eq. to} {\\small \\texttt{"{t}"}})." -v -
   -else                                    # Reached line as '#@gmic : description'.
@@ -2178,7 +2178,7 @@ _document_gmic_subsection_man :
 
 _document_gmic_declaration_man :
   -if {{t}'=='"(+)"} qualifier=" "{t} -rm[-1] -else qualifier="" -endif
-  -if {$!>1" && "{{[0-{min(wh-1,6)}]}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
+  -if {$!>1" && "{${-head\ 7}'=='{'"eq. to "'}}}  # Declaration of a shortcut command.
     -rows[-1] 7,100% -autocrop[-1] {'.'} -autocrop[-1] {'" "'} -autocrop[-1] 39
     _shortcut$_shortcut={0,t}
     _shortcutlink$_shortcut={t}
@@ -2628,7 +2628,7 @@ _update :
   -v -
   out=${-path_rc}cli_update$_version.gmic
   -l[] cimgz:http://gmic.eu/cli_update$_version.gmic
-    -if {h>7" && "{{[0-{min(wh-1,5)}]}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
+    -if {h>7" && "{${-head\ 6}'=='{'"#@gmic"'}}} -o raw:$out,char -endif
     -rm
   -onfail -error[0--3] "Command '-update' : Unreachable update file."
   -endl
@@ -3246,7 +3246,7 @@ update_server : -skip ${1=$_version},${2=1}
 
   -repeat $!
     ind={$>-$offset}
-    -if {{{$ind-1},[-1]}==10" && "{{`{$ind,[0-{min(wh-1,5)}]}`}'=='"#@gimp"}" && "({$ind,[6]}==32" || "{$ind,[6]}=={'_'})} -l[$ind] # Line starts by '#@gimp[_] '
+    -if {{{$ind-1},[-1]}==10" && "{${-head[$ind]\ 6}'=='{'#@gimp'}}" && "({$ind,[6]}==32" || "{$ind,[6]}=={'_'})} -l[$ind] # Line starts by '#@gimp[_] '
 
       is_folder=0
       -s +,10
@@ -14101,6 +14101,11 @@ gcd : -check "isint($1) && isint($2) && $1*$2!=0"
 _gcd :
   r={$1%$2} -if $r -u ${-_gcd\ $2,$r} -else -u $2 -endif
 
+#@gmic head : length>=0
+#@gmic : Return the first 'length' values of the last image, or all its values if image size is less than 'length'.
+head : -check "isint($1) && $1>=0"
+  -v - -if {$1>0" && "w} -u {[0-{min(whds-1,$1-1)}]} -else -u "" -endif -v +
+
 #@gmic hex : hexadecimal_int1,...
 #@gmic : Print specified hexadecimal integers into their binary, octal, decimal and string representations.
 hex :
@@ -18360,7 +18365,7 @@ _gimp_merge_layers :
     -s +,$str
     -if {$!>1}
       -repeat $!
-        -if {$>!=$!-1" && "{{$>,[0-{$>,min($l,h)-1}]}'=='$str}}
+        -if {$>!=$!-1" && "{${-head[$>]\ $l}'=='$str}}
           -l[{$>+1}] -s +,{')'} -if {$!>1} res={0,t} -endif -a y -endl
         -endif
         -if {narg({'$res'})} -break -endif
@@ -18733,7 +18738,7 @@ gimp_manage_filter_sources_preview :
     -gimp_filter_sources
     msg= i=1 -rm[0,1]
     -if $! -repeat $!
-      -if {{$>,[0-{min(wh-1,3)}]}'=='{'http'}} -basename {$>,t} msg=$msg"\n["$i"] "${} i={$i+1}
+      -if {${-head[$>]\ 4}'=='{'http'}} -basename {$>,t} msg=$msg"\n["$i"] "${} i={$i+1}
       -else
         -if ${-path_rc}{$>,t} msg=$msg"\n["$i"] "{$>,t}" (local user file)" i={$i+1} -endif
       -endif
