@@ -5600,8 +5600,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             CImg<unsigned int> &rd = repeatdones.back();
             const unsigned int counter = ++rd[2];
             if (rd.height()>3) std::memcpy(title,rd.data() + 3,(rd.height() - 3)*sizeof(unsigned int));
-            if (--rd[1]) position = rd[0];
-            else {
+            if (--rd[1]) {
+              position = rd[0];
+              next_debug_line = debug_line; next_debug_filename = debug_filename;
+            } else {
               if (verbosity>0 || is_debug) print(images,0,"End 'repeat..done' block.");
               repeatdones.remove();
               scope.remove();
@@ -11386,8 +11388,11 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                                is_filename?(is_cond?"exists":
                                                             "does not exist"):
                                                (is_cond?"is true":"is false"));
-            if (is_cond) { position = dowhiles.back()(0); continue; }
-            else {
+            if (is_cond) {
+              position = dowhiles.back()(0);
+              next_debug_line = debug_line; next_debug_filename = debug_filename;
+              continue;
+            } else {
               if (verbosity>0 || is_debug) print(images,0,"End 'do..while' block.");
               dowhiles.remove();
               scope.remove();
