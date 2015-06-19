@@ -248,6 +248,10 @@ struct gmic {
 
   gmic_list<char> commands_line_to_CImgList(const char *const commands_line);
 
+  template<typename T>
+  void _gmic_substitute_args(const char *const argument, const char *const argument0,
+                             const char *const command, const gmic_list<T>& images);
+
   gmic& print(const char *format, ...);
   gmic& error(const char *format, ...);
   gmic& debug(const char *format, ...);

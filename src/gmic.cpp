@@ -1981,21 +1981,34 @@ inline bool _gmic_image_arg(const unsigned int ind, const CImg<unsigned int>& se
 #define gmic_image_arg(ind) gmic_check(_gmic_image_arg(ind,selection)?images[ind]:\
                                        images[ind].get_shared())
 
-// Macros to manage argument substitutions from a command.
+// Macro to manage argument substitutions from a command.
+template<typename T>
+void gmic::_gmic_substitute_args(const char *const argument, const char *const argument0,
+                                 const char *const command, const CImgList<T>& images) {
+  if (is_debug) {
+    if (std::strcmp(argument,argument0)) debug(images,"Command '%s': arguments = '%s' -> '%s'.",
+                                               command,argument0,argument); \
+    else debug(images,"Command '%s': arguments = '%s'.",
+               command,argument0);
+  }
+}
+
 #define gmic_substitute_args() { \
   const char *const argument0 = argument; \
   substitute_item(argument,images,images_names,parent_images,parent_images_names,variables_sizes).move_to(_argument); \
-  argument_text = argument = _argument; \
-  if (is_debug) { \
-    if (std::strcmp(argument,argument0)) debug(images,"Command '%s': arguments = '%s' -> '%s'.", \
-                                               command,argument0,argument); \
-    else debug(images,"Command '%s': arguments = '%s'.", \
-               command,argument0); \
-  }}
+  argument = _argument; \
+  _gmic_substitute_args(argument,argument0,command,images); \
+}
 
-#define gmic_argument_text() (argument_text = ellipsize(argument,_argument_text,80,false))
+// Macro for computing a readable version of a command argument.
+inline char *_gmic_argument_text(const char *const argument, CImg<char>& argument_text, const bool is_verbose) {
+  if (is_verbose) return gmic::ellipsize(argument,argument_text,80,false);
+  else return &(*argument_text=0);
+}
 
-// Code for having 'get' or 'non-get' versions of G'MIC commands.
+#define gmic_argument_text() _gmic_argument_text(argument,argument_text,is_verbose)
+
+// Macro for having 'get' or 'non-get' versions of G'MIC commands.
 #define gmic_apply(function) { \
     __ind = (unsigned int)selection[l]; \
     gmic_check(images[__ind]); \
@@ -2005,7 +2018,7 @@ inline bool _gmic_image_arg(const unsigned int ind, const CImg<unsigned int>& se
     } else images[__ind].function; \
   }
 
-// Code for simple commands that has no arguments and act on images.
+// Macro for simple commands that has no arguments and act on images.
 #define gmic_simple_item(command_name,function,description) \
   if (!std::strcmp(command_name,command)) { \
     print(images,0,description,gmic_selection); \
@@ -2013,7 +2026,7 @@ inline bool _gmic_image_arg(const unsigned int ind, const CImg<unsigned int>& se
     is_released = false; continue; \
 }
 
-// Code for G'MIC arithmetic commands.
+// Macro for G'MIC arithmetic commands.
 #define gmic_arithmetic_item(command_name,\
                              function1,description1,arg1_1,arg1_2,arg1_3,value_type1, \
                              function2,description2,arg2_1,arg2_2, \
@@ -3338,11 +3351,12 @@ gmic& gmic::display_images(const CImgList<T>& images, const CImgList<char>& imag
   CImgDisplay *const _display_window = (CImgDisplay*)display_window;
 #endif
   if (!images || !images_names || !selection) { print(images,0,"Display image []."); return *this; }
+  const bool is_verbose = verbosity>=0 || is_debug;
 
   // Check for available display.
 #if cimg_display==0
   print(images,0,"Display image%s",gmic_selection);
-  if (verbosity>=0 || is_debug) {
+  if (is_verbose) {
     cimg::mutex(29);
     if (XYZ) std::fprintf(cimg::output(),", from point (%u,%u,%u)",XYZ[0],XYZ[1],XYZ[2]);
     std::fprintf(cimg::output()," (console output only, no display support).\n");
@@ -3356,7 +3370,7 @@ gmic& gmic::display_images(const CImgList<T>& images, const CImgList<char>& imag
     is_available_display = (bool)CImgDisplay::screen_width();
   } catch (CImgDisplayException&) {
     print(images,0,"Display image%s",gmic_selection);
-    if (verbosity>=0 || is_debug) {
+    if (is_verbose) {
       cimg::mutex(29);
       if (XYZ) std::fprintf(cimg::output(),", from point (%u,%u,%u)",XYZ[0],XYZ[1],XYZ[2]);
       std::fprintf(cimg::output()," (console output only, no display available).\n");
@@ -3388,7 +3402,7 @@ gmic& gmic::display_images(const CImgList<T>& images, const CImgList<char>& imag
   ellipsize(_gmic_names,80,false);
   const char *const gmic_names = _gmic_names.data();
   print(images,0,"Display image%s = '%s'",gmic_selection,gmic_names);
-  if (verbosity>=0 || is_debug) {
+  if (is_verbose) {
     cimg::mutex(29);
     if (XYZ) std::fprintf(cimg::output(),", from point (%u,%u,%u).\n",XYZ[0],XYZ[1],XYZ[2]);
     else std::fprintf(cimg::output(),".\n");
@@ -4157,8 +4171,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
   // Allocate string variables, widely used afterwards
   // (prevents stack overflow on recursive calls while remaining thread-safe).
   CImg<char> _formula(4096), _color(4096), message(1024), _title(256), _indices(256),
-    _argx(256), _argy(256), _argz(256), _argc(256), _current_command(256),
-    _command(256), _restriction(256), _argument_text(81);
+    _argx(256), _argy(256), _argz(256), _argc(256), _current_command(256), argument_text(81),
+    _command(256), _restriction(256);
 
   char
     *const formula = _formula.data(),
@@ -4240,10 +4254,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       substitute_item(initial_item,images,images_names,parent_images,parent_images_names,
                       variables_sizes).move_to(_item);
       char *item = _item.data();
-      const char *argument = initial_argument, *argument_text = initial_argument;
+      const char *argument = initial_argument;
 
       // Split command/restriction, if necessary.
-      *command = *restriction = *_argument_text = 0;
+      *command = *restriction = 0;
 
       bool is_get_version = false, is_restriction = false;
       CImg<unsigned int> selection;
@@ -4309,7 +4323,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       }
 
       // Check for verbosity command, prior to the first output of a log message.
-      bool is_verbose_argument = false;
+      bool is_verbose = verbosity>=0 || is_debug, is_verbose_argument = false;
       const int old_verbosity = verbosity;
       if ((*item=='-' && item[1]=='v') && (!std::strcmp("-v",item) || !std::strcmp("-verbose",item))) {
         // Do a first fast check.
@@ -4329,6 +4343,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           }
         }
       }
+      is_verbose = verbosity>=0 || is_debug;
+      const bool is_very_verbose = verbosity>0 || is_debug;
 
       // Display starting message.
       if (is_start) {
@@ -4338,7 +4354,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
       // Cancellation point.
       if (*is_cancel || is_cancel_thread) {
-        if (verbosity>0 || is_debug) print(images,0,"Cancel G'MIC interpreter.\n");
+        if (is_very_verbose) print(images,0,"Cancel G'MIC interpreter.\n");
         dowhiles.assign();
         repeatdones.assign();
         position = commands_line.size();
@@ -4869,7 +4885,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               is_filename = true;
               is_cond = check_filename(name);
             }
-            if (verbosity>0 || is_debug)
+            if (is_very_verbose)
               print(images,0,"Check %s '%s' -> %s.",
                     is_filename?"file":"expression",
                     gmic_argument_text(),
@@ -5381,7 +5397,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     arg_command_text);
               add_commands(arg_command);
             }
-            if (verbosity>=0 || is_debug) {
+            if (is_verbose) {
               unsigned int nb_added = 0;
               for (unsigned int l = 0; l<256; ++l) nb_added+=commands[l].size();
               nb_added-=siz;
@@ -5402,7 +5418,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               is_full_check = (*argument=='1');
               ++position;
             } else is_full_check = true;
-            if (verbosity>0 || is_debug)
+            if (is_very_verbose)
               print(images,0,"Check validity of 3d object%s (%s check)",
                     gmic_selection,
                     is_full_check?"full":"fast");
@@ -5410,7 +5426,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               const unsigned int uind = selection[l];
               CImg<T>& img = gmic_check(images[uind]);
               if (!img.is_CImg3d(is_full_check,&(*message=0))) {
-                if (verbosity>0 || is_debug) {
+                if (is_very_verbose) {
                   cimg::mutex(29);
                   std::fprintf(cimg::output()," -> invalid.");
                   std::fflush(cimg::output());
@@ -5421,7 +5437,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                       uind,gmic_selection,message.data());
               }
             }
-            if (verbosity>0 || is_debug) {
+            if (is_very_verbose) {
               cimg::mutex(29);
               std::fprintf(cimg::output()," -> valid.");
               std::fflush(cimg::output());
@@ -5598,7 +5614,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 cimg::mutex(29,0);
               }
               for (unsigned int k = 0; k<(unsigned int)nb_frames; ++k) {
-                if (nb_frames>1 && (verbosity>=0 || is_debug)) {
+                if (nb_frames>1 && is_verbose) {
                   cimg::mutex(29);
                   std::fprintf(cimg::output(),"\r  > Image %u/%u        ",
                                k + 1,(unsigned int)nb_frames);
@@ -5670,7 +5686,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               position = rd[0];
               next_debug_line = debug_line; next_debug_filename = debug_filename;
             } else {
-              if (verbosity>0 || is_debug) print(images,0,"End 'repeat..done' block.");
+              if (is_very_verbose) print(images,0,"End 'repeat..done' block.");
               repeatdones.remove();
               scope.remove();
             }
@@ -5687,7 +5703,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_snprintf(argx,_argx.width(),"*do#%u",debug_line);
               CImg<char>::string(argx).move_to(scope);
             } else CImg<char>::string("*do").move_to(scope);
-            if (verbosity>0 || is_debug) print(images,0,"Start '-do..-while' block.");
+            if (is_very_verbose) print(images,0,"Start '-do..-while' block.");
             CImg<unsigned int>::vector(position).move_to(dowhiles);
             continue;
           }
@@ -6105,7 +6121,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (s[0]!='*' || s[1]!='i')
               error(images,0,0,
                     "Command '-endif': Not associated to a '-if' command within the same scope.");
-            if (verbosity>0 || is_debug) print(images,0,"End 'if..endif' block.");
+            if (is_very_verbose) print(images,0,"End 'if..endif' block.");
             check_elif = false;
             scope.remove();
             continue;
@@ -6119,7 +6135,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     "Command '%s': Not associated to a '-if' command within the same scope.",
                     item);
             check_elif = false;
-            if (verbosity>0 || is_debug) print(images,0,"Reach '-else' block.");
+            if (is_very_verbose) print(images,0,"Reach '-else' block.");
             for (int nb_ifs = 1; nb_ifs && position<commands_line.size(); ++position) {
               const char *const it = commands_line[position].data();
               if (*it==1 &&
@@ -6138,14 +6154,14 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               error(images,0,0,
                     "Command '-endlocal': Not associated to a '-local' command within "
                     "the same scope.");
-            if (verbosity>0 || is_debug) print(images,0,"End 'local..endlocal' block.");
+            if (is_very_verbose) print(images,0,"End 'local..endlocal' block.");
             is_endlocal = true;
             break;
           }
 
           // Echo.
           if (!std::strcmp("-echo",command) && !is_get_version) {
-            if (verbosity>=0 || is_debug) {
+            if (is_verbose) {
               gmic_substitute_args();
               CImg<char> str(argument,(unsigned int)std::strlen(argument) + 1);
               cimg::strunescape(str);
@@ -6521,11 +6537,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) gmic_apply(fill(values));
             } else {
               gmic_argument_text();
-              CImg<char> arg_fill_text(argument_text,(unsigned int)std::strlen(argument_text) + 1);
-              cimg::strpare(arg_fill_text,'\'',true,false);
+              if (*argument_text=='\'') cimg::strpare(argument_text,'\'',true,false);
               print(images,0,"Fill image%s with expression '%s'.",
                     gmic_selection,
-                    arg_fill_text.data());
+                    argument_text.data());
               CImg<char> arg_fill(argument,(unsigned int)std::strlen(argument) + 1);
               cimg::strpare(arg_fill,'\'',true,false);
               strreplace_fw(arg_fill);
@@ -7395,7 +7410,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               nimages.swap(images);
               nimages_names.swap(images_names);
             }
-            if (verbosity>=0 || is_debug) {
+            if (is_verbose) {
               cimg::mutex(29);
               std::fprintf(cimg::output()," (%u image%s left).",
                            images.size(),images.size()==1?"":"s");
@@ -7418,7 +7433,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_snprintf(argx,_argx.width(),"*local#%u",debug_line);
               CImg<char>::string(argx).move_to(scope);
             } else CImg<char>::string("*local").move_to(scope);
-            if (verbosity>0 || is_debug)
+            if (is_very_verbose)
               print(images,0,"Start '-local..-endlocal' block, with image%s.",
                     gmic_selection);
             CImgList<T> nimages(selection.height());
@@ -7461,7 +7476,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               }
               if (scope.size()>local_scope_size) scope.remove(local_scope_size,scope.size() - 1);
               if (nb_locals==1 && position<commands_line.size()) { // Onfail block found.
-                if (verbosity>0 || is_debug) print(images,0,"Reach '-onfail' block.");
+                if (is_very_verbose) print(images,0,"Reach '-onfail' block.");
                 try {
                   _run(commands_line,++position,nimages,nimages_names,
                        parent_images,parent_images_names,variables_sizes,is_noarg);
@@ -9395,7 +9410,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               _images.move_to(images,0);
               _images_names.move_to(images_names,0);
             }
-            if (verbosity>=0 || is_debug) {
+            if (is_verbose) {
               cimg::mutex(29);
               std::fprintf(cimg::output()," (%u image%s left).",
                            images.size(),images.size()==1?"":"s");
@@ -9420,7 +9435,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   cimg_snprintf(argx,_argx.width(),"*repeat#%u",debug_line);
                   CImg<char>::string(argx).move_to(scope);
                 } else CImg<char>::string("*repeat").move_to(scope);
-                if (verbosity>0 || is_debug) {
+                if (is_very_verbose) {
                   if (*title) print(images,0,"Start '-repeat..-done' block with variable '%s' (%u iteration%s).",
                                     title,nb,nb>1?"s":"");
                   else print(images,0,"Start '-repeat..-done' block (%u iteration%s).",
@@ -9432,7 +9447,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 if (l) { std::memcpy(rd.data() + 3,title,l); set_variable(title,"0",variables_sizes); }
                 rd.move_to(repeatdones);
               } else {
-                if (verbosity>0 || is_debug) {
+                if (is_very_verbose) {
                   if (*title) print(images,0,"Skip 'repeat..done' block with variable '%s' (0 iteration).",
                                     title);
                   else print(images,0,"Skip 'repeat..done' block (0 iteration).");
@@ -9650,7 +9665,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
           // Return.
           if (!std::strcmp("-return",item)) {
-            if (verbosity>0 || is_debug) print(images,0,"Return.");
+            if (is_very_verbose) print(images,0,"Return.");
             position = commands_line.size();
             while (scope && scope.back()[0]=='*') {
               const char c = scope.back()[1];
@@ -9934,7 +9949,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           // Skip argument.
           if (!std::strcmp("-skip",item)) {
             gmic_substitute_args();
-            if (verbosity>0 || is_debug)
+            if (is_very_verbose)
               print(images,0,"Skip argument '%s'.",
                     gmic_argument_text());
             ++position;
@@ -10894,7 +10909,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               print(images,0,"Select %s in image%s in interactive mode",
                     feature_type==0?"point":feature_type==1?"segment":feature_type==2?"rectangle":
                     "ellipse",gmic_selection);
-              if (verbosity>=0 || is_debug) {
+              if (is_verbose) {
                 cimg::mutex(29);
                 if (is_xyz) std::fprintf(cimg::output(),", from point (%u,%u,%u)",X,Y,Z);
                 std::fprintf(cimg::output()," (skipped, no display support).");
@@ -10910,7 +10925,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                       "Select %s in image%s in interactive mode",
                       feature_type==0?"point":feature_type==1?"segment":
                       feature_type==2?"rectangle":"ellipse",gmic_selection);
-                if (verbosity>=0 || is_debug) {
+                if (is_verbose) {
                   cimg::mutex(29);
                   if (is_xyz) std::fprintf(cimg::output(),", from point (%u,%u,%u)",X,Y,Z);
                   std::fprintf(cimg::output()," (skipped, no display available).");
@@ -10922,7 +10937,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 print(images,0,"Select %s in image%s in interactive mode",
                       feature_type==0?"point":feature_type==1?"segment":
                       feature_type==2?"rectangle":"ellipse",gmic_selection);
-                if (verbosity>=0 || is_debug) {
+                if (is_verbose) {
                   cimg::mutex(29);
                   if (is_xyz) std::fprintf(cimg::output(),", from point (%u,%u,%u).",X,Y,Z);
                   else std::fprintf(cimg::output(),".");
@@ -11321,7 +11336,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     }
                 }
               }
-              if (verbosity>=0 || is_debug) {
+              if (is_verbose) {
                 cimg::mutex(29);
                 unsigned int siz = 0;
                 for (unsigned int l = 0; l<256; ++l) siz+=commands[l].size();
@@ -11390,9 +11405,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               print(images,0,"Decrement verbosity level (set to %d).",
                     verbosity);
             else if (*argument=='+' && !argument[1]) {
-              if (verbosity>0) print(images,0,"Increment verbosity level (set to %d).",
-                                     verbosity);
-            } else if (verbosity>=0 && old_verbosity>=0)
+              if (is_very_verbose) print(images,0,"Increment verbosity level (set to %d).",
+                                         verbosity);
+            } else if ((verbosity>=0 && old_verbosity>=0) || is_debug)
               print(images,0,"Set verbosity level to %d.",
                     verbosity);
             if (is_verbose_argument) ++position;
@@ -11448,18 +11463,18 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               _is_cond = (float)check_filename(name);
             }
             const bool is_cond = (bool)_is_cond;
-            if (verbosity>0 || is_debug) print(images,0,"Reach '-while' command -> %s '%s' %s.",
-                                               is_filename?"file":"boolean",
-                                               gmic_argument_text(),
-                                               is_filename?(is_cond?"exists":
-                                                            "does not exist"):
-                                               (is_cond?"is true":"is false"));
+            if (is_very_verbose) print(images,0,"Reach '-while' command -> %s '%s' %s.",
+                                       is_filename?"file":"boolean",
+                                       gmic_argument_text(),
+                                       is_filename?(is_cond?"exists":
+                                                    "does not exist"):
+                                       (is_cond?"is true":"is false"));
             if (is_cond) {
               position = dowhiles.back()(0);
               next_debug_line = debug_line; next_debug_filename = debug_filename;
               continue;
             } else {
-              if (verbosity>0 || is_debug) print(images,0,"End 'do..while' block.");
+              if (is_very_verbose) print(images,0,"End 'do..while' block.");
               dowhiles.remove();
               scope.remove();
             }
@@ -11856,17 +11871,17 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_snprintf(argx,_argx.width(),"*if#%u",debug_line);
               CImg<char>::string(argx).move_to(scope);
             } else CImg<char>::string("*if").move_to(scope);
-            if (verbosity>0 || is_debug) print(images,0,"Start '-if..-endif' block -> %s '%s' %s.",
-                                               is_filename?"file":"boolean",
-                                               gmic_argument_text(),
-                                               is_filename?(is_cond?"exists":"does not exist"):
-                                               (is_cond?"is true":"is false"));
-          } else if (verbosity>0 || is_debug) print(images,0,"Reach '-elif' block -> %s '%s' %s.",
-                                                    is_filename?"file":"boolean",
-                                                    gmic_argument_text(),
-                                                    is_filename?(is_cond?"exists":
-								 "does not exist"):
-                                                    (is_cond?"is true":"is false"));
+            if (is_very_verbose) print(images,0,"Start '-if..-endif' block -> %s '%s' %s.",
+                                       is_filename?"file":"boolean",
+                                       gmic_argument_text(),
+                                       is_filename?(is_cond?"exists":"does not exist"):
+                                       (is_cond?"is true":"is false"));
+          } else if (is_very_verbose) print(images,0,"Reach '-elif' block -> %s '%s' %s.",
+                                            is_filename?"file":"boolean",
+                                            gmic_argument_text(),
+                                            is_filename?(is_cond?"exists":
+                                                         "does not exist"):
+                                            (is_cond?"is true":"is false"));
           if (!is_cond) {
             for (int nb_ifs = 1; nb_ifs && position<commands_line.size(); ++position) {
               const char *const it = commands_line[position].data();
@@ -11996,7 +12011,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     &img1 = uind1!=~0U?gmic_check(images[uind1]):CImg<T>::empty();
             name = images_names[uind0];
             if (uind1!=~0U) { // Complex transform.
-              if (verbosity>=0 || is_debug) {
+              if (is_verbose) {
                 cimg::mutex(29);
                 std::fprintf(cimg::output()," ([%u],[%u])%c",uind0,uind1,
 			     l>=selection.height() - 2?'.':',');
@@ -12022,7 +12037,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               }
               ++l;
             } else { // Real transform.
-              if (verbosity>=0 || is_debug) {
+              if (is_verbose) {
                 cimg::mutex(29);
                 std::fprintf(cimg::output()," ([%u],0)%c",uind0,
 			     l>=selection.height() - 2?'.':',');
@@ -13081,7 +13096,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           int err = 0;
 #ifdef cimg_use_tiff
           static const TIFFErrorHandler default_handler = TIFFSetWarningHandler(0);
-          if (verbosity>0 || is_debug) TIFFSetWarningHandler(default_handler);
+          if (is_very_verbose) TIFFSetWarningHandler(default_handler);
           else TIFFSetWarningHandler(0);
 #endif // #ifdef cimg_use_tiff
           if ((err=std::sscanf(options,"%f,%f,%f",&first_frame,&last_frame,&step))>0) {
@@ -13128,7 +13143,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           std::FILE *const file = cimg::fopen(filename,"rb");
           add_commands(file,add_debug_info?filename:0);
           cimg::fclose(file);
-          if (verbosity>=0 || is_debug) {
+          if (is_verbose) {
             unsigned int nb_added = 0;
             for (unsigned int l = 0; l<256; ++l) nb_added+=commands[l].size();
             nb_added-=siz;
@@ -13271,7 +13286,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         if (is_network_file) std::remove(_filename);   // Clean temporary file if network input.
       }
 
-      if (verbosity>=0 || is_debug) {
+      if (is_verbose) {
         cimg::mutex(29);
         if (input_images) {
           const unsigned int last = input_images.size() - 1;

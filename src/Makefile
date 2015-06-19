@@ -303,7 +303,7 @@ STD_GMICOL_LIBS = $(MANDATORY_LIBS) $(PARALLEL_LIBS) $(PNG_LIBS) $(JPEG_LIBS) $(
 #--------------------------
 
 # Main default entries.
-all:
+all: CImg.h gmic_def.h
 ifeq ($(OS),Unix)
 	@echo "**"
 	@echo "** Generic unix configuration."
