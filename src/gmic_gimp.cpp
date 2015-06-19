@@ -1020,7 +1020,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
   cimglist_for(sources,l) if (try_net_update && (!cimg::strncasecmp(sources[l],"http://",7) ||
                                                  !cimg::strncasecmp(sources[l],"https://",8))) {
 
-    const char *const s_basename = gmic_basename(sources[l]);
+    const char *const s_basename = gmic::basename(sources[l]);
     CImg<char> _s_basename = CImg<char>::string(s_basename);
     cimg::strwindows_reserved(_s_basename);
     if (!is_silent) gimp_progress_set_text_printf(" G'MIC : Update filters '%s'...",s_basename);
@@ -1077,7 +1077,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
   CImgList<char> _gmic_additional_commands;
   bool is_default_update = false;
   cimglist_for(sources,l) {
-    const char *s_basename = gmic_basename(sources[l]);
+    const char *s_basename = gmic::basename(sources[l]);
     CImg<char> _s_basename = CImg<char>::string(s_basename);
     cimg::strwindows_reserved(_s_basename);
     const bool is_parent = sources(l,0)=='.' && sources(l,1)=='.' && (sources(l,2)=='/' || sources(l,2)=='\\');
@@ -1843,7 +1843,7 @@ void on_file_parameter_changed(GtkFileChooser *const file_chooser, const void *c
   CImg<char> o_value = CImg<char>::string(_o_value);
   cimg::strpare(o_value,'\"',true);
   const bool
-    is_same_file = !std::strcmp(gmic_basename(s_value),gmic_basename(o_value)),
+    is_same_file = !std::strcmp(gmic::basename(s_value),gmic::basename(o_value)),
     is_silent_argument = (bool)*((void**)event_infos + 1);
   CImg<char> s_param;
   if (s_value && *s_value) {
@@ -2299,14 +2299,14 @@ void process_image(const char *const commands_line, const bool is_apply) {
     const char *const cl = _commands_line +
       (!std::strncmp(_commands_line,"-v -99 ",7) || !std::strncmp(_commands_line,"-debug ",7)?7:0);
     cimg_snprintf(new_label,new_label.width(),"[G'MIC] %s : %s",gtk_label_get_text(GTK_LABEL(markup2ascii)),cl);
-    gmic_ellipsize(new_label,240,false);
+    gmic::ellipsize(new_label,240,false);
     gtk_widget_destroy(markup2ascii);
   } else {
     cimg_snprintf(new_label,new_label.width(),"G'MIC : %s...",_commands_line);
-    gmic_ellipsize(new_label,240,false);
+    gmic::ellipsize(new_label,240,false);
     gimp_progress_init_printf("%s",new_label.data());
     cimg_snprintf(new_label,new_label.width(),"[G'MIC] : %s",_commands_line);
-    gmic_ellipsize(new_label,240,false);
+    gmic::ellipsize(new_label,240,false);
   }
 
   // Get input layers for the chosen filter.
@@ -2653,7 +2653,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
       CImgList<char> return_values = spt.status.get_split(CImg<char>::vector(_rbrace,_lbrace),false,false);
       if (return_values._width==get_filter_nbparams(filter))
         cimglist_for(return_values,l) {
-          gmic_strreplace_fw(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
+          gmic::strreplace_fw(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
           if (std::strcmp(return_values[l].data(),get_filter_parameter(filter,l))) {
             set_filter_parameter(filter,l,return_values[l]);
             update_parameters = true;
@@ -2915,7 +2915,7 @@ void process_preview() {
       CImgList<char> return_values = spt.status.get_split(CImg<char>::vector(_rbrace,_lbrace),false,false);
       if (return_values._width==get_filter_nbparams(filter))
         cimglist_for(return_values,l) {
-          gmic_strreplace_fw(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
+          gmic::strreplace_fw(return_values[l].resize(1,return_values[l].height() + 1,1,1,0));
           if (std::strcmp(return_values[l].data(),get_filter_parameter(filter,l))) {
             set_filter_parameter(filter,l,return_values[l]);
             update_parameters = true;

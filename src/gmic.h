@@ -165,74 +165,7 @@ namespace cimg_library {
 // Define some special character codes used for replacement in double quoted strings.
 const char _dollar = 23, _lbrace = 24, _rbrace = 25, _comma = 26, _dquote = 28, _newline = 29;
 
-// Ellipsize a string.
-inline char *gmic_ellipsize(char *const s, const unsigned int l=80,
-                            const bool is_ending=true) { // Work in-place.
-  if (l<5) return gmic_ellipsize(s,5);
-  const unsigned int ls = (unsigned int)std::strlen(s);
-  if (ls<=l) return s;
-  if (is_ending) std::strcpy(s + l - 5,"(...)");
-  else {
-    const unsigned int ll = (l - 5)/2 + 1 - (l%2), lr = l - ll - 5;
-    std::strcpy(s + ll,"(...)");
-    std::memmove(s + ll + 5,s + ls - lr,lr);
-  }
-  s[l] = 0;
-  return s;
-}
-
-inline char *gmic_ellipsize(const char *const s, char *const res, const unsigned int l=80,
-                            const bool is_ending=true) { // Return a new string.
-  if (l<5) return gmic_ellipsize(s,res,5);
-  const unsigned int ls = (unsigned int)std::strlen(s);
-  if (ls<=l) { std::strcpy(res,s); return res; }
-  if (is_ending) {
-    std::strncpy(res,s,l - 5);
-    std::strcpy(res + l -5,"(...)");
-  } else {
-    const unsigned int ll = (l - 5)/2 + 1 - (l%2), lr = l - ll - 5;
-    std::strncpy(res,s,ll);
-    std::strcpy(res + ll,"(...)");
-    std::strncpy(res + ll + 5,s + ls - lr,lr);
-  }
-  res[l] = 0;
-  return res;
-}
-
-// Replace special characters in a string.
-inline char *gmic_strreplace_fw(char *const str) {
-  if (str) for (char *s = str ; *s; ++s) {
-      const char c = *s;
-      if (c<' ')
-        *s = c==_dollar?'$':c==_lbrace?'{':c==_rbrace?'}':c==_comma?',':
-          c==_dquote?'\"':c;
-    }
-  return str;
-}
-
-inline char *gmic_strreplace_bw(char *const str) {
-  if (str) for (char *s = str ; *s; ++s) {
-      const char c = *s;
-      *s = c=='$'?_dollar:c=='{'?_lbrace:c=='}'?_rbrace:c==','?_comma:
-        c=='\"'?_dquote:c;
-    }
-  return str;
-}
-
-// Compute the basename of a filename.
-inline const char* gmic_basename(const char *const str)  {
-  if (!str) return str;
-  const unsigned int l = (unsigned int)std::strlen(str);
-  if (*str=='[' && (str[l - 1]==']' || str[l - 1]=='.')) return str;
-  const char *p = 0, *np = str;
-  while (np>=str && (p=np)) np = std::strchr(np,'/') + 1;
-  np = p;
-  while (np>=str && (p=np)) np = std::strchr(np,'\\') + 1;
-  return p;
-}
-
 #endif // #ifndef gmic_build
-
 
 // Define main libgmic class 'gmic'.
 //----------------------------------
@@ -271,15 +204,28 @@ struct gmic {
 
   // Functions below should be considered as *private*, and should not be
   // used in user's code.
+  static int _levenshtein(const char *const s, const char *const t,
+                          gmic_image<int>& d, const int i, const int j);
+  static int levenshtein(const char *const s, const char *const t);
+  static bool check_filename(const char *const filename);
+  static unsigned int hashcode(const char *const str, const bool is_variable);
+  static bool command_has_arguments(const char *const command);
+  static const char* basename(const char *const str);
+  static char *strreplace_fw(char *const str);
+  static char *strreplace_bw(char *const str);
+  static char *ellipsize(char *const s, const unsigned int l=80,
+                         const bool is_ending=true);
+  static char *ellipsize(const char *const s, char *const res, const unsigned int l=80,
+                         const bool is_ending=true);
+  static const char* path_rc(const char *const custom_path=0, const bool return_parent=false);
+  static bool init_rc(const char *const custom_path=0);
+  static const gmic_image<char>& get_default_commands();
+
   template<typename T>
   void _gmic(const char *const commands_line,
              gmic_list<T>& images, gmic_list<char>& images_names,
              const char *const custom_commands, const bool include_default_commands,
              float *const p_progress, bool *const p_is_cancel);
-
-  static const gmic_image<char>& get_default_commands();
-  static const char* path_rc(const char *const custom_path=0, const bool return_parent=false);
-  static bool init_rc(const char *const custom_path=0);
 
   inline gmic& set_variable(const char *const name, const char *const value,
                             const unsigned int *const variables_sizes=0);
