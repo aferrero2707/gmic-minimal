@@ -1996,8 +1996,7 @@ void gmic::_gmic_substitute_args(const char *const argument, const char *const a
 #define gmic_substitute_args() { \
   const char *const argument0 = argument; \
   substitute_item(argument,images,images_names,parent_images,parent_images_names,variables_sizes).move_to(_argument); \
-  argument = _argument; \
-  _gmic_substitute_args(argument,argument0,command,images); \
+  _gmic_substitute_args(argument = _argument,argument0,command,images); \
 }
 
 // Macro for computing a readable version of a command argument.

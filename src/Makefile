@@ -374,7 +374,7 @@ gmic_gimp : gmic_gimp.o gmic_gimp.cpp
 gmic: gmic.cpp gmic.h gmic_def.h CImg.h
 	$(CC) -o gmic gmic.cpp -Dgmic_main $(CFLAGS) $(LIBS)
 
-gmic_def.h: gmic_def.gmic
+gmic_def.h:
 	@wget --quiet -O gmic_def.h http://gmic.eu/gmic_def.h
 	@touch gmic_def.h
 
