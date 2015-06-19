@@ -23158,7 +23158,7 @@ gimp_deblur :
 gimp_deblur_preview :
   -gimp_split_preview "-gimp_deblur $*",$-1
 
-#@gimp Sharpen [Gold-Meinel] : gimp_unsharp_goldmeinel, gimp_unsharp_goldmeinel_preview
+#@gimp Sharpen [Gold-Meinel] : gimp_unsharp_goldmeinel, gimp_unsharp_goldmeinel_preview(0)
 #@gimp : Sigma = float(1,0.5,10)
 #@gimp : Iterations = int(5,1,15)
 #@gimp : Acceleration = float(1,1,3)
