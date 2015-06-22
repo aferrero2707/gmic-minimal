@@ -6604,6 +6604,31 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             is_released = false; ++position; continue;
           }
 
+          // List of directory files.
+          if (!std::strcmp("-files",item)) {
+            gmic_substitute_args();
+            unsigned int mode = 5;
+            if ((*argument>='0' && *argument<='5') &&
+                argument[1]==',' && argument[2]) {
+              mode = *argument - '0';
+              argument+=2;
+            }
+            const unsigned int _mode = mode%3;
+            print(images,0,"Get list of %s from location '%s'.",
+                  _mode==0?"files":_mode==1?"folders":"files and folders",
+                  argument);
+            CImgList<char> files = cimg::files(argument,true,_mode,mode>=3);
+            cimglist_for(files,l) {
+              strreplace_bw(files[l]);
+              files[l].back() = ',';
+            }
+            if (files) {
+              files.back().back() = 0;
+              (files>'x').move_to(status);
+            } else status.assign();
+            ++position; continue;
+          }
+
           // Set 3d focale.
           if (!std::strcmp("-focale3d",item)) {
             gmic_substitute_args();
@@ -13213,7 +13238,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     "deriche","dijkstra","displacement","display","display3d",
                     "endif","else","elif","endlocal","endl","echo","exec","error","endian","exp",
                     "eq","ellipse","equalize","erode","elevation3d","eigen","eikonal",
-                    "fill","flood","focale3d","fft",
+                    "fill","flood","files","focale3d","fft",
                     "ge","gt","gradient","graph","guided",
                     "histogram","hsi2rgb","hsl2rgb","hsv2rgb","hessian",
                     "input","if","image","index","invert","isoline3d","isosurface3d","inpaint",
@@ -13455,6 +13480,11 @@ void gmic_segfault_sigaction(int signal, siginfo_t *si, void *arg) {
 // Start main procedure.
 //-----------------------
 #ifdef gmic_main
+
+#if cimg_OS==2
+int _CRT_glob = 0; // Disable globbing for msys.
+#endif
+
 int main(int argc, char **argv) {
 
   // Set default output messages stream.
