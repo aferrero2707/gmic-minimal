@@ -5680,18 +5680,23 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             *title = 0;
             CImg<unsigned int> &rd = repeatdones.back();
             const unsigned int counter = ++rd[2];
-            if (rd.height()>3) std::memcpy(title,rd.data() + 3,(rd.height() - 3)*sizeof(unsigned int));
+            unsigned int hashcode = ~0U, pos = ~0U;
+            if (rd.height()>3) { hashcode = (unsigned int)rd[3]; pos = (unsigned int)rd[4]; }
             if (--rd[1]) {
               position = rd[0];
+              if (hashcode!=~0U) {
+                cimg_snprintf(argx,_argx.width(),"%u",counter);
+                CImg<char>::string(argx).move_to((*variables[hashcode])[pos]);
+              }
               next_debug_line = debug_line; next_debug_filename = debug_filename;
             } else {
               if (is_very_verbose) print(images,0,"End 'repeat..done' block.");
+              if (hashcode!=~0U) {
+                variables[hashcode]->remove(pos);
+                variables_names[hashcode]->remove(pos);
+              }
               repeatdones.remove();
               scope.remove();
-            }
-            if (*title) {
-              cimg_snprintf(argx,_argx.width(),"%u",counter);
-              set_variable(title,argx,variables_sizes);
             }
             continue;
           }
@@ -9465,10 +9470,16 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   else print(images,0,"Start '-repeat..-done' block (%u iteration%s).",
                              nb,nb>1?"s":"");
                 }
-                const unsigned int l = std::strlen(title) + 1;
-                CImg<unsigned int> rd(1,3 + l/sizeof(unsigned int) + (l%sizeof(unsigned int)?1:0));
+                const unsigned int l = std::strlen(title);
+                CImg<unsigned int> rd(1,3 + (l?2:0));
                 rd[0] = position + 1; rd[1] = nb; rd[2] = 0;
-                if (l) { std::memcpy(rd.data() + 3,title,l); set_variable(title,"0",variables_sizes); }
+                if (l) {
+                  const unsigned int hashcode = gmic::hashcode(title,true);
+                  rd[3] = hashcode;
+                  rd[4] = variables[hashcode]->width();
+                  CImg<char>::string(title).move_to(*variables_names[hashcode]);
+                  CImg<char>::string("0").move_to(*variables[hashcode]);
+                }
                 rd.move_to(repeatdones);
               } else {
                 if (is_very_verbose) {
