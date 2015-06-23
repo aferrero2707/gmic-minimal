@@ -2676,7 +2676,7 @@ gmic& gmic::debug(const char *format, ...) {
 // Set variable in the interpreter environment.
 //---------------------------------------------
 inline gmic& gmic::set_variable(const char *const name, const char *const value,
-                         const unsigned int *const variables_sizes) {
+                                const unsigned int *const variables_sizes) {
   if (!name || !value) return *this;
   int ind = 0; bool is_name_found = false;
   const bool
