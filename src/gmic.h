@@ -228,6 +228,7 @@ struct gmic {
              float *const p_progress, bool *const p_is_cancel);
 
   inline gmic& set_variable(const char *const name, const char *const value,
+                            const bool add_new_variable,
                             const unsigned int *const variables_sizes=0);
 
   gmic& add_commands(const char *const data_commands, const char *const commands_file=0);

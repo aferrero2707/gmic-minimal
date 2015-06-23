@@ -2676,21 +2676,23 @@ gmic& gmic::debug(const char *format, ...) {
 // Set variable in the interpreter environment.
 //---------------------------------------------
 inline gmic& gmic::set_variable(const char *const name, const char *const value,
+                                const bool add_new_variable,
                                 const unsigned int *const variables_sizes) {
   if (!name || !value) return *this;
   int ind = 0; bool is_name_found = false;
   const bool
     is_global = *name=='_',
     is_thread_global = is_global && name[1]=='_';
+  if (is_thread_global) cimg::mutex(30);
   const unsigned int hashcode = gmic::hashcode(name,true);
   const int lind = is_global || !variables_sizes?0:(int)variables_sizes[hashcode];
-  if (is_thread_global) cimg::mutex(30);
   CImgList<char>
     &__variables = *variables[hashcode],
     &__variables_names = *variables_names[hashcode];
-  for (int l = __variables.width() - 1; l>=lind; --l) if (!std::strcmp(__variables_names[l],name)) {
-      is_name_found = true; ind = l; break;
-    }
+  if (!add_new_variable)
+    for (int l = __variables.width() - 1; l>=lind; --l) if (!std::strcmp(__variables_names[l],name)) {
+        is_name_found = true; ind = l; break;
+      }
   if (is_name_found) CImg<char>::string(value).move_to(__variables[ind]);
   else {
     CImg<char>::string(name).move_to(__variables_names);
@@ -3275,7 +3277,7 @@ void gmic::_gmic(const char *const commands_line,
   // Set pre-defined global variables.
   CImg<char> str(8);
   cimg_snprintf(str,str.width(),"%u",cimg::nb_cpus());
-  set_variable("_cpus",str);
+  set_variable("_cpus",str,true);
 
 #if cimg_OS==1
   cimg_snprintf(str,str.width(),"%u",(unsigned int)getpid());
@@ -3284,17 +3286,17 @@ void gmic::_gmic(const char *const commands_line,
 #else // #if cimg_OS==1
   cimg_snprintf(str,str.width(),"0");
 #endif // #if cimg_OS==1
-  set_variable("_pid",str);
+  set_variable("_pid",str,true);
 
 #ifdef gmic_prerelease
-  set_variable("_prerelease",gmic_prerelease);
+  set_variable("_prerelease",gmic_prerelease,true);
 #endif // #if gmic_prerelease==1
 
   cimg_snprintf(str,str.width(),"%u",gmic_version);
-  set_variable("_version",str);
+  set_variable("_version",str,true);
 
 #ifdef cimg_use_vt100
-  set_variable("_vt100","1");
+  set_variable("_vt100","1",true);
 #endif // # if cimg_use_vt100
 
   // Launch the G'MIC interpreter.
@@ -12522,7 +12524,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         print(images,0,"Set %s variable %s='%s'.",
               *title=='_'?"global":"local",
               title,value);
-        set_variable(title,value,variables_sizes);
+        set_variable(title,value,false,variables_sizes);
         continue;
       }
 
