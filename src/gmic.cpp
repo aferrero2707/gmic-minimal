@@ -5584,9 +5584,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                              &cam_index,&nb_frames,&end)==2 ||
                  std::sscanf(argument,"%f,%f,%f%c",
                              &cam_index,&nb_frames,&skip_frames,&end)==3 ||
-                 std::sscanf(argument,"%f,%f,%f,%f,%f,%c",
+                 std::sscanf(argument,"%f,%f,%f,%f,%f%c",
                              &cam_index,&nb_frames,&skip_frames,
-                             &capture_width,&capture_height,&end)==6) &&
+                             &capture_width,&capture_height,&end)==5) &&
                 cam_index>=0 && nb_frames>=0 && skip_frames>=0 &&
                 ((!capture_width && !capture_height) || (capture_width>0 && capture_height>0)))
               ++position;
