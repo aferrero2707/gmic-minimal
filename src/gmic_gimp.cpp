@@ -286,7 +286,8 @@ bool get_net_update() {
 // Set/get the current locale.
 void set_locale() {
   CImg<char> locale(16); *locale = 0;
-  const char *s_locale = setlocale(LC_CTYPE,0);
+  const char *s_locale = gimp_gimprc_query("language");
+  if (!s_locale || std::strlen(s_locale)<2) s_locale = setlocale(LC_CTYPE,0);
   if (!s_locale || std::strlen(s_locale)<2 || !cimg::strncasecmp("lc",s_locale,2)) s_locale = getenv("LANG");
   if (!s_locale || std::strlen(s_locale)<2) s_locale = getenv("LANGUAGE");
   if (!s_locale || std::strlen(s_locale)<2) s_locale = getenv("LC_ALL");
@@ -441,7 +442,7 @@ const char *t(const char *const s) {
   }
 
   // Dutch translation
-  if (!std::strcmp(get_locale(),"nl")) {
+  else if (!std::strcmp(get_locale(),"nl")) {
     if (!s) {
       static const char *const ns = "Geen internet-update mogelijk !\n\n"
         "Kan deze filters bronnen te bereiken :\n";
@@ -495,7 +496,7 @@ const char *t(const char *const s) {
   }
 
   // French translation
-  if (!std::strcmp(get_locale(),"fr")) {
+  else if (!std::strcmp(get_locale(),"fr")) {
     if (!s) {
       static const char *const ns = "Mise &#224; jour depuis Internet incompl&#232;te !\n\n"
         "Acc&#232;s impossible aux sources de filtres :\n";
@@ -555,7 +556,7 @@ const char *t(const char *const s) {
   }
 
   // German translation
-  if (!std::strcmp(get_locale(),"de")) {
+  else if (!std::strcmp(get_locale(),"de")) {
     if (!s) {
       static const char *const ns = "Kein Internet-Update m\303\266glich !\n\n"
         "Kann diese Filter Quellen erreichen :\n";
@@ -614,7 +615,7 @@ const char *t(const char *const s) {
   }
 
   // Italian translation
-  if (!std::strcmp(get_locale(),"it")) {
+  else if (!std::strcmp(get_locale(),"it")) {
     if (!s) {
       static const char *const ns = "Impossibile aggiornare da Internet !\n\n"
         "Impossibile raggiungere queste fonti filtri :\n";
@@ -673,7 +674,7 @@ const char *t(const char *const s) {
   }
 
   // Polish translation
-  if (!std::strcmp(get_locale(),"pl")) {
+  else if (!std::strcmp(get_locale(),"pl")) {
     if (!s) {
       static const char *const ns = "Aktualizacja filtr\303\263w przez internet (cz\304\231\305\233ciowo) nie "
         "powiod\305\202a si\304\231 !\n\n"
@@ -729,7 +730,7 @@ const char *t(const char *const s) {
   }
 
   // Portuguese translation
-  if (!std::strcmp(get_locale(),"pt")) {
+  else if (!std::strcmp(get_locale(),"pt")) {
     if (!s) {
       static const char *const ns = "A atualiza\303\247\303\243o pela internet falhou !\n\n"
         "Incapaz de chegar a essas fontes de filtros :\n";
@@ -784,7 +785,7 @@ const char *t(const char *const s) {
   }
 
   // Serbian translation
-  if (!std::strcmp(get_locale(),"sr")) {
+  else if (!std::strcmp(get_locale(),"sr")) {
     if (!s) {
       static const char *const ns = "A\305\276uriranje filtera sa interneta (delimi\304\215no) neuspe\305\241no !\n\n"
         "Nije mogu\304\207e dospeti do izvorne lokacije ovih filtera :\n";
@@ -838,7 +839,7 @@ const char *t(const char *const s) {
   }
 
   // Spanish translation (Castillan)
-  if (!std::strcmp(get_locale(),"es")) {
+  else if (!std::strcmp(get_locale(),"es")) {
     if (!s) {
       static const char *const ns = "No es posible establecer conexión a Internet !\n\n"
         "No es posible acceder a estas fuentes de filtros :\n";
