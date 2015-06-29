@@ -12471,11 +12471,13 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             } else {
               cimg_forY(selection,l) {
                 const unsigned int uind = selection[l];
-                if (images[uind]._depth==0x4B1D && !images[uind]._spectrum)
+                if (images[uind]._depth==0x4B1D && !images[uind]._spectrum) {
+                  selection2string(selection,images_names,1).move_to(name);
                   error(images,0,0,
-                        "Command '-%s': Image%s is not a valid selection"
+                        "Command '-%s': Invalid selection%s "
                         "(image [%u] has been already reserved by another thread).",
-                        custom_command,debug_filename,gmic_selection,uind);
+                        custom_command,name.data() + (*name=='s'?1:0),uind);
+                }
                 if (images[uind].is_shared())
                   nimages[l].assign(images[uind],false);
                 else {
