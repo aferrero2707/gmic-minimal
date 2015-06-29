@@ -2595,7 +2595,7 @@ gmic& gmic::error(const char *const format, ...) {
     if (*message!='\r')
       for (unsigned int i = 0; i<nb_carriages; ++i) std::fputc('\n',cimg::output());
     nb_carriages = 1;
-    if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
+    if (debug_filename<commands_files.size() && debug_line!=~0U)
       std::fprintf(cimg::output(),"[gmic]%s %s%s*** Error (file '%s', %sline #%u) *** %s%s",
                    s_scope.data(),cimg::t_red,cimg::t_bold,
                    commands_files[debug_filename].data(),
@@ -2644,7 +2644,7 @@ gmic& gmic::debug(const char *format, ...) {
     for (unsigned int i = 0; i<nb_carriages; ++i) std::fputc('\n',cimg::output());
   nb_carriages = 1;
 
-  if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
+  if (debug_filename<commands_files.size() && debug_line!=~0U)
     std::fprintf(cimg::output(),
                  "%s<gmic>%s#%u ",
                  cimg::t_green,scope2string(true).data(),debug_line);
@@ -3049,7 +3049,7 @@ gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const scope_
     for (unsigned int i = 0; i<nb_carriages; ++i) std::fputc('\n',cimg::output());
   nb_carriages = 1;
   if (!scope_selection || *scope_selection) {
-    if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
+    if (debug_filename<commands_files.size() && debug_line!=~0U)
       std::fprintf(cimg::output(),
                    "[gmic]-%u%s %s%s*** Warning (file '%s', %sline #%u) *** %s%s",
                    list.size(),s_scope.data(),cimg::t_magenta,cimg::t_bold,
@@ -3090,7 +3090,7 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
       for (unsigned int i = 0; i<nb_carriages; ++i) std::fputc('\n',cimg::output());
     nb_carriages = 1;
     if (!scope_selection || *scope_selection) {
-      if (is_debug_info && debug_filename!=~0U && debug_line!=~0U)
+      if (debug_filename<commands_files.size() && debug_line!=~0U)
         std::fprintf(cimg::output(),
                      "[gmic]-%u%s %s%s*** Error (file '%s', %sline #%u) *** %s%s",
                      list.size(),s_scope.data(),cimg::t_red,cimg::t_bold,
@@ -7487,6 +7487,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   nimages[l].swap(images[uind]);
                   // Small hack to be able to track images of the selection passed to the new environment.
                   std::memcpy(&images[uind]._width,&nimages[l]._data,sizeof(void*));
+                  images[uind]._depth = 0x4B1D;
+                  images[uind]._spectrum = 0;
                 }
                 nimages_names[l] = images_names[uind];   // Make a copy to be still able to recognize '-pass[label]'.
               }
@@ -12469,12 +12471,19 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             } else {
               cimg_forY(selection,l) {
                 const unsigned int uind = selection[l];
+                if (images[uind]._depth==0x4B1D && !images[uind]._spectrum)
+                  error(images,0,0,
+                        "Command '-%s': Image%s is not a valid selection"
+                        "(image [%u] has been already reserved by another thread).",
+                        custom_command,debug_filename,gmic_selection,uind);
                 if (images[uind].is_shared())
                   nimages[l].assign(images[uind],false);
                 else {
                   nimages[l].swap(images[uind]);
                   // Small hack to be able to track images of the selection passed to the new environment.
                   std::memcpy(&images[uind]._width,&nimages[l]._data,sizeof(void*));
+                  images[uind]._depth = 0x4B1D;
+                  images[uind]._spectrum = 0;
                 }
                 nimages_names[l] = images_names[uind];   // Make a copy to be still able to recognize '-pass[label]'.
               }
