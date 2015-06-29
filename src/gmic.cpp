@@ -4320,10 +4320,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       if (is_debug) {
         const char *const _initial_item = initial_item + (is_get_version?1:0);
         if (std::strcmp(item,_initial_item))
-          debug(images,"Item '%s' -> '%s', indice%s.",
+          debug(images,"Item '%s' -> '%s', selection%s.",
                 _initial_item,item,gmic_selection);
         else
-          debug(images,"Item '%s', indice%s.",
+          debug(images,"Item '%s', selection%s.",
                 _initial_item,gmic_selection);
       }
 
