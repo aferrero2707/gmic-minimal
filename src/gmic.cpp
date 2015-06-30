@@ -7479,25 +7479,29 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 const unsigned int uind = selection[l];
                 nimages[l].assign(images[uind]);
                 nimages_names[l].assign(images_names[uind]).copymark();
-              } else cimg_forY(selection,l) {
-                const unsigned int uind = selection[l];
-                if (images[uind].is_shared())
-                  nimages[l].assign(images[uind],false);
-                else {
-                  if ((images[uind]._width || images[uind]._height) && !images[uind]._spectrum) {
-                    selection2string(selection,images_names,1).move_to(name);
-                    error(images,0,0,
-                          "Command '-local': Invalid selection%s "
-                          "(image [%u] is already used in another thread).",
-                          name.data() + (*name=='s'?1:0),uind);
+              } else {
+                cimg::mutex(27);
+                cimg_forY(selection,l) {
+                  const unsigned int uind = selection[l];
+                  if (images[uind].is_shared())
+                    nimages[l].assign(images[uind],false);
+                  else {
+                    if ((images[uind]._width || images[uind]._height) && !images[uind]._spectrum) {
+                      selection2string(selection,images_names,1).move_to(name);
+                      error(images,0,0,
+                            "Command '-local': Invalid selection%s "
+                            "(image [%u] is already used in another thread).",
+                            name.data() + (*name=='s'?1:0),uind);
+                    }
+                    nimages[l].swap(images[uind]);
+                    // Small hack to be able to track images of the selection passed to the new environment.
+                    std::memcpy(&images[uind]._width,&nimages[l]._data,sizeof(void*));
+                    images[uind]._spectrum = 0;
                   }
-                  nimages[l].swap(images[uind]);
-                  // Small hack to be able to track images of the selection passed to the new environment.
-                  std::memcpy(&images[uind]._width,&nimages[l]._data,sizeof(void*));
-                  images[uind]._spectrum = 0;
+                  nimages_names[l] = images_names[uind];   // Make a copy to be still able to recognize '-pass[label]'.
                 }
-                nimages_names[l] = images_names[uind];   // Make a copy to be still able to recognize '-pass[label]'.
-              }
+                cimg::mutex(27,0);
+            }
             const unsigned int local_scope_size = scope.size();
             try {
               if (next_debug_line!=~0U) { debug_line = next_debug_line; next_debug_line = ~0U; }
@@ -12475,6 +12479,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimglist_for(nimages_names,l) nimages_names[l].copymark();
               nimages_names.move_to(images_names,~0U);
             } else {
+              cimg::mutex(27);
               cimg_forY(selection,l) {
                 const unsigned int uind = selection[l];
                 if ((images[uind]._width || images[uind]._height) && !images[uind]._spectrum) {
@@ -12494,6 +12499,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 }
                 nimages_names[l] = images_names[uind];   // Make a copy to be still able to recognize '-pass[label]'.
               }
+              cimg::mutex(27,0);
+
               try {
                 is_debug_info = false;
                 _run(ncommands_line,nposition,nimages,nimages_names,images,images_names,nvariables_sizes,&_is_noarg);
