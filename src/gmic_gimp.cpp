@@ -350,6 +350,7 @@ void get_output_layer_props(const char *const s, GimpLayerModeEffects &blendmode
   char sep = 0;
   S = std::strstr(s,"opacity(");
   if (S && std::sscanf(S + 8,"%lf%c",&_opacity,&sep)==2 && sep==')') opacity = _opacity;
+  if (opacity<0) opacity = 0; else if (opacity>100) opacity = 100;
 
   // Read output positions.
   int _posx = 0, _posy = 0;
