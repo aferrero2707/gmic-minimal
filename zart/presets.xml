@@ -335,27 +335,6 @@
 ************************************ -->
 <preset_group name="Artistic" >
 
-<!-- /Artistic/Bokeh -->
-<preset name="Bokeh">
-  <command>
--gimp_bokeh_preview $"*"
-  </command>
-  <note text="&lt;b&gt;&lt;small&gt;Global parameters:&lt;/small&gt;&lt;/b&gt;" />
-  <float name="Amplitude" default="250" min="0" max="600" />
-  <float name="Smoothness" default="2" min="0" max="20" />
-  <float name="Density" default="0.5" min="0" max="5" />
-  <separator />
-  <note text="&lt;b&gt;&lt;small&gt;Bokeh shape:&lt;/small&gt;&lt;/b&gt;" />
-  <int name="Size" default="24" min="1" max="64" />
-  <float name="Outline size" default="10" min="0" max="100" />
-  <float name="Outline amplitude" default="2" min="0" max="10" />
-  <float name="Smoothness" default="0.7" min="0" max="5" />
-  <separator />
-  <const value="0" />
-  <separator />
-  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;04/24/2013&lt;/i&gt;.&lt;/small&gt;" />
-</preset>
-
 <!-- /Artistic/Cartoon -->
 <preset name="Cartoon">
   <command>
