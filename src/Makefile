@@ -138,13 +138,11 @@ OPENMP_LIBS = -lgomp
 # Flags to enable image display, using X11
 # (keep /usr/ dirname here since X11 is located in /usr/ on Mac too).
 # This requires the presence of the X11 include and library files.
-# (package 'libx11-dev' on Debian).
 X11_CFLAGS = -Dcimg_display=1 -Dcimg_appname=\\\"gmic\\\" -I/usr/X11R6/include #-Dcimg_use_xrandr
 X11_LIBS = -L/usr/X11R6/lib -lX11 -lpthread #-lXrandr
 
 # Flags to enable fast display, using XShm.
 # This requires the presence of the X11 extension include and library files.
-# (package 'libx11-dev' on Debian).
 XSHM_CFLAGS = -Dcimg_use_xshm
 XSHM_LIBS = -L$(USR)/X11R6/lib -lXext
 
@@ -155,25 +153,21 @@ GDI32_LIBS = -lgdi32
 
 # Flags to enable native support for PNG image files, using the PNG library.
 # This requires the presence of the libpng include and library files.
-# (package 'libpng12-dev' on Debian).
 PNG_CFLAGS = -Dcimg_use_png
 PNG_LIBS = -lpng -lz
 
 # Flags to enable native support for JPEG image files, using the JPEG library.
 # This requires the presence of the libjpeg include and library files.
-# (package 'libjpeg62-dev' on Debian).
 JPEG_CFLAGS = -Dcimg_use_jpeg
 JPEG_LIBS = -ljpeg
 
 # Flags to enable native support for TIFF image files, using the TIFF library.
 # This requires the presence of the libtiff include and library files.
-# (package 'libtiff4-dev' on Debian).
 TIFF_CFLAGS = -Dcimg_use_tiff
 TIFF_LIBS = -ltiff
 
 # Flags to enable native support for MINC2 image files, using the MINC2 library.
 # ( http://en.wikibooks.org/wiki/MINC/Reference/MINC2.0_Users_Guide )
-# (package 'libminc-dev' on Debian).
 MINC2_CFLAGS = -Dcimg_use_minc2 -I${HOME}/local/include
 MINC2_LIBS = -lminc_io -lvolume_io2 -lminc2 -lnetcdf -lhdf5 -lz -L${HOME}/local/lib
 
@@ -182,21 +176,13 @@ MINC2_LIBS = -lminc_io -lvolume_io2 -lminc2 -lnetcdf -lhdf5 -lz -L${HOME}/local/
 CURL_CFLAGS = -Dcimg_use_curl
 CURL_LIBS = -lcurl
 
-# Flags to enable native support of webcams, using the OpenCV library.
+# Flags to enable native support of webcams and video streaming, using the OpenCV library.
 # This requires the presence of the OpenCV include and library files.
-# (package 'libcv3-2-dev' on Debian).
-ifeq ($(OS),Darwin)
-OPENCV_CFLAGS = -Dcimg_use_opencv -I$(USR)/$(INCLUDE) -I$(USR)/$(INCLUDE)/opencv
-OPENCV_LIBS = `pkg-config opencv --libs`   #-> Use this for OpenCV 2.2.0 !
-else
-OPENCV_CFLAGS = -Dcimg_use_opencv -I$(USR)/$(INCLUDE) -I$(USR)/$(INCLUDE)/opencv
-# OPENCV_LIBS = -lcv -lhighgui
-OPENCV_LIBS = -lopencv_core -lopencv_highgui   #-> Use this for OpenCV >= 2.2.0 !
-endif
+OPENCV_CFLAGS = -Dcimg_use_opencv  `pkg-config opencv --cflags`
+OPENCV_LIBS = `pkg-config opencv --libs`
 
 # Flags to enable native support of most classical image file formats, using the GraphicsMagick++ library.
 # This requires the presence of the GraphicsMagick++ include and library files.
-# (package 'libgraphicsmagick++1-dev' on Debian).
 MAGICK_CFLAGS = -Dcimg_use_magick -I$(USR)/$(INCLUDE)/GraphicsMagick
 ifeq ($(OS),Darwin)
 MAGICK_LIBS = -L$(USR)/$(LIB) -lGraphicsMagick++ -lGraphicsMagick -llcms -ltiff -lfreetype -ljpeg -lpng -lbz2 -lxml2 -lz -lm -lltdl
@@ -206,13 +192,11 @@ endif
 
 # Flags to enable native support of EXR file format, using the OpenEXR library/
 # This requires the presence of the OpenEXR include and library files.
-# (package 'libopenexr-dev' on Debian).
 EXR_CFLAGS = -Dcimg_use_openexr -I$(USR)/$(INCLUDE)/OpenEXR
 EXR_LIBS = -lIlmImf -lHalf
 
 # Flags to enable the use of the FFTW3 library.
 # This requires the presence of the FFTW3 include and library files.
-# (package 'libfftw3-dev' on Debian).
 FFTW_CFLAGS = -Dcimg_use_fftw3
 ifeq ($(OSTYPE),msys)
 FFTW_LIBS = -lfftw3
@@ -222,7 +206,6 @@ endif
 
 # Flags to enable the use of the BOARD library.
 # This requires the presence of the BOARD include and library files.
-# (no packages exist for Debian at this time).
 BOARD_CFLAGS = -Dcimg_use_board
 BOARD_LIBS = -lboard
 
