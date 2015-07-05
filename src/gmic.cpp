@@ -3248,13 +3248,6 @@ void gmic::_gmic(const char *const commands_line,
                  float *const p_progress, bool *const p_is_cancel) {
 
   // Initialize class variables and default G'MIC environment.
-  cimg::mutex(26);
-  if (is_running)
-    error(images,0,0,
-          "An instance of G'MIC interpreter %p is already running.",
-          (void*)this);
-  is_running = true;
-  cimg::mutex(26,0);
   setlocale(LC_NUMERIC,"C");
   cimg_exception_mode = cimg::exception_mode();
   cimg::exception_mode(0);
@@ -4113,6 +4106,13 @@ template<typename T>
 gmic& gmic::run(const char *const commands_line,
                 gmic_list<T> &images, gmic_list<char> &images_names,
                 float *const p_progress, bool *const p_is_cancel) {
+  cimg::mutex(26);
+  if (is_running)
+    error(images,0,0,
+          "An instance of G'MIC interpreter %p is already running.",
+          (void*)this);
+  is_running = true;
+  cimg::mutex(26,0);
   starting_commands_line = commands_line;
   is_debug = false;
   return _run(commands_line_to_CImgList(commands_line),
