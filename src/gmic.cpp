@@ -2132,7 +2132,7 @@ struct st_gmic_parallel {
   CImgList<st_gmic_parallel<T> > *threads_data;
   CImgList<T> *images, *parent_images;
   CImg<unsigned int> variables_sizes;
-  volatile bool is_running;
+  volatile bool is_thread_running;
   gmic_exception exception;
   gmic gmic_instance;
 #ifdef gmic_is_parallel
@@ -2165,7 +2165,7 @@ static DWORD WINAPI gmic_parallel(void *arg)
 #ifdef gmic_is_parallel
     CImgList<st_gmic_parallel<T> > &threads_data = *st.threads_data;
     cimglist_for(threads_data,i) cimg_forY(threads_data[i],l)
-      if (&threads_data(i,l)!=&st && threads_data(i,l).is_running) {
+      if (&threads_data(i,l)!=&st && threads_data(i,l).is_thread_running) {
         threads_data(i,l).gmic_instance.is_cancel_thread = true;
 #if cimg_OS!=2
         pthread_join(threads_data(i,l).thread_id,0);
@@ -2173,7 +2173,7 @@ static DWORD WINAPI gmic_parallel(void *arg)
         WaitForSingleObject(threads_data(i,l).thread_id,INFINITE);
         CloseHandle(threads_data(i,l).thread_id);
 #endif // #if cimg_OS!=2
-        threads_data(i,l).is_running = false;
+        threads_data(i,l).is_thread_running = false;
       }
 #endif // #ifdef gmic_is_parallel
 
@@ -2330,7 +2330,7 @@ char *gmic::ellipsize(const char *const s, char *const res, const unsigned int l
     commands_has_arguments(new CImgList<char>[512]), \
     _variables(new CImgList<char>[512]), _variables_names(new CImgList<char>[512]), \
     variables(new CImgList<char>*[512]), variables_names(new CImgList<char>*[512]), \
-    display_window(new CImgDisplay[10])
+    display_window(new CImgDisplay[10]), is_running(false)
 
 CImg<char> gmic::default_commands = CImg<char>::empty();
 
@@ -4106,10 +4106,19 @@ template<typename T>
 gmic& gmic::run(const char *const commands_line,
                 gmic_list<T> &images, gmic_list<char> &images_names,
                 float *const p_progress, bool *const p_is_cancel) {
+  cimg::mutex(26);
+  if (is_running)
+    error(images,0,0,
+          "An instance of G'MIC interpreter %p is already running.",
+          (void*)this);
+  is_running = true;
+  cimg::mutex(26,0);
   starting_commands_line = commands_line;
   is_debug = false;
-  return _run(commands_line_to_CImgList(commands_line),
-              images,images_names,p_progress,p_is_cancel);
+  _run(commands_line_to_CImgList(commands_line),
+       images,images_names,p_progress,p_is_cancel);
+  is_running = false;
+  return *this;
 }
 
 template<typename T>
@@ -9046,7 +9055,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               _threads_data[l].parent_images = &parent_images;
               _threads_data[l].parent_images_names = &parent_images_names;
               _threads_data[l].threads_data = &threads_data;
-              _threads_data[l].is_running = true;
+              _threads_data[l].is_thread_running = true;
 
               // Substitute special characters codes appearing outside strings.
               arguments[l].resize(1,arguments[l].height() + 1,1,1,0);
@@ -9079,7 +9088,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
             // Wait threads if immediate waiting mode selected.
             if (wait_mode) {
-              cimg_forY(_threads_data,l) if (_threads_data[l].is_running) {
+              cimg_forY(_threads_data,l) if (_threads_data[l].is_thread_running) {
 #ifdef gmic_is_parallel
 #if cimg_OS!=2
                 pthread_join(_threads_data[l].thread_id,0);
@@ -9087,7 +9096,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 WaitForSingleObject(_threads_data[l].thread_id,INFINITE);
                 CloseHandle(_threads_data[l].thread_id);
 #endif // #if cimg_OS!=2
-                _threads_data[l].is_running = false;
+                _threads_data[l].is_thread_running = false;
 #endif // #ifdef gmic_is_parallel
               }
 
@@ -13398,7 +13407,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
     // Wait for remaining threads to finish.
 #ifdef gmic_is_parallel
     cimglist_for(threads_data,i) cimg_forY(threads_data[i],l) {
-      if (!threads_data(i,l).is_running) threads_data(i,l).gmic_instance.is_cancel_thread = true;
+      if (!threads_data(i,l).is_thread_running) threads_data(i,l).gmic_instance.is_cancel_thread = true;
 #if cimg_OS!=2
       pthread_join(threads_data(i,l).thread_id,0);
 #else // #if cimg_OS!=2
@@ -13406,7 +13415,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       CloseHandle(threads_data(i,l).thread_id);
 #endif // #if cimg_OS!=2
       is_released&=threads_data(i,l).gmic_instance.is_released;
-      threads_data(i,l).is_running = false;
+      threads_data(i,l).is_thread_running = false;
     }
     // Check for possible exceptions thrown by threads.
     cimglist_for(threads_data,i) cimg_forY(threads_data[i],l)
