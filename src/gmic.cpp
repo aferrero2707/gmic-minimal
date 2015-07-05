@@ -4115,8 +4115,10 @@ gmic& gmic::run(const char *const commands_line,
   cimg::mutex(26,0);
   starting_commands_line = commands_line;
   is_debug = false;
-  return _run(commands_line_to_CImgList(commands_line),
-              images,images_names,p_progress,p_is_cancel);
+  _run(commands_line_to_CImgList(commands_line),
+       images,images_names,p_progress,p_is_cancel);
+  is_running = false;
+  return *this;
 }
 
 template<typename T>
