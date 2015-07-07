@@ -178,8 +178,8 @@ CURL_LIBS = -lcurl
 
 # Flags to enable native support of webcams and video streaming, using the OpenCV library.
 # This requires the presence of the OpenCV include and library files.
-OPENCV_CFLAGS = -Dcimg_use_opencv  `pkg-config opencv --cflags`
-OPENCV_LIBS = `pkg-config opencv --libs`
+OPENCV_CFLAGS = -Dcimg_use_opencv  `pkg-config opencv --cflags` -I/usr/include/opencv
+OPENCV_LIBS = `pkg-config opencv --libs` -lopencv_core -lopencv_highgui
 
 # Flags to enable native support of most classical image file formats, using the GraphicsMagick++ library.
 # This requires the presence of the GraphicsMagick++ include and library files.
