@@ -1646,8 +1646,8 @@ const char* get_commands_line(const bool is_preview) {
   CImgList<char> lres;
   switch (get_verbosity_mode()) {
   case 0: case 1: case 2: case 3: CImg<char>("-v -99 -",8).move_to(lres); break;  // Quiet or Verbose.
-  case 4: case 5 : CImg<char>("-",1).move_to(lres); break;                // Very verbose.
-  default: CImg<char>("-debug -",8).move_to(lres);                        // Debug.
+  case 4: case 5 : CImg<char>("-v 0 -",1).move_to(lres); break;                   // Very verbose.
+  default: CImg<char>("-debug -",8).move_to(lres);                                // Debug.
   }
   const CImg<char> &command_item = (is_preview?gmic_preview_commands[filter]:gmic_commands[filter]);
   if (command_item) {
