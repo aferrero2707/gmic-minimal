@@ -1091,18 +1091,29 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
                     gmic::path_rc(),_s_basename.data());
     const unsigned int omode = cimg::exception_mode();
     try {
+      CImg<char> com;
+      bool add_code_separator = false;
       cimg::exception_mode(0);
       if (sources[l].back()==1) { // Overload default, add more checking.
-        CImg<char> com = CImg<char>::get_load_raw(filename);
+        com.load_raw(filename);
         if (std::sscanf(com," #@gmi%c",&sep)==1 && sep=='c') {
           is_default_update = true;
           com.move_to(_gmic_additional_commands);
-          CImg<char>::string("\n#@gimp ________\n",false).unroll('y').move_to(_gmic_additional_commands);
+          add_code_separator = true;
+        } else if (std::sscanf(com,"1 unsigned_cha%c",&sep)==1 && sep=='r') {
+          CImgList<char>::get_unserialize(com)[0].move_to(_gmic_additional_commands);
+          is_default_update = true;
+          add_code_separator = true;
         }
       } else {
-        CImg<char>::get_load_raw(filename).move_to(_gmic_additional_commands);
-        CImg<char>::string("\n#@gimp ________\n",false).unroll('y').move_to(_gmic_additional_commands);
+        com.load_raw(filename);
+        if (std::sscanf(com,"1 unsigned_cha%c",&sep)==1 && sep=='r')
+          CImgList<char>::get_unserialize(com)[0].move_to(_gmic_additional_commands);
+        else com.move_to(_gmic_additional_commands);
+        add_code_separator = true;
       }
+      if (add_code_separator)
+        CImg<char>::string("\n#@gimp ________\n",false).unroll('y').move_to(_gmic_additional_commands);
     } catch(...) {
       if (get_verbosity_mode()>1)
         std::fprintf(cimg::output(),
