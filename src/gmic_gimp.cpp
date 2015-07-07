@@ -2289,7 +2289,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   if (!commands_line && !filter) return;
   bool update_parameters = false;
   const char *const _commands_line = commands_line?commands_line:get_commands_line(false);
-  if (!_commands_line || std::strstr(_commands_line,"-_none_")) return;
+  if (!_commands_line || std::strstr(_commands_line," -_none_")) return;
 
   CImg<char> new_label(256), progress_label;
   *new_label = 0;
@@ -2683,15 +2683,16 @@ void process_preview() {
   const unsigned int filter = get_current_filter();
   if (!filter) return;
   const char *const commands_line = get_commands_line(true);
-  if (!commands_line || std::strstr(commands_line,"-_none_")) return;
+  if (!commands_line || std::strstr(commands_line," -_none_")) return;
+
   bool update_parameters = false;
   int wp, hp, sp, xp, yp;
   static int _xp = -1, _yp = -1;
-
   guchar *const ptr0 = gimp_zoom_preview_get_source(GIMP_ZOOM_PREVIEW(gui_preview),&wp,&hp,&sp);
   const double factor = gimp_zoom_preview_get_factor(GIMP_ZOOM_PREVIEW(gui_preview));
   gimp_preview_get_position(GIMP_PREVIEW(gui_preview),&xp,&yp);
   if (xp!=_xp || _yp!=yp) { _xp = xp; _yp = yp; computed_preview.assign(); }
+
   if (!computed_preview) {
 
     // Get input layers for the chosen filter and convert then to the preview size if necessary.
@@ -2925,6 +2926,7 @@ void process_preview() {
         }
     }
   }
+
   std::memcpy(ptr0,computed_preview.data(),wp*hp*sp*sizeof(unsigned char));
   gimp_preview_draw_buffer(GIMP_PREVIEW(gui_preview),ptr0,wp*sp);
   g_free(ptr0);
