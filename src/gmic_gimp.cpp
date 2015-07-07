@@ -1646,7 +1646,7 @@ const char* get_commands_line(const bool is_preview) {
   CImgList<char> lres;
   switch (get_verbosity_mode()) {
   case 0: case 1: case 2: case 3: CImg<char>("-v -99 -",8).move_to(lres); break;  // Quiet or Verbose.
-  case 4: case 5 : CImg<char>("-v 0 -",1).move_to(lres); break;                   // Very verbose.
+  case 4: case 5 : CImg<char>("-v 0 -",6).move_to(lres); break;                   // Very verbose.
   default: CImg<char>("-debug -",8).move_to(lres);                                // Debug.
   }
   const CImg<char> &command_item = (is_preview?gmic_preview_commands[filter]:gmic_commands[filter]);
@@ -2299,7 +2299,9 @@ void process_image(const char *const commands_line, const bool is_apply) {
     CImg<char>::string(gtk_label_get_text(GTK_LABEL(markup2ascii))).move_to(progress_label);
     gimp_progress_init_printf(" G'MIC : %s...",progress_label.data());
     const char *const cl = _commands_line +
-      (!std::strncmp(_commands_line,"-v -99 ",7) || !std::strncmp(_commands_line,"-debug ",7)?7:0);
+      (!std::strncmp(_commands_line,"-v -99 ",7)?7:
+       !std::strncmp(_commands_line,"-v 0 ",5)?5:
+       !std::strncmp(_commands_line,"-debug ",7)?7:0);
     cimg_snprintf(new_label,new_label.width(),"[G'MIC] %s : %s",gtk_label_get_text(GTK_LABEL(markup2ascii)),cl);
     gmic::ellipsize(new_label,240,false);
     gtk_widget_destroy(markup2ascii);
