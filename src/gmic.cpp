@@ -2231,8 +2231,8 @@ bool gmic::check_filename(const char *const filename) {
 
 // Return a 8-bits hashcode from a string.
 unsigned int gmic::hashcode(const char *const str, const bool is_variable) {
-  if (!str) return 0;
-  unsigned int hash = 0;
+  if (!str) return 0U;
+  unsigned int hash = 0U;
   if (is_variable) {
     if (*str=='_') return str[1]=='_'?511U:510U;
     for (const char *s = str; *s; ++s) (hash*=31)+=*s;
@@ -2623,7 +2623,6 @@ gmic& gmic::error(const char *const format, ...) {
   CImg<char>::string(full_message).move_to(status);
   message.assign();
   throw gmic_exception(0,status);
-  return *this;
 }
 
 // Print debug message.
@@ -3121,7 +3120,6 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
   CImg<char>::string(full_message).move_to(status);
   message.assign();
   throw gmic_exception(command,status);
-  return *this;
 }
 
 #define arg_error(command) gmic::error(images,0,command,"Command '-%s': Invalid argument '%s'.",\

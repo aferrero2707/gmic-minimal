@@ -160,6 +160,19 @@
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;01/12/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
+<!-- /Arrays &amp; tiles/Grid [triangular] -->
+<preset name="Grid [triangular]">
+  <command>
+-gimp_imagegrid_triangular $"*"
+  </command>
+  <int name="Pattern width" default="10" min="8" max="128" />
+  <int name="Pattern height" default="18" min="8" max="128" />
+  <choice name="Pattern type" default="0" choice0="Horizontal" choice1="Vertical" choice2="Crossed" choice3="Cube" choice4="Decreasing" choice5="Increasing" />
+  <color name="Outline color" default="255,255,255,128" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/08/2015&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
+
 <!-- /Arrays &amp; tiles/Make seamless -->
 <preset name="Make seamless">
   <command>
@@ -334,6 +347,37 @@
 
 ************************************ -->
 <preset_group name="Artistic" >
+
+<!-- /Artistic/Bokeh -->
+<preset name="Bokeh">
+  <command>
+-gimp_bokeh_preview $"*"
+  </command>
+  <int name="Number of scales" default="3" min="1" max="10" />
+  <choice name="Shape" default="8" choice0="Triangle" choice1="Square" choice2="Diamond" choice3="Pentagon" choice4="Hexagon" choice5="Octogon" choice6="Decagon" choice7="Star" choice8="Circular" />
+  <separator />
+  <note text="&lt;small&gt;&lt;b&gt;Starting parameters:&lt;/b&gt;&lt;/small&gt;" />
+  <int name="Density" default="30" min="1" max="256" />
+  <float name="Radius (%)" default="8" min="0" max="50" />
+  <float name="Outline (%)" default="4" min="0" max="100" />
+  <float name="Inner shade" default="0.3" min="0" max="1" />
+  <float name="Smoothness" default="0.2" min="0" max="8" />
+  <color name="Color" default="210,210,80,160" />
+  <float name="Color dispersion" default="0.7" min="0" max="1" />
+  <separator />
+  <note text="&lt;small&gt;&lt;b&gt;Ending parameters:&lt;/b&gt;&lt;/small&gt;" />
+  <int name="Density" default="30" min="1" max="256" />
+  <float name="Radius (%)" default="20" min="0" max="50" />
+  <float name="Outline (%)" default="20" min="0" max="100" />
+  <float name="Inner shade" default="1" min="0" max="1" />
+  <float name="Smoothness" default="2" min="0" max="8" />
+  <color name="Color" default="170,130,20,110" />
+  <float name="Color dispersion" default="0.15" min="0" max="1" />
+  <separator />
+  <const value="0" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/02/2015&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
 
 <!-- /Artistic/Cartoon -->
 <preset name="Cartoon">
@@ -2114,6 +2158,24 @@ You can define a transparent top layer that will help the seam-carving algorithm
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;01/16/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
+<!-- /Degradations/Chromatic aberrations -->
+<preset name="Chromatic aberrations">
+  <command>
+-gimp_chromatic_aberrations_preview $"*"
+  </command>
+  <color name="Primary color" default="255,0,0" />
+  <float name="X-shift" default="2" min="-16" max="16" />
+  <float name="Y-shift" default="2" min="-16" max="16" />
+  <separator />
+  <color name="Secondary color" default="0,255,0" />
+  <float name="X-shift (px)" default="0" min="-16" max="16" />
+  <float name="Y-shift (px)" default="0" min="-16" max="16" />
+  <separator />
+  <const value="0" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/05/2015&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
+
 <!-- /Degradations/Dirty -->
 <preset name="Dirty">
   <command>
@@ -2201,6 +2263,23 @@ You can define a transparent top layer that will help the seam-carving algorithm
   <const value="0" />
   <separator />
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;11/02/2011&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
+
+<!-- /Degradations/Rain &amp; snow -->
+<preset name="Rain &amp; snow">
+  <command>
+-gimp_rain_preview $"*"
+  </command>
+  <float name="Angle" default="65" min="-180" max="180" />
+  <float name="Speed" default="10" min="0" max="50" />
+  <float name="Density (%)" default="50" min="0" max="100" />
+  <float name="Radius" default="0.1" min="0" max="3" />
+  <float name="Gamma" default="1" min="0" max="2" />
+  <float name="Opacity" default="1" min="0" max="1" />
+  <separator />
+  <const value="0" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;06/29/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
 <!-- /Degradations/Random shade stripes -->
@@ -3225,6 +3304,27 @@ jpeg_action:
   <const value="0" />
   <separator />
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;02/21/2011&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
+
+<!-- /Lights &amp; shadows/Light leaks -->
+<preset name="Light leaks">
+  <command>
+-gimp_light_leaks_preview $"*"
+  </command>
+  <int name="Leak type" default="0" min="0" max="70" />
+  <float name="Angle" default="0" min="-180" max="180" />
+  <float name="X-scale" default="1" min="1" max="10" />
+  <float name="Y-scale" default="1" min="1" max="10" />
+  <float name="Hue" default="0" min="-180" max="180" />
+  <float name="Opacity" default="0.85" min="0" max="1" />
+  <bool name="Output as separate layers" default="1" />
+  <separator />
+  <const value="0" />
+  <separator />
+  <note text="&lt;small&gt;This filter uses the free light leaks dataset available at :&lt;/small&gt;" />
+  <link name="Lomo Light Leaks" url="http://www.photoshoptutorials.ws/downloads/mockups-graphics/lomo-light-leaks/" align="center" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/01/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
 <!-- /Lights &amp; shadows/Light patch -->
@@ -4633,6 +4733,29 @@ Reduce resolution to be able to view&lt;br/&gt;
   <color name="Color 4" default="255,0,255" />
   <separator />
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;12/29/2010&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
+
+<!-- /Rendering/Neon lightning -->
+<preset name="Neon lightning">
+  <command>
+-gimp_neon_lightning $"*"
+  </command>
+  <float name="X0" default="50" min="0" max="100" />
+  <float name="Y0" default="50" min="0" max="100" />
+  <float name="R0" default="0" min="0" max="100" />
+  <float name="X1" default="50" min="0" max="100" />
+  <float name="Y1" default="50" min="0" max="100" />
+  <float name="R1" default="100" min="0" max="100" />
+  <separator />
+  <int name="Density" default="50" min="1" max="512" />
+  <float name="Glow" default="0.7" min="0" max="5" />
+  <float name="Thickness" default="3" min="0" max="20" />
+  <separator />
+  <color name="Color" default="130,80,50" />
+  <float name="Color dispersion" default="0.25" min="0" max="1" />
+  <float name="Transparency" default="0" min="0" max="1" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;06/30/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
 <!-- /Rendering/Quick copyright -->
