@@ -98,3 +98,9 @@ ImageSource::height() const
 {
   return _height;
 }
+
+QSize
+ImageSource::size() const
+{
+  return QSize(_width,_height);
+}

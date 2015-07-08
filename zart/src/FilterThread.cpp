@@ -81,8 +81,8 @@ FilterThread::FilterThread(ImageSource & imageSource,
     _gmic_images(),
     _gmic(0)
 {
-   setCommand(command);
-   setFPS(fps);
+  setCommand(command);
+  setFPS(fps);
 }
 
 FilterThread::~FilterThread()
@@ -167,10 +167,10 @@ FilterThread::run()
       timeMeasure.restart();
 
       if ( _commandUpdated ) {
-         delete _gmic;
-         QString c = QString("foo: -skip $\"*\" ") + _command;
-         _gmic = new gmic( "", c.toLatin1().constData() );
-         _commandUpdated = false;
+        delete _gmic;
+        QString c = QString("foo: -skip $\"*\" ") + _command;
+        _gmic = new gmic( "", c.toLatin1().constData() );
+        _commandUpdated = false;
       }
 
       _gmic->run("-v -");
@@ -187,7 +187,7 @@ FilterThread::run()
       _arguments.unlock();
       c += call;
 
-     // QSHOW( call );
+      // QSHOW( call );
 
       _gmic->run( c.toLatin1().constData(),_gmic_images,_gmic_images_names );
       lastCommandDuration = timeMeasure.elapsed();
@@ -271,7 +271,7 @@ FilterThread::setCommand( const QString & command )
   QByteArray str = command.toLatin1();
   _command = str.constData();
   _command.replace( "{*,x}", "$_x" )
-        .replace( "{*,y}", "$_y" )
-        .replace( "{*,b}", "$_b" );
+      .replace( "{*,y}", "$_y" )
+      .replace( "{*,b}", "$_b" );
   _commandUpdated = true;
 }

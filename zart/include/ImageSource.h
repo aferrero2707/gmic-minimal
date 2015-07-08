@@ -55,6 +55,8 @@
 #include <highgui.h>
 #endif
 
+#include <QSize>
+
 class ImageSource {
 public:
   ImageSource();
@@ -62,6 +64,7 @@ public:
   IplImage * image() const;
   int width() const;
   int height() const;
+  QSize size() const;
   virtual void capture() = 0;
 protected:
   void setWidth(int);

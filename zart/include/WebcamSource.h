@@ -55,29 +55,35 @@
 #include <cv.h>
 #include <highgui.h>
 #endif
+#include <QVector>
 #include <QList>
+#include <QSize>
 #include "ImageSource.h"
 
+class QSplashScreen;
+class QStatusBar;
+
 class WebcamSource : public ImageSource {
-
 public:
-
    WebcamSource();
-
    ~WebcamSource();
-
    int cameraIndex();
-
-   static QList<int> getWebcamList();
-
    void capture();
-
    void setCameraIndex( int i );
-
+   void stop();
+   void start();
+   static void setDefaultCaptureSize(int width, int height);
+   static void setDefaultCaptureSize(const QSize & size);
+   static QSize defaultCaptureSize();
+   static QList<int> getWebcamList();
+   static void retrieveWebcamResolutions(const QList<int> & camList, QSplashScreen * splashScreen = 0, QStatusBar * statusBar = 0);
+   static const QList<QSize> & webcamResolutions(int index);
+   static void clearSavedSettings();
 private:
-
    CvCapture *_capture;
    int _cameraIndex;
+   static QSize _defaultCaptureSize;
+   static QVector< QList<QSize> > _webcamResolutions;
 };
 
 #endif

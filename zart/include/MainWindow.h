@@ -60,6 +60,7 @@
 #include "FilterThread.h"
 #include <QMutex>
 #include <QSemaphore>
+#include <QVector>
 
 
 class QScrollArea;
@@ -76,8 +77,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow {
    Q_OBJECT
 public:
 
-
-   MainWindow( QWidget * parent = 0 );
+  MainWindow( QWidget * parent = 0 );
    ~MainWindow();
    QString getPreset( const QString & name );
 
@@ -107,10 +107,9 @@ public slots:
    void savePresetsFile();
 
    void onWebcamComboChanged( int index );
-   void onUseOnlinePresets( bool );
+   void onWebcamResolutionComboChanged(int i );
    void onUseBuiltinPresets( bool );
    void onReloadPresets();
-   void networkReplyFinished(QNetworkReply*);
    void onPreviewModeChanged( int index );
    void onRightPanel( bool );
    void onComboSourceChanged( int );
@@ -123,6 +122,9 @@ public slots:
    void onCommandParametersChanged();
    void enterFullScreenMode();
    void leaveFullScreenMode();
+   void onRefreshCameraResolutions();
+   void onDetectCameras();
+   void initGUIFromCameraList(const QList<int> & camList);
 
 private:
 
@@ -132,30 +134,30 @@ private:
                     TreeWidgetPresetItem * );
    void setCurrentPreset( QDomNode node );
    void showOneSourceImage();
+   void updateCameraResolutionCombo();
 
    int _firstWebcamIndex;
    int _secondWebcamIndex;
+   FilterThread * _filterThread;
+   Source _source;
    WebcamSource _webcam;
    StillImageSource _stillImage;
    VideoFileSource _videoFile;
    ImageSource * _currentSource;
-   FilterThread * _filterThread;
    QDomDocument _presets;
    QDomNode _currentPresetNode;
    QString _currentDir;
    QString _imageFilters;
-   QNetworkAccessManager * _networkManager;
    QButtonGroup * _bgZoom;
    QString _filtersPath;
-   QAction * _onlinePresetsAction;
    QAction * _builtInPresetsAction;
    QAction * _startStopAction;
-   Source _source;
    DisplayMode _displayMode;
    FullScreenWidget * _fullScreenWidget;
-   int _presetsCount;
    QSemaphore _filterThreadSemaphore;
    bool _zeroFPS;
+   int _presetsCount;
+   QVector<int> _cameraDefaultResolutionsIndexes;
 };
 
 #endif

@@ -59,6 +59,7 @@ class ImageView : public QWidget {
   
   inline QImage & image();
   inline QMutex & imageMutex();
+  void setImageSize(int width, int height);
 
  public slots:
 

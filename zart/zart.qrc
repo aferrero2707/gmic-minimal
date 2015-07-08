@@ -12,5 +12,6 @@
         <file>images/media-playback-stop.png</file>
         <file>Licence_CeCILL_V2-en.html</file>
         <file>images/Logo_150_alpha.png</file>
+        <file>images/splash.png</file>
     </qresource>
 </RCC>

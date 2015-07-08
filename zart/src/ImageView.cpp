@@ -51,6 +51,7 @@
 #include <QFrame>
 #include <QLayout>
 #include <QRect>
+#include <QMutexLocker>
 #include <iostream>
 #include "Common.h"
 
@@ -67,15 +68,20 @@ ImageView::ImageView( QWidget * parent )
 }
 
 void
+ImageView::setImageSize(int width, int height)
+{
+  _image = _image.scaled(width,height,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+}
+
+void
 ImageView::paintEvent( QPaintEvent * )
 {
   QPainter painter( this );
-  _imageMutex.lock();
+  QMutexLocker locker(&_imageMutex);
   if ( _image.size() == size() ) {
      painter.drawImage( 0, 0, _image );
      _imagePosition = rect();
      _scaleFactor = 1.0;
-     _imageMutex.unlock();
      return;
   }
   QImage scaled;
@@ -92,7 +98,6 @@ ImageView::paintEvent( QPaintEvent * )
       _scaleFactor = scaled.height()/static_cast<double>(_image.height());
       painter.drawImage( _imagePosition.topLeft(), scaled );
   }
-  _imageMutex.unlock();
 }
 
 void
@@ -134,9 +139,9 @@ void ImageView::zoomFitBest()
    _zoomOriginal = false;
    QFrame * frame = dynamic_cast<QFrame*>(parent());
    if ( frame ) {
-      QRect rect = frame->layout()->contentsRect();
-      setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-      resize(rect.width(),rect.height());
+     QRect rect = frame->layout()->contentsRect();
+     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+     resize(rect.width(),rect.height());
    }
 }
 

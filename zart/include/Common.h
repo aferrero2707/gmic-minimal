@@ -59,6 +59,6 @@
 #define CERR if ( false ) std::cerr
 #endif
 
-#define ZART_VERSION "3.0.0"
+#define ZART_VERSION "3.0.1"
 
 #endif
