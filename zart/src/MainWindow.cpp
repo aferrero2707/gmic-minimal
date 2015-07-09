@@ -82,12 +82,6 @@
 #include "TreeWidgetPresetItem.h"
 #include "FullScreenWidget.h"
 
-#if QT_VERSION >= 0x050201
-#define CURRENTDATA( CBOX ) ( CBOX -> currentData() )
-#else
-#define CURRENTDATA( CBOX ) ( CBOX -> itemData( CBOX -> currentIndex() ) )
-#endif
-
 MainWindow::MainWindow( QWidget * parent )
   : QMainWindow( parent ),
     _filterThread(0),
@@ -164,7 +158,7 @@ MainWindow::MainWindow( QWidget * parent )
   QList<int> cameras = WebcamSource::getWebcamList();
   initGUIFromCameraList(cameras);
 
-  QSize cameraSize = CURRENTDATA(_comboCamResolution).toSize();
+  QSize cameraSize = _comboCamResolution->currentData().toSize();
   if ( ! cameraSize.isValid() ) {
     _imageView->resize( QSize(640,480) );
   } else {
@@ -356,7 +350,7 @@ MainWindow::MainWindow( QWidget * parent )
     _rightPanel->hide();
 
   if ( _comboWebcam->count() ) {
-    _webcam.setCameraIndex( CURRENTDATA(_comboWebcam).toInt());
+    _webcam.setCameraIndex(_comboWebcam->currentData().toInt());
     // Update actual source capture size
     _webcam.start();
     _webcam.stop();
@@ -846,12 +840,12 @@ MainWindow::onWebcamComboChanged( int index )
   if ( _source == Webcam && _filterThread && _filterThread->isRunning() ) {
     stop(false);
     updateCameraResolutionCombo();
-    WebcamSource::setDefaultCaptureSize(CURRENTDATA(_comboCamResolution).toSize());
+    WebcamSource::setDefaultCaptureSize(_comboCamResolution->currentData().toSize());
     _webcam.setCameraIndex( index );
     play();
   } else {
     updateCameraResolutionCombo();
-    WebcamSource::setDefaultCaptureSize(CURRENTDATA(_comboCamResolution).toSize());
+    WebcamSource::setDefaultCaptureSize(_comboCamResolution->currentData().toSize());
     _webcam.setCameraIndex( index );
   }
 }
@@ -861,7 +855,7 @@ MainWindow::onWebcamResolutionComboChanged( int i )
 {
   int currentCam = _comboWebcam->currentIndex();
   _cameraDefaultResolutionsIndexes[currentCam] = i;
-  QSize resolution = CURRENTDATA(_comboCamResolution).toSize();
+  QSize resolution = _comboCamResolution->currentData().toSize();
   if ( _source == Webcam && _filterThread && _filterThread->isRunning() ) {
     stop(false);
     WebcamSource::setDefaultCaptureSize(resolution);
@@ -1108,4 +1102,3 @@ MainWindow::initGUIFromCameraList(const QList<int> & camList)
            this, SLOT(onComboSourceChanged(int)));
   onComboSourceChanged(0);
 }
-

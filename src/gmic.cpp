@@ -4022,7 +4022,8 @@ CImg<char> gmic::substitute_item(const char *const source,
 
         // Substitute '$name' and '${name}' -> Variable, image indice or environment variable.
       } else if ((((is_braces && std::sscanf(inbraces,"%255[a-zA-Z0-9_]",
-                                             substr.assign(256).data())==1)) ||
+                                             substr.assign(256).data())==1) &&
+                   !inbraces[std::strlen(substr)]) ||
                   (std::sscanf(nsource + 1,"%255[a-zA-Z0-9_]",substr.assign(256).data())==1)) &&
                  (*substr<'0' || *substr>'9')) {
         const CImg<char>& name = is_braces?inbraces:substr;
