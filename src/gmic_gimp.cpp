@@ -2432,7 +2432,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
 
   // Check that everything went fine, else display an error dialog.
   if (spt.error_message) {
-
     if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
       GtkWidget *const
         message = gtk_message_dialog_new(0,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,"%s",

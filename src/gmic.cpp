@@ -3077,6 +3077,7 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
   CImg<char> message(1024);
   message[message.width() - 2] = 0;
   cimg_vsnprintf(message,message.width(),format,ap);
+
   strreplace_fw(message);
   if (message[message.width() - 2]) ellipsize(message,message.width() - 2);
   va_end(ap);
@@ -3123,7 +3124,7 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
 }
 
 #define arg_error(command) gmic::error(images,0,command,"Command '-%s': Invalid argument '%s'.",\
-                                       command,gmic_argument_text())
+                                       command,_gmic_argument_text(argument,argument_text,true))
 
 // Print debug message.
 //---------------------
