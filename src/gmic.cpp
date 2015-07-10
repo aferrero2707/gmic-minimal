@@ -2006,6 +2006,7 @@ inline char *_gmic_argument_text(const char *const argument, CImg<char>& argumen
 }
 
 #define gmic_argument_text() _gmic_argument_text(argument,argument_text,is_verbose)
+#define gmic_argument_text_verbose() _gmic_argument_text(argument,argument_text,true)
 
 // Macro for having 'get' or 'non-get' versions of G'MIC commands.
 #define gmic_apply(function) { \
@@ -3124,7 +3125,7 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
 }
 
 #define arg_error(command) gmic::error(images,0,command,"Command '-%s': Invalid argument '%s'.",\
-                                       command,_gmic_argument_text(argument,argument_text,true))
+                                       command,gmic_argument_text_verbose())
 
 // Print debug message.
 //---------------------
@@ -4622,7 +4623,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     error(images,0,0,
                           "Command '-add3d': Invalid 3d object [%u], in specified "
                           "argument '%s' (%s).",
-                          *ind,gmic_argument_text(),message.data());
+                          *ind,gmic_argument_text_verbose(),message.data());
                   else if (!img.is_CImg3d(true,message))
                     error(images,0,0,
                           "Command '-add3d': Invalid 3d object [%d], in selected image%s (%s).",
@@ -4908,10 +4909,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               if (scope.size()>1 && scope.back()[0]!='*')
                 error(images,0,scope.back().data(),
                       "Command '-check': Expression '%s' is false (and no file with this name exists).",
-                      gmic_argument_text());
+                      gmic_argument_text_verbose());
               else error(images,0,0,
                          "Command '-check': Expression '%s' is false (and no file with this name exists).",
-                         gmic_argument_text());
+                         gmic_argument_text_verbose());
             }
             ++position; continue;
           }
@@ -5366,7 +5367,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-command",item)) {
             gmic_substitute_args();
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
-            const char *arg_command_text = gmic_argument_text();
+            const char *arg_command_text = gmic_argument_text_verbose();
             char *arg_command = name;
             strreplace_fw(arg_command);
 
@@ -8265,7 +8266,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   error(images,0,0,
                         "Command '-object3d': Invalid 3d object [%u], specified "
                         "in argument '%s' (%s).",
-                        *ind,gmic_argument_text(),message.data());
+                        *ind,gmic_argument_text_verbose(),message.data());
                 else throw e;
               }
               cimglist_for(opacities,o) if (!opacities[o].is_shared()) opacities[o]*=opacity;
@@ -12782,7 +12783,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   _gmic_selection);
             error(images,0,0,
                   "Unreachable network file '%s'.",
-                  gmic_argument_text());
+                  gmic_argument_text_verbose());
           }
           is_network_file = true;
           std::strncpy(_filename,filename_tmp,_filename.width() - 1);
@@ -13338,19 +13339,19 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   if (misspelled)
                     error(images,0,0,
                           "Unknown command or filename '%s' (did you mean '-%s' ?).",
-                          gmic_argument_text(),misspelled);
+                          gmic_argument_text_verbose(),misspelled);
                   else error(images,0,0,
                              "Unknown command or filename '%s'.",
-                             gmic_argument_text());
+                             gmic_argument_text_verbose());
                 } else error(images,0,0,
                              "Unknown %s '%s'.",
                              *filename=='-'?"command or filename":"filename",
-                             gmic_argument_text());
+                             gmic_argument_text_verbose());
               } else
                 error(images,0,0,
                       "Unknown command '%s' in '%s' type mode "
                       "(command defined only in 'float' type mode ?).",
-                      gmic_argument_text(),cimg::type<T>::string());
+                      gmic_argument_text_verbose(),cimg::type<T>::string());
             } else throw;
           }
         }
