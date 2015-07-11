@@ -2005,8 +2005,8 @@ inline char *_gmic_argument_text(const char *const argument, CImg<char>& argumen
   else return &(*argument_text=0);
 }
 
-#define gmic_argument_text() _gmic_argument_text(argument,argument_text,is_verbose)
-#define gmic_argument_text_verbose() _gmic_argument_text(argument,argument_text,true)
+#define gmic_argument_text_printed() _gmic_argument_text(argument,argument_text,is_verbose)
+#define gmic_argument_text() _gmic_argument_text(argument,argument_text,true)
 
 // Macro for having 'get' or 'non-get' versions of G'MIC commands.
 #define gmic_apply(function) { \
@@ -3125,7 +3125,7 @@ gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const scope
 }
 
 #define arg_error(command) gmic::error(images,0,command,"Command '-%s': Invalid argument '%s'.",\
-                                       command,gmic_argument_text_verbose())
+                                       command,gmic_argument_text())
 
 // Print debug message.
 //---------------------
@@ -4550,7 +4550,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (col) {
               print(images,0,"Auto-crop image%s by vector '%s'.",
                     gmic_selection,
-                    gmic_argument_text());
+                    gmic_argument_text_printed());
               ++position;
             } else print(images,0,"Auto-crop image%s.",
                          gmic_selection);
@@ -4573,7 +4573,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Add image [%d] to image%s",
                                ind[0],gmic_selection,
                                "Add expression %s to image%s",
-                               gmic_argument_text(),gmic_selection,
+                               gmic_argument_text_printed(),gmic_selection,
                                "Add image%s");
 
           // Add 3d objects together, or shift a 3d object.
@@ -4623,7 +4623,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     error(images,0,0,
                           "Command '-add3d': Invalid 3d object [%u], in specified "
                           "argument '%s' (%s).",
-                          *ind,gmic_argument_text_verbose(),message.data());
+                          *ind,gmic_argument_text(),message.data());
                   else if (!img.is_CImg3d(true,message))
                     error(images,0,0,
                           "Command '-add3d': Invalid 3d object [%d], in selected image%s (%s).",
@@ -4680,7 +4680,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise AND of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise AND of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise AND of image%s");
 
           // Arc-tangent (two arguments).
@@ -4816,7 +4816,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise right shift of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise right shift of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise right shift of image%s");
 
           // Bitwise left shift.
@@ -4828,7 +4828,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise left shift of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise left shift of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise left shift of image%s");
 
           // Bilateral filter.
@@ -4903,16 +4903,16 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (is_very_verbose)
               print(images,0,"Check %s '%s' -> %s.",
                     is_filename?"file":"expression",
-                    gmic_argument_text(),
+                    gmic_argument_text_printed(),
                     is_filename?(is_cond?"found":"not found"):(is_cond?"true":"false"));
             if (!is_cond) {
               if (scope.size()>1 && scope.back()[0]!='*')
                 error(images,0,scope.back().data(),
                       "Command '-check': Expression '%s' is false (and no file with this name exists).",
-                      gmic_argument_text_verbose());
+                      gmic_argument_text());
               else error(images,0,0,
                          "Command '-check': Expression '%s' is false (and no file with this name exists).",
-                         gmic_argument_text_verbose());
+                         gmic_argument_text());
             }
             ++position; continue;
           }
@@ -5367,7 +5367,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-command",item)) {
             gmic_substitute_args();
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
-            const char *arg_command_text = gmic_argument_text_verbose();
+            const char *arg_command_text = gmic_argument_text();
             char *arg_command = name;
             strreplace_fw(arg_command);
 
@@ -5571,7 +5571,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (*argument && is_axes_argument) {
               print(images,0,"Cumulate values of image%s along the '%s'-ax%cs.",
                     gmic_selection,
-                    gmic_argument_text(),
+                    gmic_argument_text_printed(),
                     std::strlen(argument)>1?'e':'i');
               cimg_forY(selection,l) gmic_apply(cumulate(argument));
               ++position;
@@ -5752,7 +5752,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               try { values.assign(nb_values,1,1,1).fill(argument + s_argx,true,false); }
               catch (CImgException&) { arg_error("discard"); }
               print(images,0,"Discard sequence of values '%s' along '%s'-ax%cs, in image%s.",
-                    gmic_argument_text() + s_argx,
+                    gmic_argument_text_printed() + s_argx,
                     argx,
                     std::strlen(argx)>1?'e':'i',
                     gmic_selection);
@@ -5766,7 +5766,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               catch (CImgException&) { values.assign(); }
               if (values) {
                 print(images,0,"Discard sequence of values '%s' in image%s.",
-                      gmic_argument_text(),
+                      gmic_argument_text_printed(),
                       gmic_selection);
                 cimg_forY(selection,l) gmic_apply(discard(values));
                 ++position;
@@ -5795,7 +5795,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Divide image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Divide image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Divide image%s");
 
           // Distance function.
@@ -6196,10 +6196,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             gmic_substitute_args();
 #ifdef gmic_noexec
             print(images,0,"Execute external command '%s' (skipped, no exec allowed).",
-                  gmic_argument_text());
+                  gmic_argument_text_printed());
 #else // #ifdef gmic_noexec
             print(images,0,"Execute external command '%s'\n",
-                  gmic_argument_text());
+                  gmic_argument_text_printed());
             CImg<char> arg_exec(argument,(unsigned int)std::strlen(argument) + 1);
             cimg::strunescape(arg_exec);
             strreplace_fw(arg_exec);
@@ -6255,7 +6255,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute boolean equality between image%s and image [%d]",
                                gmic_selection,ind[0],
                                "Compute boolean equality between image%s and expression %s'",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute boolean equality between image%s");
 
           // Draw ellipse.
@@ -6556,7 +6556,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               const CImg<T> values = gmic_image_arg(*ind);
               cimg_forY(selection,l) gmic_apply(fill(values));
             } else {
-              gmic_argument_text();
+              gmic_argument_text_printed();
               if (*argument_text=='\'') cimg::strpare(argument_text,'\'',true,false);
               print(images,0,"Fill image%s with expression '%s'.",
                     gmic_selection,
@@ -6680,7 +6680,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                gmic_selection,ind[0],
                                "Compute boolean 'greater or equal than' between image%s "
                                "and expression %s'",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute boolean 'greater or equal than' between image%s");
 
           // Greater than.
@@ -6692,7 +6692,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute boolean 'greater than' between image%s and image [%d]",
                                gmic_selection,ind[0],
                                "Compute boolean 'greater than' between image%s and expression %s'",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute boolean 'greater than' between image%s");
 
           // Compute gradient.
@@ -7586,7 +7586,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                gmic_selection,ind[0],
                                "Compute boolean 'less or equal than' between image%s and "
                                "expression %s'",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute boolean 'less or equal than' between image%s");
 
           // Less than.
@@ -7598,7 +7598,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute boolean 'less than' between image%s and image [%d]",
                                gmic_selection,ind[0],
                                "Compute boolean 'less than' between image%s and expression %s'",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute boolean 'less than' between image%s");
 
           // Logarithm, base-e.
@@ -7784,7 +7784,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             if (is_valid_argument) {
               print(images,0,"Mirror image%s along the '%s'-ax%cs.",
                     gmic_selection,
-                    gmic_argument_text(),
+                    gmic_argument_text_printed(),
                     std::strlen(argument)>1?'e':'i');
               cimg_forY(selection,l) gmic_apply(mirror(argument));
             } else arg_error("mirror");
@@ -7817,7 +7817,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Multiply image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Multiply image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Multiply image%s");
           // Modulo.
           gmic_arithmetic_item("-mod",
@@ -7828,7 +7828,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute pointwise modulo of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute pointwise modulo of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential pointwise modulo of image%s");
 
           // Max.
@@ -7840,7 +7840,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute pointwise maximum between image%s and image [%d]",
                                gmic_selection,ind[0],
                                "Compute pointwise maximum between image%s and expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute pointwise maximum of all image%s together");
           // Min.
           gmic_arithmetic_item("-min",
@@ -7851,7 +7851,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute pointwise minimum between image%s and image [%d]",
                                gmic_selection,ind[0],
                                "Compute pointwise minimum between image%s and expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute pointwise minimum of image%s");
 
           // Matrix multiplication.
@@ -7863,7 +7863,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Multiply matrix/vector%s by matrix/vector image [%d]",
                                gmic_selection,ind[0],
                                "Multiply matrix/vector%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Multiply matrix/vector%s");
 
           // Set 3d rendering modes.
@@ -7966,7 +7966,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Divide matrix/vector%s by matrix/vector image [%d]",
                                gmic_selection,ind[0],
                                "Divide matrix/vector%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Divide matrix/vector%s");
 
           // MSE.
@@ -8038,7 +8038,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-name",command) && !is_get_version) {
             gmic_substitute_args();
             print(images,0,"Set name of image%s to '%s'.",
-                  gmic_selection,gmic_argument_text());
+                  gmic_selection,gmic_argument_text_printed());
             CImg<char>::string(argument).move_to(name);
             strreplace_fw(name);
             cimg_forY(selection,l) images_names[selection[l]].assign(name);
@@ -8105,7 +8105,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute boolean inequality between image%s and image [%d]",
                                gmic_selection,ind[0],
                                "Compute boolean inequality between image%s and expression %s'",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute boolean inequality between image%s");
 
           // Discard custom command arguments.
@@ -8266,7 +8266,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   error(images,0,0,
                         "Command '-object3d': Invalid 3d object [%u], specified "
                         "in argument '%s' (%s).",
-                        *ind,gmic_argument_text_verbose(),message.data());
+                        *ind,gmic_argument_text(),message.data());
                 else throw e;
               }
               cimglist_for(opacities,o) if (!opacities[o].is_shared()) opacities[o]*=opacity;
@@ -8304,7 +8304,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise OR of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise OR of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise OR of image%s");
 
           // Set 3d object opacity.
@@ -8978,7 +8978,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           // Run multiple commands in parallel.
           if (!std::strcmp("-parallel",item)) {
             gmic_substitute_args();
-            const char *_arg = argument, *_arg_text = gmic_argument_text();
+            const char *_arg = argument, *_arg_text = gmic_argument_text_printed();
             bool wait_mode = true;
             if ((*_arg=='0' || *_arg=='1') && (_arg[1]==',' || !_arg[1])) {
               wait_mode = (bool)(*_arg - '0'); _arg+=2; _arg_text+=2;
@@ -9121,7 +9121,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-permute",command)) {
             gmic_substitute_args();
             print(images,0,"Permute axes of image%s, with permutation '%s'.",
-                  gmic_selection,gmic_argument_text());
+                  gmic_selection,gmic_argument_text_printed());
             cimg_forY(selection,l) gmic_apply(permute_axes(argument));
             is_released = false; ++position; continue;
           }
@@ -9158,7 +9158,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute image%s to the power of image [%d]",
                                gmic_selection,ind[0],
                                "Compute image%s to the power of expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential power of image%s");
 
           // Draw point.
@@ -9959,7 +9959,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise left rotation of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise left rotation of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise left rotation of image%s");
 
           // Bitwise right rotation.
@@ -9971,7 +9971,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise right rotation of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise left rotation of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise left rotation of image%s");
 
           // Reverse 3d object orientation.
@@ -10004,7 +10004,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           // Set status.
           if (!std::strcmp("-status",item)) {
             gmic_substitute_args();
-            print(images,0,"Set status to '%s'.",gmic_argument_text());
+            print(images,0,"Set status to '%s'.",gmic_argument_text_printed());
             CImg<char>::string(argument).move_to(status);
             ++position; continue;
           }
@@ -10014,7 +10014,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             gmic_substitute_args();
             if (is_very_verbose)
               print(images,0,"Skip argument '%s'.",
-                    gmic_argument_text());
+                    gmic_argument_text_printed());
             ++position;
             continue;
           }
@@ -10151,12 +10151,12 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                         pm=='-'?"discard":"keep",
                         argx,
                         std::strlen(argx)>1?'e':'i',
-                        gmic_argument_text() + (s_values - argument));
+                        gmic_argument_text_printed() + (s_values - argument));
                 else
                   print(images,0,"Split image%s in '%s' mode, according to value sequence '%s'.",
                         gmic_selection,
                         pm=='-'?"discard":"keep",
-                        gmic_argument_text() + 2);
+                        gmic_argument_text_printed() + 2);
                 int off = 0;
                 cimg_forY(selection,l) {
                   const unsigned int uind = selection[l] + off;
@@ -10475,7 +10475,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Subtract image [%d] to image%s",
                                ind[0],gmic_selection,
                                "Subtract expression %s to image%s",
-                               gmic_argument_text(),gmic_selection,
+                               gmic_argument_text_printed(),gmic_selection,
                                "Subtract image%s");
           // Square root.
           gmic_simple_item("-sqrt",sqrt,"Compute pointwise square root of image%s.");
@@ -11382,7 +11382,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               CImgList<char> command_list = CImg<char>::string(argument).get_split(CImg<char>::vector(','),0,false);
               print(images,0,"Discard last definition of custom command%s '%s'",
                     command_list.width()>1?"s":"",
-                    gmic_argument_text());
+                    gmic_argument_text_printed());
               unsigned int nb_removed = 0;
               cimglist_for(command_list,l) {
                 CImg<char>& arg_command = command_list[l];
@@ -11528,7 +11528,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             const bool is_cond = (bool)_is_cond;
             if (is_very_verbose) print(images,0,"Reach '-while' command -> %s '%s' %s.",
                                        is_filename?"file":"boolean",
-                                       gmic_argument_text(),
+                                       gmic_argument_text_printed(),
                                        is_filename?(is_cond?"exists":
                                                     "does not exist"):
                                        (is_cond?"is true":"is false"));
@@ -11907,7 +11907,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                "Compute bitwise XOR of image%s by image [%d]",
                                gmic_selection,ind[0],
                                "Compute bitwise XOR of image%s by expression %s",
-                               gmic_selection,gmic_argument_text(),
+                               gmic_selection,gmic_argument_text_printed(),
                                "Compute sequential bitwise XOR of image%s");
 
         } // command1=='x'.
@@ -11936,12 +11936,12 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             } else CImg<char>::string("*if").move_to(scope);
             if (is_very_verbose) print(images,0,"Start '-if..-endif' block -> %s '%s' %s.",
                                        is_filename?"file":"boolean",
-                                       gmic_argument_text(),
+                                       gmic_argument_text_printed(),
                                        is_filename?(is_cond?"exists":"does not exist"):
                                        (is_cond?"is true":"is false"));
           } else if (is_very_verbose) print(images,0,"Reach '-elif' block -> %s '%s' %s.",
                                             is_filename?"file":"boolean",
-                                            gmic_argument_text(),
+                                            gmic_argument_text_printed(),
                                             is_filename?(is_cond?"exists":
                                                          "does not exist"):
                                             (is_cond?"is true":"is false"));
@@ -12057,7 +12057,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             print(images,0,"Compute %sfourier transform of image%s along the '%s'-ax%cs with complex pair%s",
                   inv_fft?"inverse ":"",
                   gmic_selection,
-                  gmic_argument_text(),
+                  gmic_argument_text_printed(),
                   std::strlen(argument)>1?'e':'i',
                   selection.height()>2?"s":selection.height()>=1?"":"().");
             ++position;
@@ -12746,7 +12746,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         }
         print(images,0,"Input image at position%s, with values %s",
               _gmic_selection,
-              gmic_argument_text());
+              gmic_argument_text_printed());
         img.move_to(input_images);
         arg_input.move_to(input_images_names);
 
@@ -12783,7 +12783,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   _gmic_selection);
             error(images,0,0,
                   "Unreachable network file '%s'.",
-                  gmic_argument_text_verbose());
+                  gmic_argument_text());
           }
           is_network_file = true;
           std::strncpy(_filename,filename_tmp,_filename.width() - 1);
@@ -13339,19 +13339,19 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   if (misspelled)
                     error(images,0,0,
                           "Unknown command or filename '%s' (did you mean '-%s' ?).",
-                          gmic_argument_text_verbose(),misspelled);
+                          gmic_argument_text(),misspelled);
                   else error(images,0,0,
                              "Unknown command or filename '%s'.",
-                             gmic_argument_text_verbose());
+                             gmic_argument_text());
                 } else error(images,0,0,
                              "Unknown %s '%s'.",
                              *filename=='-'?"command or filename":"filename",
-                             gmic_argument_text_verbose());
+                             gmic_argument_text());
               } else
                 error(images,0,0,
                       "Unknown command '%s' in '%s' type mode "
                       "(command defined only in 'float' type mode ?).",
-                      gmic_argument_text_verbose(),cimg::type<T>::string());
+                      gmic_argument_text(),cimg::type<T>::string());
             } else throw;
           }
         }
