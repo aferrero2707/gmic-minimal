@@ -78,6 +78,8 @@ bool _create_dialog_gui;                       // Return value for 'create_gui_d
 bool is_block_preview = false;                 // Flag to block preview, when double-clicking on the filter tree.
 void **event_infos;                            // Infos that are passed to the GUI callback functions.
 int image_id = 0;                              // The image concerned by the plug-in execution.
+int preview_image_id = 0;                      // The alternate preview image used if image is too small.
+double preview_image_factor = 0;               // If alternative preview image used, tell about the size factor (>1).
 unsigned int indice_faves = 0;                 // The starting index of favorite filters.
 unsigned int nb_available_filters = 0;         // The number of available filters (non-testing).
 std::FILE *logfile = 0;                        // The log file if any.
@@ -1720,7 +1722,21 @@ void _gimp_preview_invalidate() {
     gimp_preview_invalidate(GIMP_PREVIEW(gui_preview));
   else {
     if (GTK_IS_WIDGET(gui_preview)) gtk_widget_destroy(gui_preview);
-    drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(image_id));
+    const int w = gimp_image_width(image_id), h = gimp_image_height(image_id);
+    if (preview_image_id) gimp_image_delete(preview_image_id);
+    preview_image_id = 0; preview_image_factor = 1;
+    const int min_preview_size = (200 + 120*(2 + get_preview_size(true)))/2;
+    if (cimg::max(w,h)<min_preview_size) { // Image too small, prevent preview to be tiny.
+      int pw = 0, ph = 0;
+      if (w>=h) ph = cimg::max(1,h*(pw=min_preview_size)/w); else pw = cimg::max(1,w*(ph=min_preview_size)/h);
+      preview_image_id = gimp_image_duplicate(image_id);
+      preview_image_factor = (double)cimg::max(pw,ph)/cimg::max(w,h);
+      const GimpInterpolationType mode = gimp_context_get_interpolation();
+      gimp_context_set_interpolation(GIMP_INTERPOLATION_NONE);
+      gimp_image_scale(preview_image_id,pw,ph);
+      gimp_context_set_interpolation(mode);
+    }
+    drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(preview_image_id?preview_image_id:image_id));
     gui_preview = gimp_zoom_preview_new(drawable_preview);
     gtk_widget_show(gui_preview);
     gtk_box_pack_end(GTK_BOX(left_pane),gui_preview,true,true,0);
@@ -2700,10 +2716,11 @@ void process_preview() {
   bool update_parameters = false;
   int wp, hp, sp, xp, yp;
   static int _xp = -1, _yp = -1;
+  static double _factor = -1;
   guchar *const ptr0 = gimp_zoom_preview_get_source(GIMP_ZOOM_PREVIEW(gui_preview),&wp,&hp,&sp);
   const double factor = gimp_zoom_preview_get_factor(GIMP_ZOOM_PREVIEW(gui_preview));
   gimp_preview_get_position(GIMP_PREVIEW(gui_preview),&xp,&yp);
-  if (xp!=_xp || _yp!=yp) { _xp = xp; _yp = yp; computed_preview.assign(); }
+  if (xp!=_xp || _yp!=yp || _factor!=factor) { _xp = xp; _yp = yp; _factor = factor; computed_preview.assign(); }
 
   if (!computed_preview) {
 
@@ -2720,11 +2737,12 @@ void process_preview() {
     int nb_layers = 0, *const layers = gimp_image_get_layers(image_id,&nb_layers);
 
     if (nb_layers && input_mode) {
-      if (input_mode==1 ||
-          (input_mode==2 && nb_layers==1) ||
-          (input_mode==3 && nb_layers==1 && gimp_drawable_get_visible(*layers)) ||
-          (input_mode==4 && nb_layers==1 && !gimp_drawable_get_visible(*layers)) ||
-          (input_mode==5 && nb_layers==1)) {
+      if (!preview_image_id &&
+          (input_mode==1 ||
+           (input_mode==2 && nb_layers==1) ||
+           (input_mode==3 && nb_layers==1 && gimp_drawable_get_visible(*layers)) ||
+           (input_mode==4 && nb_layers==1 && !gimp_drawable_get_visible(*layers)) ||
+           (input_mode==5 && nb_layers==1))) {
 
         // Single input layer : get the default thumbnail provided by GIMP.
         spt.images.assign(1);
@@ -2799,8 +2817,10 @@ void process_preview() {
           const int
             active_layer = gimp_image_get_active_layer(image_id),
             w0 = gimp_drawable_width(active_layer),
-            h0 = gimp_drawable_height(active_layer);
-          const double ratio = cimg::max((double)wp/w0,(double)hp/h0);
+            h0 = gimp_drawable_height(active_layer),
+            _wp = (int)cimg::round(wp/preview_image_factor),
+            _hp = (int)cimg::round(hp/preview_image_factor);
+          const double ratio = cimg::max((double)_wp/w0,(double)_hp/h0);
 
           // Retrieve resized and cropped preview layers.
           cimg_forY(layers,p) {
@@ -2817,8 +2837,8 @@ void process_preview() {
               y0 = (int)(yp*h/hp/factor),
               x1 = x0 + (int)(w/factor) - 1,
               y1 = y0 + (int)(h/factor) - 1,
-              ox = (int)(posx*wp/w0),
-              oy = (int)(posy*hp/h0);
+              ox = (int)(posx*_wp/w0),
+              oy = (int)(posy*_hp/h0);
             img.get_crop(x0,y0,x1,y1).resize(cimg::round(img.width()*ratio),
                                              cimg::round(img.height()*ratio)).
               move_to(spt.images[p]);
@@ -3869,6 +3889,7 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
     status = GIMP_PDB_CALLING_ERROR;
   }
 
+  if (preview_image_id) gimp_image_delete(preview_image_id);
   if (logfile) std::fclose(logfile);
   return_values[0].data.d_status = status;
 }
