@@ -4227,6 +4227,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
     // Begin command line parsing.
     if (!commands_line && is_start) { print(images,0,"Start G'MIC interpreter."); is_start = false; }
     while (position<commands_line.size() && !is_quit && !is_return) {
+      const bool is_first_item = !position;
 
       // Process debug info.
       if (next_debug_line!=~0U) { debug_line = next_debug_line; next_debug_line = ~0U; }
@@ -4906,10 +4907,12 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     gmic_argument_text_printed(),
                     is_filename?(is_cond?"found":"not found"):(is_cond?"true":"false"));
             if (!is_cond) {
-              if (scope.size()>1 && scope.back()[0]!='*')
-                error(images,0,scope.back().data(),
-                      "Command '-check': Expression '%s' is false (and no file with this name exists).",
-                      gmic_argument_text());
+              if (is_first_item && scope.size()>1 && scope.back()[0]!='*')
+                arg_error(scope.back().data());
+              /*                error(images,0,scope.back().data(),
+                                "Command '-check': Expression '%s' is false (and no file with this name exists).",
+                                gmic_argument_text());
+              */
               else error(images,0,0,
                          "Command '-check': Expression '%s' is false (and no file with this name exists).",
                          gmic_argument_text());
