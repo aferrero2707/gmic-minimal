@@ -297,7 +297,7 @@ void set_locale() {
   if (!s_locale || std::strlen(s_locale)<2) s_locale = getenv("LC_TIME");
   if (!s_locale || std::strlen(s_locale)<2) s_locale = getenv("LC_NAME");
   if (!s_locale || std::strlen(s_locale)<2) s_locale = "en";
-  std::sscanf(s_locale,"%c%c",&(locale[0]),&(locale[1]));
+  cimg_sscanf(s_locale,"%c%c",&(locale[0]),&(locale[1]));
   locale[2] = 0;
   cimg::uncase(locale);
   gimp_set_data("gmic_locale",locale,std::strlen(locale) + 1);
@@ -351,14 +351,14 @@ void get_output_layer_props(const char *const s, GimpLayerModeEffects &blendmode
   double _opacity = 0;
   char sep = 0;
   S = std::strstr(s,"opacity(");
-  if (S && std::sscanf(S + 8,"%lf%c",&_opacity,&sep)==2 && sep==')') opacity = _opacity;
+  if (S && cimg_sscanf(S + 8,"%lf%c",&_opacity,&sep)==2 && sep==')') opacity = _opacity;
   if (opacity<0) opacity = 0; else if (opacity>100) opacity = 100;
 
   // Read output positions.
   int _posx = 0, _posy = 0;
   sep = 0;
   S = std::strstr(s,"pos(");
-  if (S && std::sscanf(S + 4,"%d%*c%d%c",&_posx,&_posy,&sep)==3 && sep==')') { posx = _posx; posy = _posy; }
+  if (S && cimg_sscanf(S + 4,"%d%*c%d%c",&_posx,&_posy,&sep)==3 && sep==')') { posx = _posx; posy = _posy; }
 
   // Read output name.
   S = std::strstr(s,"name(");
@@ -941,11 +941,11 @@ void flush_tree_view(GtkWidget *const tree_view) {
       gtk_tree_path_free(path);
     }
   } else { // Collapse
-    if (filter && *current_path && std::sscanf(current_path,"%u",&current_dir)==1) {
+    if (filter && *current_path && cimg_sscanf(current_path,"%u",&current_dir)==1) {
       cimglist_for(gmic_1stlevel_entries,l) {
         const char *const s_path = gmic_1stlevel_entries[l].data();
         unsigned int dir = 0;
-        if (std::sscanf(s_path,"%u",&dir)!=1 || dir!=current_dir) {
+        if (cimg_sscanf(s_path,"%u",&dir)!=1 || dir!=current_dir) {
           GtkTreePath *path = gtk_tree_path_new_from_string(gmic_1stlevel_entries[l].data());
           gtk_tree_view_collapse_row(GTK_TREE_VIEW(tree_view),path);
           gtk_tree_path_free(path);
@@ -1098,18 +1098,18 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
       cimg::exception_mode(0);
       if (sources[l].back()==1) { // Overload default, add more checking.
         com.load_raw(filename);
-        if (std::sscanf(com," #@gmi%c",&sep)==1 && sep=='c') {
+        if (cimg_sscanf(com," #@gmi%c",&sep)==1 && sep=='c') {
           is_default_update = true;
           com.move_to(_gmic_additional_commands);
           add_code_separator = true;
-        } else if (std::sscanf(com,"1 unsigned_cha%c",&sep)==1 && sep=='r') {
+        } else if (cimg_sscanf(com,"1 unsigned_cha%c",&sep)==1 && sep=='r') {
           CImgList<char>::get_unserialize(com)[0].move_to(_gmic_additional_commands);
           is_default_update = true;
           add_code_separator = true;
         }
       } else {
         com.load_raw(filename);
-        if (std::sscanf(com,"1 unsigned_cha%c",&sep)==1 && sep=='r')
+        if (cimg_sscanf(com,"1 unsigned_cha%c",&sep)==1 && sep=='r')
           CImgList<char>::get_unserialize(com)[0].move_to(_gmic_additional_commands);
         else com.move_to(_gmic_additional_commands);
         add_code_separator = true;
@@ -1177,7 +1177,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
 
     if (*_line!=':') { // Check for a description of a possible filter or menu folder.
       *entry = *command = *preview_command = *arguments = 0;
-      err = std::sscanf(_line," %255[^:]: %1023[^,]%*c %255[^,]%*c %65533[^\n]",
+      err = cimg_sscanf(_line," %255[^:]: %1023[^,]%*c %255[^,]%*c %65533[^\n]",
                         entry.data(),command.data(),preview_command.data(),arguments.data());
       if (err==1) { // If entry defines a menu folder.
         cimg::strpare(entry,' ',false,true);
@@ -1240,7 +1240,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
             char *const preview_mode = std::strchr(preview_command,'(');
             double factor = 1;
             char sep = 0;
-            if (preview_mode && std::sscanf(preview_mode + 1,"%lf%c",&factor,&sep)==2 && factor>=0 && sep==')')
+            if (preview_mode && cimg_sscanf(preview_mode + 1,"%lf%c",&factor,&sep)==2 && factor>=0 && sep==')')
               *preview_mode = 0;
             else factor = -1;
             CImg<char>::string(preview_command).move_to(gmic_preview_commands);
@@ -1285,7 +1285,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
   if (file_gmic_faves) {
     for (unsigned int line_nb = 1; std::fscanf(file_gmic_faves," %[^\n]",line.data())==1; ++line_nb) {
       char sep = 0;
-      if (std::sscanf(line,"{%255[^}]}{%255[^}]}{%255[^}]}{%255[^}]%c",
+      if (cimg_sscanf(line,"{%255[^}]}{%255[^}]}{%255[^}]}{%255[^}]%c",
                       label.data(),entry.data(),command.data(),preview_command.data(),&sep)==5 && sep=='}') {
         const char *_line = line.data() + 8 + std::strlen(label) + std::strlen(entry) + std::strlen(command) +
           std::strlen(preview_command);
@@ -1348,7 +1348,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
           gmic_arguments.insert(gmic_arguments[filter]);
           gmic_preview_factors.insert(gmic_preview_factors[filter]);
           unsigned int nbp = 0;
-          for (nbp = 0; std::sscanf(_line,"{%65533[^}]%c",arguments.data(),&sep)==2 && sep=='}'; ++nbp) {
+          for (nbp = 0; cimg_sscanf(_line,"{%65533[^}]%c",arguments.data(),&sep)==2 && sep=='}'; ++nbp) {
             // Get back '}' if necessary.
             for (char *p = std::strchr(arguments,_rbrace); p; p = std::strchr(p,_rbrace)) *p = '}';
             // Get back '\n' if necessary.
@@ -2028,7 +2028,7 @@ void on_dialog_add_fave_clicked(GtkWidget *const tree_view) {
       for (char *p = basename; p; p = std::strchr(p + 1,' ')) last_space = p;
       if (last_space>basename) {
         char sep = 0, end = 0;
-        if (std::sscanf(last_space + 1,"(%u%c%c",&ind,&sep,&end)==2 && sep==')') *last_space = 0;
+        if (cimg_sscanf(last_space + 1,"(%u%c%c",&ind,&sep,&end)==2 && sep==')') *last_space = 0;
       }
       std::strcpy(label,basename);
       cimglist_for(gmic_faves,l) {
@@ -2413,7 +2413,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
 #elif cimg_OS==1
         CImg<char> st; st.load_raw("/proc/self/status",512); st.back() = 0;
         const char *const s = std::strstr(st,"VmRSS:");
-        if (s && std::sscanf(s + 7,"%u",&used_memory)==1) used_memory/=1024;
+        if (s && cimg_sscanf(s + 7,"%u",&used_memory)==1) used_memory/=1024;
 #endif
       }
 
@@ -3005,11 +3005,11 @@ void create_parameters_gui(const bool reset_params) {
     *argument_name = *_argument_type = *argument_arg = 0;
     unsigned int nb_arguments = 0;
     for (const char *argument = gmic_arguments[filter].data(); *argument; ) {
-      int err = std::sscanf(argument,"%255[^=]=%31[ a-zA-z](%65535[^)]",
+      int err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-z](%65535[^)]",
                             argument_name.data(),_argument_type.data(),&(argument_arg[0]=0));
-      if (err!=3) err = std::sscanf(argument,"%255[^=]=%31[ a-zA-z]{%65535[^}]",
+      if (err!=3) err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-z]{%65535[^}]",
                                     argument_name.data(),_argument_type.data(),argument_arg.data());
-      if (err!=3) err = std::sscanf(argument,"%255[^=]=%31[ a-zA-z][%65535[^]]",
+      if (err!=3) err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-z][%65535[^]]",
                                     argument_name.data(),_argument_type.data(),argument_arg.data());
       if (err>=2) {
         argument += std::strlen(argument_name) + std::strlen(_argument_type) + std::strlen(argument_arg) + 3;
@@ -3044,11 +3044,11 @@ void create_parameters_gui(const bool reset_params) {
       unsigned int current_argument = 0, current_table_line = 0;
       const bool is_fave = filter>=indice_faves;
       for (const char *argument = gmic_arguments[filter].data(); *argument; ) {
-        int err = std::sscanf(argument,"%255[^=]=%31[ a-zA-Z_](%65535[^)]",
+        int err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-Z_](%65535[^)]",
                               argument_name.data(),_argument_type.data(),&(argument_arg[0]=0));
-        if (err!=3) err = std::sscanf(argument,"%255[^=]=%31[ a-zA-Z_][%65535[^]]",
+        if (err!=3) err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-Z_][%65535[^]]",
                                       argument_name.data(),_argument_type.data(),argument_arg.data());
-        if (err!=3) err = std::sscanf(argument,"%255[^=]=%31[ a-zA-Z_]{%65535[^}]",
+        if (err!=3) err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-Z_]{%65535[^}]",
                                       argument_name.data(),_argument_type.data(),argument_arg.data());
         if (err>=2) {
           argument += std::strlen(argument_name) + std::strlen(_argument_type) + std::strlen(argument_arg) + 3;
@@ -3076,9 +3076,9 @@ void create_parameters_gui(const bool reset_params) {
           if (!found_valid_argument && !cimg::strcasecmp(argument_type,"float")) {
             float value = 0, min_value = 0, max_value = 100;
             setlocale(LC_NUMERIC,"C");
-            std::sscanf(argument_arg,"%f%*c%f%*c%f",&value,&min_value,&max_value);
-            if (is_fave) std::sscanf(argument_fave,"%f",&value);
-            if (!reset_params) std::sscanf(argument_value,"%f",&value);
+            cimg_sscanf(argument_arg,"%f%*c%f%*c%f",&value,&min_value,&max_value);
+            if (is_fave) cimg_sscanf(argument_fave,"%f",&value);
+            if (!reset_params) cimg_sscanf(argument_value,"%f",&value);
             GtkObject *const
               scale = gimp_scale_entry_new(GTK_TABLE(table),0,(int)current_table_line,argument_name,50,6,
                                            (double)value,(double)min_value,(double)max_value,
@@ -3099,9 +3099,9 @@ void create_parameters_gui(const bool reset_params) {
           if (!found_valid_argument && !cimg::strcasecmp(argument_type,"int")) {
             float value = 0, min_value = 0, max_value = 100;
             setlocale(LC_NUMERIC,"C");
-            std::sscanf(argument_arg,"%f%*c%f%*c%f",&value,&min_value,&max_value);
-            if (is_fave) std::sscanf(argument_fave,"%f",&value);
-            if (!reset_params) std::sscanf(argument_value,"%f",&value);
+            cimg_sscanf(argument_arg,"%f%*c%f%*c%f",&value,&min_value,&max_value);
+            if (is_fave) cimg_sscanf(argument_fave,"%f",&value);
+            if (!reset_params) cimg_sscanf(argument_value,"%f",&value);
             GtkObject *const
               scale = gimp_scale_entry_new(GTK_TABLE(table),0,(int)current_table_line,argument_name,50,6,
                                            (double)(int)cimg::round(value,1.0f),
@@ -3151,7 +3151,7 @@ void create_parameters_gui(const bool reset_params) {
           if (!found_valid_argument && !cimg::strcasecmp(argument_type,"button")) {
             float alignment = 0;
             setlocale(LC_NUMERIC,"C");
-            if (std::sscanf(argument_arg,"%f",&alignment)!=1) alignment = 0;
+            if (cimg_sscanf(argument_arg,"%f",&alignment)!=1) alignment = 0;
             GtkWidget
               *const button = gtk_button_new_with_label(argument_name),
               *const align = gtk_alignment_new(alignment,0.5f,0,0);
@@ -3184,17 +3184,17 @@ void create_parameters_gui(const bool reset_params) {
             char end = 0; int err = 0;
             unsigned int value = 0;
             const char *entries = argument_arg;
-            if (std::sscanf(entries,"%u",&value)==1)
+            if (cimg_sscanf(entries,"%u",&value)==1)
               entries+=cimg_snprintf(s_entry,s_entry.width(),"%u",value) + 1;
             while (*entries) {
-              if ((err = std::sscanf(entries,"%1023[^,]%c",s_entry.data(),&end))>0) {
+              if ((err = cimg_sscanf(entries,"%1023[^,]%c",s_entry.data(),&end))>0) {
                 entries += std::strlen(s_entry) + (err==2?1:0);
                 cimg::strpare(s_entry,' ',false,true); cimg::strpare(s_entry,'\"',true);
                 gtk_combo_box_append_text(GTK_COMBO_BOX(combobox),s_entry);
               } else break;
             }
-            if (is_fave) std::sscanf(argument_fave,"%u",&value);
-            if (!reset_params) std::sscanf(argument_value,"%u",&value);
+            if (is_fave) cimg_sscanf(argument_fave,"%u",&value);
+            if (!reset_params) cimg_sscanf(argument_value,"%u",&value);
             gtk_combo_box_set_active(GTK_COMBO_BOX(combobox),value);
             gtk_table_attach(GTK_TABLE(table),combobox,1,3,(int)current_table_line,(int)current_table_line + 1,
                              (GtkAttachOptions)(GTK_EXPAND | GTK_FILL),GTK_FILL,0,0);
@@ -3212,7 +3212,7 @@ void create_parameters_gui(const bool reset_params) {
           if (!found_valid_argument && !cimg::strcasecmp(argument_type,"text")) {
             int line_number = 0;
             char sep = 0;
-            if (std::sscanf(argument_arg,"%d%c",&line_number,&sep)==2 && sep==',' && line_number==1) {
+            if (cimg_sscanf(argument_arg,"%d%c",&line_number,&sep)==2 && sep==',' && line_number==1) {
               // Multi-line entry
               GtkWidget *const frame = gtk_frame_new(NULL);
               gtk_widget_show(frame);
@@ -3357,9 +3357,9 @@ void create_parameters_gui(const bool reset_params) {
             float red = 0, green = 0, blue = 0, alpha = 255;
             setlocale(LC_NUMERIC,"C");
 
-            const int err = std::sscanf(argument_arg,"%f%*c%f%*c%f%*c%f",&red,&green,&blue,&alpha);
-            if (is_fave) std::sscanf(argument_fave,"%f%*c%f%*c%f%*c%f",&red,&green,&blue,&alpha);
-            if (!reset_params) std::sscanf(argument_value,"%f%*c%f%*c%f%*c%f",&red,&green,&blue,&alpha);
+            const int err = cimg_sscanf(argument_arg,"%f%*c%f%*c%f%*c%f",&red,&green,&blue,&alpha);
+            if (is_fave) cimg_sscanf(argument_fave,"%f%*c%f%*c%f%*c%f",&red,&green,&blue,&alpha);
+            if (!reset_params) cimg_sscanf(argument_value,"%f%*c%f%*c%f%*c%f",&red,&green,&blue,&alpha);
             red = red<0?0:red>255?255:red;
             green = green<0?0:green>255?255:green;
             blue = blue<0?0:blue>255?255:blue;
@@ -3411,10 +3411,10 @@ void create_parameters_gui(const bool reset_params) {
           if (!found_valid_argument && !cimg::strcasecmp(argument_type,"link")) {
             CImg<char> label(1024), url(1024); *label = *url = 0;
             float alignment = 0.5f;
-            switch (std::sscanf(argument_arg,"%f,%1023[^,],%1023s",&alignment,label.data(),url.data())) {
+            switch (cimg_sscanf(argument_arg,"%f,%1023[^,],%1023s",&alignment,label.data(),url.data())) {
             case 2 : std::strcpy(url,label); break;
             case 1 : cimg_snprintf(url,url.width(),"%g",alignment); break;
-            case 0 : if (std::sscanf(argument_arg,"%1023[^,],%1023s",label.data(),url.data())==1)
+            case 0 : if (cimg_sscanf(argument_arg,"%1023[^,],%1023s",label.data(),url.data())==1)
                 std::strcpy(url,label); break;
             }
             cimg::strpare(label,' ',false,true);
