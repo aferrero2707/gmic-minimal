@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   ImageConverter.cpp
  * @author Sebastien Fourey
  * @date   Jul 2010
@@ -333,7 +333,6 @@ void ImageConverter::mergeRight( IplImage * iplImage,
     srcR += firstHalf;
     srcG += firstHalf;
     srcB += firstHalf;
-
     dst += qiOffset;
   }
 }

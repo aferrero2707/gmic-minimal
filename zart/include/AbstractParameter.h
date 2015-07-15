@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   AbstractParameter.h
  * @author Sebastien Fourey
  * @date   Nov 2014
@@ -50,17 +50,17 @@
 #include <QDomNode>
 
 class AbstractParameter : public QObject {
-   Q_OBJECT
+  Q_OBJECT
 public:
-   AbstractParameter(QObject * parent = 0);
-   virtual ~AbstractParameter();
-   virtual void addTo( QWidget *, int row ) = 0;
-   virtual QString textValue() const = 0;
-   virtual void reset() = 0;
-   virtual void saveValueInDOM() = 0;
-   static AbstractParameter * createFromNode(QDomNode node , QObject * parent = 0);
+  AbstractParameter(QObject * parent = 0);
+  virtual ~AbstractParameter();
+  virtual void addTo( QWidget *, int row ) = 0;
+  virtual QString textValue() const = 0;
+  virtual void reset() = 0;
+  virtual void saveValueInDOM() = 0;
+  static AbstractParameter * createFromNode(QDomNode node , QObject * parent = 0);
 signals:
-   void valueChanged();
+  void valueChanged();
 };
 
 #endif // _ABSTRACTPARAMETER_H_

@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   ImageConverter.h
  * @author Sebastien Fourey
  * @date   Jul 2010
@@ -61,31 +61,31 @@ class QImage;
 class ImageConverter {
 public:
 
-   enum MergeDirection { MergeTop, MergeLeft, MergeBottom, MergeRight };
+  enum MergeDirection { MergeTop, MergeLeft, MergeBottom, MergeRight };
 
-   static void convert( const IplImage * in, QImage * out );
-   static void convert( const QImage & in, IplImage ** out  );
-   static void convert( const IplImage * in, cimg_library::CImg<float> & out );
-   static void convert( const cimg_library::CImg<float> & in, QImage * out );
-   static void merge( IplImage * iplImage,
+  static void convert( const IplImage * in, QImage * out );
+  static void convert( const QImage & in, IplImage ** out  );
+  static void convert( const IplImage * in, cimg_library::CImg<float> & out );
+  static void convert( const cimg_library::CImg<float> & in, QImage * out );
+  static void merge( IplImage * iplImage,
                      const cimg_library::CImg<float> & cimgImage,
                      QImage * out,
                      QMutex * imageMutex,
                      MergeDirection direction );
-   static void mergeTop( IplImage * iplImage,
+  static void mergeTop( IplImage * iplImage,
                         const cimg_library::CImg<float> & cimgImage,
                         QImage * out );
-   static void mergeLeft( IplImage * iplImage,
+  static void mergeLeft( IplImage * iplImage,
                          const cimg_library::CImg<float> & cimgImage,
                          QImage * out );
-   static void mergeBottom( IplImage * iplImage,
+  static void mergeBottom( IplImage * iplImage,
                            const cimg_library::CImg<float> & cimgImage,
                            QImage * out );
-   static void mergeRight( IplImage * iplImage,
+  static void mergeRight( IplImage * iplImage,
                           const cimg_library::CImg<float> & cimgImage,
                           QImage * out );
- private:
-   static IplImage * _image;
+private:
+  static IplImage * _image;
 };
 
 #endif // _IMAGECONVERTER_H_

@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   StillImageSource.cpp
  * @author Sebastien Fourey
  * @date   Oct 2014

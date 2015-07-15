@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   CommandParamsWidget.h
  * @author Sebastien Fourey
  * @date   Nov 2014
@@ -54,7 +54,7 @@ class AbstractParameter;
 class QLabel;
 
 class CommandParamsWidget : public QWidget {
-   Q_OBJECT
+  Q_OBJECT
 public:
 
   CommandParamsWidget(QWidget * parent = 0);

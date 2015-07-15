@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   MainWindow.cpp
  * @author Sebastien Fourey
  * @date   July 2010
@@ -252,11 +252,11 @@ MainWindow::MainWindow( QWidget * parent )
   _tbCamera->setIcon(QIcon::fromTheme("camera-photo",QIcon(":/images/camera.png")));
 #else
   _tbCamera->setIcon(QIcon(":images/camera.png");
-#endif
+    #endif
 
 
-  connect( _cbPreviewMode, SIGNAL(activated(int)),
-           this, SLOT(onPreviewModeChanged(int)));
+      connect( _cbPreviewMode, SIGNAL(activated(int)),
+               this, SLOT(onPreviewModeChanged(int)));
 
   connect( _tbZoomOriginal, SIGNAL( clicked() ),
            _imageView, SLOT( zoomOriginal() ) );
@@ -345,7 +345,7 @@ MainWindow::MainWindow( QWidget * parent )
   connect( _startStopAction, SIGNAL(toggled(bool)),
            this, SLOT(changePlayButtonAppearence(bool)));
   connect( _startStopAction, SIGNAL(toggled(bool)),
-           this, SLOT(onButtonPlay(bool)));
+           this, SLOT(onPlayAction(bool)));
 
   connect(_commandParamsWidget,SIGNAL(valueChanged()),
           this,SLOT(onCommandParametersChanged()));
@@ -373,6 +373,7 @@ MainWindow::~MainWindow()
   }
   if ( _filterThread ) {
     _filterThread->stop();
+    _filterThreadSemaphore.release();
     _filterThread->wait();
     delete _filterThread;
   }
@@ -470,7 +471,6 @@ MainWindow::play()
 
   switch (_source) {
   case Webcam:
-    _webcam.start();
     _filterThread = new FilterThread( _webcam,
                                       _commandEditor->toPlainText(),
                                       &view->image(),
@@ -517,17 +517,13 @@ MainWindow::play()
 }
 
 void
-MainWindow::stop(bool restart)
+MainWindow::stop()
 {
   if ( _filterThread ) {
     _filterThread->stop();
     _filterThreadSemaphore.release();
     _filterThread->wait();
     _filterThread = 0;
-    _webcam.stop();
-  }
-  if ( restart ) {
-    play();
   }
 }
 
@@ -563,13 +559,15 @@ void MainWindow::enterFullScreenMode()
   }
   _displayMode = FullScreen;
   bool running = _filterThread && _filterThread->isRunning();
-  stop(false);
+  stop();
   _commandParamsWidget->saveValuesInDOM();
   _fullScreenWidget->imageView()->image() = _imageView->image();
   _fullScreenWidget->imageView()->zoomFitBest();
   _fullScreenWidget->commandParamsWidget()->build(_currentPresetNode);
   _fullScreenWidget->showFullScreen();
-  if ( running ) play();
+  if ( running ) {
+    play();
+  }
 }
 
 void
@@ -578,18 +576,24 @@ MainWindow::leaveFullScreenMode()
   _fullScreenWidget->close();
   _displayMode = InWindow;
   bool running = _filterThread && _filterThread->isRunning();
-  stop(false);
+  stop();
   _fullScreenWidget->commandParamsWidget()->saveValuesInDOM();
   _commandParamsWidget->build(_currentPresetNode);
-  if ( running ) play();
+  if ( running ) {
+    play();
+  }
 }
 
 void
-MainWindow::onButtonPlay(bool on)
+MainWindow::onPlayAction(bool on)
 {
   if ( !on && _filterThread ) {
-    stop(false);
+    stop();
+    if ( _source == Webcam ) {
+      _webcam.stop();
+    }
     changePlayButtonAppearence(false);
+    return;
   }
   if ( on && !_filterThread ){
     if ( (_source == Video && _videoFile.filename().isEmpty()) ||
@@ -597,9 +601,13 @@ MainWindow::onButtonPlay(bool on)
       QMessageBox::information(this,"Information","No input file.\nPlease select one first.");
       _startStopAction->setChecked(false);
     } else {
+      if ( _source == Webcam ) {
+        _webcam.start();
+      }
       play();
       changePlayButtonAppearence(true);
     }
+    return;
   }
 }
 
@@ -607,7 +615,9 @@ void
 MainWindow::onComboSourceChanged(int i)
 {
   bool running = _filterThread && _filterThread->isRunning();
-  if ( running ) stop(false);
+  if ( running ) {
+    stop();
+  }
   _source = static_cast<Source>(_comboSource->itemData(i).toInt());
   switch (_source) {
   case Webcam:
@@ -615,9 +625,11 @@ MainWindow::onComboSourceChanged(int i)
     break;
   case StillImage:
     _currentSource = &_stillImage;
+    _webcam.stop();
     break;
   case Video:
     _currentSource = &_videoFile;
+    _webcam.stop();
     break;
   }
   _webcamParamsWidget->setVisible( _source == Webcam );
@@ -628,10 +640,14 @@ MainWindow::onComboSourceChanged(int i)
     onOpenImageFile();
   if ( _source == Video && _videoFile.filename().isEmpty() )
     onOpenVideoFile();
-  if ( running )
+  if ( running ) {
+    if ( _source == Webcam ) {
+      _webcam.start();
+    }
     play();
-  else
+  } else {
     showOneSourceImage();
+  }
 }
 
 void
@@ -644,7 +660,7 @@ MainWindow::onOpenImageFile()
                                           "Image files (*.bmp *.gif *.jpg *.png *.pbm *.pgm *.ppm *.xbm *.xpm *.svg)");
   if (filename.isEmpty()) return;
   if ( _source == StillImage && _filterThread ) {
-    stop(false);
+    stop();
     if (_stillImage.loadImage(filename) ) {
       updateWindowTitle();
     }
@@ -666,7 +682,7 @@ MainWindow::onOpenVideoFile()
                                           "Video files (*.avi *.mpg)");
   if (filename.isEmpty()) return;
   if ( _source == Video && _filterThread ) {
-    stop(false);
+    stop();
     if (_videoFile.loadVideoFile(filename) ) {
       updateWindowTitle();
       play();
@@ -761,7 +777,8 @@ void
 MainWindow::commandModified()
 {
   if ( _filterThread && _filterThread->isRunning() ) {
-    stop(true);
+    stop();
+    play();
   }
 }
 
@@ -806,16 +823,18 @@ MainWindow::setWebcamSkipFrames(int i)
 {
   _sliderWebcamSkipFrames->setToolTip(QString("%1").arg(i));
   QToolTip::showText(_sliderWebcamSkipFrames->mapToGlobal(QPoint(0,0)),QString("%1").arg(i),_sliderWebcamSkipFrames);
-  if ( _filterThread )
+  if ( _filterThread ) {
     _filterThread->setFrameSkip( i );
+  }
 }
 
 void MainWindow::setVideoSkipFrames(int i)
 {
   _sliderVideoSkipFrames->setToolTip(QString("%1").arg(i));
   QToolTip::showText(_sliderVideoSkipFrames->mapToGlobal(QPoint(0,0)),QString("%1").arg(i),_sliderVideoSkipFrames);
-  if ( _filterThread )
+  if ( _filterThread ) {
     _filterThread->setFrameSkip( i );
+  }
 }
 
 void
@@ -826,7 +845,9 @@ MainWindow::setImageFPS(int fps)
   if ( _filterThread ) {
     _filterThread->setFPS(fps);
   }
-  if ( _source == StillImage && _zeroFPS ) _filterThreadSemaphore.release();
+  if ( _source == StillImage && _zeroFPS ) {
+    _filterThreadSemaphore.release();
+  }
   _zeroFPS = !fps;
 }
 
@@ -835,8 +856,9 @@ MainWindow::setVideoFPS(int fps)
 {
   _sliderVideoFPS->setToolTip(QString("%1 fps").arg(fps));
   QToolTip::showText(_sliderVideoFPS->mapToGlobal(QPoint(0,0)),QString("%1 fps").arg(fps),_sliderVideoFPS);
-  if ( _filterThread )
+  if ( _filterThread ) {
     _filterThread->setFPS(fps);
+  }
 }
 
 void
@@ -844,14 +866,16 @@ MainWindow::onWebcamComboChanged( int index )
 {
   index = _comboWebcam->itemData(index).toInt();
   if ( _source == Webcam && _filterThread && _filterThread->isRunning() ) {
-    stop(false);
+    stop();
+    _webcam.stop();
     updateCameraResolutionCombo();
-    WebcamSource::setDefaultCaptureSize(CURRENTDATA(_comboCamResolution).toSize());
+    _webcam.setCaptureSize(CURRENTDATA(_comboCamResolution).toSize());
     _webcam.setCameraIndex( index );
+    _webcam.start();
     play();
   } else {
     updateCameraResolutionCombo();
-    WebcamSource::setDefaultCaptureSize(CURRENTDATA(_comboCamResolution).toSize());
+    _webcam.setCaptureSize(CURRENTDATA(_comboCamResolution).toSize());
     _webcam.setCameraIndex( index );
   }
 }
@@ -863,11 +887,11 @@ MainWindow::onWebcamResolutionComboChanged( int i )
   _cameraDefaultResolutionsIndexes[currentCam] = i;
   QSize resolution = CURRENTDATA(_comboCamResolution).toSize();
   if ( _source == Webcam && _filterThread && _filterThread->isRunning() ) {
-    stop(false);
-    WebcamSource::setDefaultCaptureSize(resolution);
+    stop();
+    _webcam.setCaptureSize(resolution);
     play();
   } else {
-    WebcamSource::setDefaultCaptureSize(resolution);
+    _webcam.setCaptureSize(resolution);
     // Update actual source capture size
     _webcam.start();
     _webcam.stop();
@@ -1041,6 +1065,7 @@ void
 MainWindow::onDetectCameras()
 {
   if ( _source == Webcam && _filterThread ) {
+    _webcam.stop();
     stop();
   }
   centralWidget()->setEnabled(false);

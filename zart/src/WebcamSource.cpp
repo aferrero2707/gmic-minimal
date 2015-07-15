@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   WebcamGrabber.cpp
  * @author Sebastien Fourey
  * @date   July 2010
@@ -55,7 +55,6 @@
 #include <algorithm>
 using namespace std;
 
-QSize WebcamSource::_defaultCaptureSize(640,480);
 QVector< QList<QSize> > WebcamSource::_webcamResolutions;
 
 namespace {
@@ -72,7 +71,9 @@ public:
 }
 
 WebcamSource::WebcamSource()
-  :_capture(0), _cameraIndex(-1)
+  : _capture(0),
+    _cameraIndex(-1),
+    _captureSize(640,480)
 {   
 }
 
@@ -137,9 +138,9 @@ WebcamSource::start()
     setImage(cvQueryFrame( _capture ));
     if ( image() ) {
       QSize imageSize(image()->width,image()->height);
-      if ( imageSize != _defaultCaptureSize ) {
-        cvSetCaptureProperty(_capture,CV_CAP_PROP_FRAME_WIDTH,_defaultCaptureSize.width());
-        cvSetCaptureProperty(_capture,CV_CAP_PROP_FRAME_HEIGHT,_defaultCaptureSize.height());
+      if ( imageSize != _captureSize ) {
+        cvSetCaptureProperty(_capture,CV_CAP_PROP_FRAME_WIDTH,_captureSize.width());
+        cvSetCaptureProperty(_capture,CV_CAP_PROP_FRAME_HEIGHT,_captureSize.height());
         setImage(cvQueryFrame( _capture ));
         setImage(cvQueryFrame( _capture ));
       }
@@ -150,22 +151,25 @@ WebcamSource::start()
 }
 
 void
-WebcamSource::setDefaultCaptureSize(int width, int height)
+WebcamSource::setCaptureSize(int width, int height)
 {
-  _defaultCaptureSize.setWidth(width);
-  _defaultCaptureSize.setHeight(height);
+  setCaptureSize(QSize(width,height));
 }
 
 void
-WebcamSource::setDefaultCaptureSize(const QSize & size)
+WebcamSource::setCaptureSize(const QSize & size)
 {
-  _defaultCaptureSize = size;
+  _captureSize = size;
+  if ( _capture ) {
+    stop();
+    start();
+  }
 }
 
 QSize
-WebcamSource::defaultCaptureSize()
+WebcamSource::captureSize()
 {
-  return _defaultCaptureSize;
+  return _captureSize;
 }
 
 int
@@ -181,13 +185,12 @@ WebcamSource::retrieveWebcamResolutions(const QList<int> & camList,
 {
   QSettings settings;
 
-  CvCapture *capture;
+  CvCapture * capture;
   QList<int>::const_iterator it = camList.begin();
   QList< std::set<QSize,QSizeCompare> > resolutions;
   int iCam = 0;
-  while (it!=camList.end()) {
+  while ( it != camList.end() ) {
     capture = cvCaptureFromCAM(*it);
-
     resolutions.push_back(std::set<QSize,QSizeCompare>());
 
     QStringList resolutionsStrList = settings.value(QString("WebcamSource/ResolutionsListForCam%1").arg(camList[iCam])).toStringList();
@@ -236,9 +239,9 @@ WebcamSource::retrieveWebcamResolutions(const QList<int> & camList,
             }
             if ( statusBar ) {
               statusBar->showMessage( QString("Retrieving webcam #%1 resolutions... %2x%3")
-                                         .arg(iCam+1)
-                                         .arg(size.width())
-                                         .arg(size.height()) );
+                                      .arg(iCam+1)
+                                      .arg(size.width())
+                                      .arg(size.height()) );
             }
             qApp->processEvents();
           }

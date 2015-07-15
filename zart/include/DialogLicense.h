@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   DialogLicense.h
  * @author Sebastien Fourey
  * @date   Feb. 2012
@@ -56,9 +56,6 @@
 class DialogLicense : public QDialog, public Ui::DialogLicense  {
 
  public:
-  /**
-   * Constructor with no arguments.
-   */
   DialogLicense( QWidget * parent );
 
  protected:

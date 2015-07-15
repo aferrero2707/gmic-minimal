@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   FullScreenWidget.cpp
  * @author Sebastien Fourey
  * @date   July 2010
@@ -53,33 +53,33 @@
 #include "MainWindow.h"
 
 FullScreenWidget::FullScreenWidget(MainWindow * mainwindow)
-   : QWidget(0),
-     _mainWindow(mainwindow)
+  : QWidget(0),
+    _mainWindow(mainwindow)
 {
-   setupUi(this);
+  setupUi(this);
 
 #if QT_VERSION >= 0x040600
-   _tbFoldRightPanel->setIcon( QIcon::fromTheme( "window-close") );
+  _tbFoldRightPanel->setIcon( QIcon::fromTheme( "window-close") );
 #else
-   _tbFoldRightPanel->setText("Hide >>");
+  _tbFoldRightPanel->setText("Hide >>");
 #endif
-   connect(_tbFoldRightPanel,SIGNAL(clicked()),
-           _rightFrame, SLOT(hide()));
-   connect(_tbFoldRightPanel,SIGNAL(clicked()),
-           _imageView, SLOT(setFocus()));
-   connect( _imageView, SIGNAL(escapePressed()),
-            this, SIGNAL(escapePressed()) );
-   connect( _imageView, SIGNAL(spaceBarPressed()),
-            this, SIGNAL(spaceBarPressed()) );
-   connect( _imageView, SIGNAL( mousePress( QMouseEvent * ) ),
-            _mainWindow, SLOT( imageViewMouseEvent( QMouseEvent * ) ) );
-   connect( _imageView, SIGNAL( mouseMove( QMouseEvent * ) ),
-            _mainWindow, SLOT( imageViewMouseEvent( QMouseEvent * ) ) );
-   _imageView->setMouseTracking( true );
-   setMouseTracking(true);
-   _rightFrame->setVisible(false);
-   _splitter->setChildrenCollapsible(false);
-   layout()->setContentsMargins(1,0,1,0);
+  connect(_tbFoldRightPanel,SIGNAL(clicked()),
+          _rightFrame, SLOT(hide()));
+  connect(_tbFoldRightPanel,SIGNAL(clicked()),
+          _imageView, SLOT(setFocus()));
+  connect( _imageView, SIGNAL(escapePressed()),
+           this, SIGNAL(escapePressed()) );
+  connect( _imageView, SIGNAL(spaceBarPressed()),
+           this, SIGNAL(spaceBarPressed()) );
+  connect( _imageView, SIGNAL( mousePress( QMouseEvent * ) ),
+           _mainWindow, SLOT( imageViewMouseEvent( QMouseEvent * ) ) );
+  connect( _imageView, SIGNAL( mouseMove( QMouseEvent * ) ),
+           _mainWindow, SLOT( imageViewMouseEvent( QMouseEvent * ) ) );
+  _imageView->setMouseTracking( true );
+  setMouseTracking(true);
+  _rightFrame->setVisible(false);
+  _splitter->setChildrenCollapsible(false);
+  layout()->setContentsMargins(1,0,1,0);
 }
 
 FullScreenWidget::~FullScreenWidget()
@@ -90,45 +90,45 @@ FullScreenWidget::~FullScreenWidget()
 void
 FullScreenWidget::keyPressEvent( QKeyEvent * e )
 {
-   if ( e->key() == Qt::Key_Escape || e->key() == Qt::Key_F5) {
-      emit escapePressed();
-      e->accept();
-   }
-   if ( e->key() == Qt::Key_Space && !_rightFrame->isVisible() ) {
-      emit spaceBarPressed();
-      e->accept();
-   }
+  if ( e->key() == Qt::Key_Escape || e->key() == Qt::Key_F5) {
+    emit escapePressed();
+    e->accept();
+  }
+  if ( e->key() == Qt::Key_Space && !_rightFrame->isVisible() ) {
+    emit spaceBarPressed();
+    e->accept();
+  }
 }
 
 
 ImageView *
 FullScreenWidget::imageView()
 {
-   return _imageView;
+  return _imageView;
 }
 
 QTreeWidget *
 FullScreenWidget::treeWidget()
 {
-   return _treePresetsFullScreen;
+  return _treePresetsFullScreen;
 }
 
 CommandParamsWidget *
 FullScreenWidget::commandParamsWidget()
 {
-   return _commandParamsWidget;
+  return _commandParamsWidget;
 }
 
 void
 FullScreenWidget::showEvent(QShowEvent *)
 {
-   _imageView->setFocus();
+  _imageView->setFocus();
 }
 
 void
 FullScreenWidget::mouseMoveEvent(QMouseEvent *event)
 {
-   if ( event->x() == width() - 1 && !_rightFrame->isVisible() ) {
-      _rightFrame->setVisible(true);
-   }
+  if ( event->x() == width() - 1 && !_rightFrame->isVisible() ) {
+    _rightFrame->setVisible(true);
+  }
 }

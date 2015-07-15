@@ -1,4 +1,4 @@
-/** -*- mode: c++ ; c-basic-offset: 3 -*-
+/** -*- mode: c++ ; c-basic-offset: 2 -*-
  * @file   StillImageSource.h
  * @author Sebastien Fourey
  * @date   Nov 2014
@@ -61,15 +61,15 @@
 class StillImageSource : public ImageSource {
 
 public:
-   StillImageSource();
-   ~StillImageSource();
-   void capture();
-   bool loadImage(QString filename);
-   const QString & filename() const;
-   const QString & filePath() const;
+  StillImageSource();
+  ~StillImageSource();
+  void capture();
+  bool loadImage(QString filename);
+  const QString & filename() const;
+  const QString & filePath() const;
 private:
-   QString _filename;
-   QString _filePath;
+  QString _filename;
+  QString _filePath;
 };
 
 #endif
