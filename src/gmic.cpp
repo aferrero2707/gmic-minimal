@@ -13331,8 +13331,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           }
         }
 
-        if (*filename_tmp) std::remove(filename_tmp);  // Clean temporary file if used.
-        if (is_network_file) std::remove(_filename);   // Clean temporary file if network input.
+        if (*filename_tmp) std::remove(filename_tmp); // Clean temporary file if used.
+        if (is_network_file) std::remove(_filename);  // Clean temporary file if network input.
       }
 
       if (is_verbose) {
@@ -13501,9 +13501,9 @@ void gmic_segfault_sigaction(int signal, siginfo_t *si, void *arg) {
 }
 #endif
 
-//-----------------------
-// Start main procedure.
-//-----------------------
+//----------------------
+// Start CLI interface.
+//----------------------
 #ifdef gmic_main
 
 #if cimg_OS==2
