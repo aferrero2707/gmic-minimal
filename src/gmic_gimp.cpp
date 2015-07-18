@@ -1987,7 +1987,10 @@ void on_dialog_cancel_clicked() {
 }
 
 void on_dialog_apply_clicked() {
+  gtk_widget_hide(dialog_window);
+  while (gtk_events_pending()) gtk_main_iteration();
   process_image(0,true);
+  gtk_widget_show(dialog_window);
   _create_dialog_gui = false;
   _gimp_preview_invalidate();
   const char *const commands_line = get_commands_line(false);
