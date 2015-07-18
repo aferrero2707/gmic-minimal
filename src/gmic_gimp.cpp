@@ -2366,9 +2366,11 @@ void process_image(const char *const commands_line, const bool is_apply) {
     if (is_selection && output_mode) {
       if (output_mode>=1 && output_mode<=2) { posx = sel_x0; posy = sel_y0; }
     } else gimp_drawable_offsets(layers[p],&posx,&posy);
+    CImg<char> _layer_name = CImg<char>::string(gimp_item_get_name(layers[p]));
+    cimg_for(_layer_name,p,char) if (*p=='(') *p = '['; else if (*p==')') *p = ']';
     cimg_snprintf(layer_name,layer_name.width(),"mode(%s),opacity(%g),pos(%d,%d),name(%s)",
                   s_blendmode[blendmode],opacity,posx,posy,
-                  gimp_item_get_name(layers[p]));
+                  _layer_name.data());
     CImg<char>::string(layer_name).move_to(spt.images_names);
   }
 
@@ -2800,9 +2802,11 @@ void process_preview() {
           h = gimp_drawable_height(*layers),
           ox = (int)(posx*wp/w),
           oy = (int)(posy*hp/h);
+        CImg<char> _layer_name = CImg<char>::string(gimp_item_get_name(*layers));
+        cimg_for(_layer_name,p,char) if (*p=='(') *p = '['; else if (*p==')') *p = ']';
         cimg_snprintf(layer_name,layer_name.width(),"mode(%s),opacity(%g),pos(%d,%d),name(%s)",
                       s_blendmode[blendmode],opacity,ox,oy,
-                      gimp_item_get_name(*layers));
+                      _layer_name.data());
         CImg<char>::string(layer_name).move_to(spt.images_names[0]);
       } else {
 
