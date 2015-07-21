@@ -66,7 +66,7 @@ ConstParameter::addTo(QWidget * , int )
 QString
 ConstParameter::textValue() const
 {
-  return QString("\"%1\"").arg(_value);
+  return QString("%1").arg(_value);
 }
 
 void
