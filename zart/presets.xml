@@ -1744,7 +1744,7 @@ time={$|%9}
   <float name="Smoothness" default="0.15" min="0" max="3" />
   <const value="0" />
   <separator />
-  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/17/2015&lt;/i&gt;.&lt;/small&gt;" />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/21/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
 <!-- /Deformations/Euclidean - polar -->
