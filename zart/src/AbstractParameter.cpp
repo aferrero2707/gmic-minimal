@@ -67,6 +67,12 @@ AbstractParameter::~AbstractParameter()
 {
 }
 
+bool
+AbstractParameter::isVisible() const
+{
+  return true;
+}
+
 AbstractParameter *
 AbstractParameter::createFromNode(QDomNode node, QObject * parent )
 {

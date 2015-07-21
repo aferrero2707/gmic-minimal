@@ -54,6 +54,7 @@ class ConstParameter : public AbstractParameter {
 public:
   ConstParameter(QDomNode node, QObject * parent = 0);
   ~ConstParameter();
+  bool isVisible() const;
   void addTo( QWidget *, int row );
   QString textValue() const;
   void reset();

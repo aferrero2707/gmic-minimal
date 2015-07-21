@@ -54,6 +54,7 @@ class AbstractParameter : public QObject {
 public:
   AbstractParameter(QObject * parent = 0);
   virtual ~AbstractParameter();
+  virtual bool isVisible() const;
   virtual void addTo( QWidget *, int row ) = 0;
   virtual QString textValue() const = 0;
   virtual void reset() = 0;

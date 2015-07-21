@@ -1719,13 +1719,14 @@ time={$|%9}
 <!-- /Deformations/Drop water -->
 <preset name="Drop water">
   <command>
-    -srand $14 -gimp_drop_water_preview 0,$"*",0
+    -gimp_drop_water_preview $"*"
   </command>
   <note text="&lt;small&gt;&lt;b&gt;Shape geometry:&lt;/b&gt;&lt;/small&gt;" />
+  <const value="0" />
   <float name="Density" default="20" min="0" max="100" />
   <float name="Radius" default="2" min="0" max="5" />
   <float name="Variability" default="80" min="0" max="100" />
-  <note text="&lt;small&gt;Parameters &lt;i&gt;Density&lt;/i&gt;, &lt;i&gt;Radius&lt;/i&gt; and &lt;i&gt;Variability&lt;/i&gt; are used only in &lt;i&gt;Procedural shapes&lt;/i&gt; mode.&lt;/small&gt;" />
+  <int name="Random seed" default="0" min="0" max="16384" />
   <separator />
   <note text="&lt;small&gt;&lt;b&gt;Light parameters:&lt;/b&gt;&lt;/small&gt;" />
   <float name="Refraction" default="3" min="0" max="20" />
@@ -1741,7 +1742,7 @@ time={$|%9}
   <float name="Diffuse shadow" default="0.05" min="0" max="3" />
   <separator />
   <float name="Smoothness" default="0.15" min="0" max="3" />
-  <int name="Random seed" default="0" min="0" max="16384" />
+  <const value="0" />
   <separator />
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/17/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
@@ -2218,7 +2219,6 @@ You can define a transparent top layer that will help the seam-carving algorithm
   <choice name="Value action" default="0" choice0="None" choice1="Cut" choice2="Normalize" />
   <separator />
   <const value="0" />
-  <separator />
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;11/24/2014&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 

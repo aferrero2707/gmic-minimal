@@ -58,8 +58,14 @@ ConstParameter::~ConstParameter()
 {
 }
 
+bool
+ConstParameter::isVisible() const
+{
+  return false;
+}
+
 void
-ConstParameter::addTo(QWidget * , int )
+ConstParameter::addTo(QWidget *, int)
 {
 }
 
