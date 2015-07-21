@@ -1547,6 +1547,7 @@ CImg<int> get_input_layers(CImgList<T>& images) {
     nb_layers = 0,
     *layers = gimp_image_get_layers(image_id,&nb_layers),
     active_layer = gimp_image_get_active_layer(image_id);
+
   CImg<int> input_layers;
   const unsigned int input_mode = get_input_mode();
   switch (input_mode) {
@@ -1717,6 +1718,10 @@ void process_preview();
 
 // Secure function for invalidate preview.
 void _gimp_preview_invalidate() {
+  const int active_layer_id = gimp_image_get_active_layer(image_id);
+  if (gimp_layer_get_edit_mask(active_layer_id))
+    gimp_layer_set_edit_mask(active_layer_id,(gboolean)0);
+
   computed_preview.assign();
   if (GIMP_IS_PREVIEW(gui_preview) && gmic_drawable_is_valid(drawable_preview))
     gimp_preview_invalidate(GIMP_PREVIEW(gui_preview));
