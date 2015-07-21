@@ -9591,7 +9591,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 if (l) {
                   const unsigned int hashcode = gmic::hashcode(title,true);
                   rd[3] = hashcode;
-                  rd[4] = variables[hashcode]->width();
+                  rd[4] = variables[hashcode]->_width;
                   CImg<char>::string(title).move_to(*variables_names[hashcode]);
                   CImg<char>::string("0").move_to(*variables[hashcode]);
                 }
