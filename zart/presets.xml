@@ -1716,6 +1716,35 @@ time={$|%9}
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;01/08/2013&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
 
+<!-- /Deformations/Drop water -->
+<preset name="Drop water">
+  <command>
+-gimp_drop_water_preview 0,$"*",0
+  </command>
+  <note text="&lt;small&gt;&lt;b&gt;Shape geometry:&lt;/b&gt;&lt;/small&gt;" />
+  <float name="Density" default="20" min="0" max="100" />
+  <float name="Radius" default="2" min="0" max="5" />
+  <float name="Variability" default="80" min="0" max="100" />
+  <note text="&lt;small&gt;Parameters &lt;i&gt;Density&lt;/i&gt;, &lt;i&gt;Radius&lt;/i&gt; and &lt;i&gt;Variability&lt;/i&gt; are used only in &lt;i&gt;Procedural shapes&lt;/i&gt; mode.&lt;/small&gt;" />
+  <separator />
+  <note text="&lt;small&gt;&lt;b&gt;Light parameters:&lt;/b&gt;&lt;/small&gt;" />
+  <float name="Refraction" default="3" min="0" max="20" />
+  <float name="Light angle" default="35" min="0" max="360" />
+  <float name="Specular size" default="10" min="0" max="100" />
+  <float name="Specular intensity" default="1" min="0" max="1" />
+  <float name="Specular centering" default="0.5" min="0" max="1" />
+  <separator />
+  <note text="&lt;small&gt;&lt;b&gt;Shadow parameters:&lt;/b&gt;&lt;/small&gt;" />
+  <float name="Shadow size" default="0.25" min="0" max="3" />
+  <float name="Shadow intensity" default="0.5" min="0" max="1" />
+  <float name="Shadow smoothness" default="0.75" min="0" max="3" />
+  <float name="Diffuse shadow" default="0.05" min="0" max="3" />
+  <separator />
+  <float name="Smoothness" default="0.15" min="0" max="3" />
+  <separator />
+  <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/17/2015&lt;/i&gt;.&lt;/small&gt;" />
+</preset>
+
 <!-- /Deformations/Euclidean - polar -->
 <preset name="Euclidean - polar">
   <command>
