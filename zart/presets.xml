@@ -1719,7 +1719,7 @@ time={$|%9}
 <!-- /Deformations/Drop water -->
 <preset name="Drop water">
   <command>
--gimp_drop_water_preview 0,$"*",0
+    -srand $14 -gimp_drop_water_preview 0,$"*",0
   </command>
   <note text="&lt;small&gt;&lt;b&gt;Shape geometry:&lt;/b&gt;&lt;/small&gt;" />
   <float name="Density" default="20" min="0" max="100" />
@@ -1741,6 +1741,7 @@ time={$|%9}
   <float name="Diffuse shadow" default="0.05" min="0" max="3" />
   <separator />
   <float name="Smoothness" default="0.15" min="0" max="3" />
+  <int name="Random seed" default="0" min="0" max="16384" />
   <separator />
   <note text="&lt;small&gt;Author: &lt;i&gt;David Tschumperl&amp;#233;&lt;/i&gt;.      Latest update: &lt;i&gt;07/17/2015&lt;/i&gt;.&lt;/small&gt;" />
 </preset>
