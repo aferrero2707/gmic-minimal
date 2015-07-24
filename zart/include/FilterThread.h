@@ -61,7 +61,7 @@ class FilterThread : public QThread {
   Q_OBJECT
 public:
 
-  enum PreviewMode { Full, TopHalf, LeftHalf, BottomHalf, RightHalf, Original };
+  enum PreviewMode { Full, TopHalf, LeftHalf, BottomHalf, RightHalf, DuplicateVertical, DuplicateHorizontal, Original };
 
   FilterThread( ImageSource & webcam,
                 const QString & command,

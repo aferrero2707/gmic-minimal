@@ -240,23 +240,27 @@ MainWindow::MainWindow( QWidget * parent )
   _cbPreviewMode->addItem("Left",FilterThread::LeftHalf);
   _cbPreviewMode->addItem("Bottom",FilterThread::BottomHalf);
   _cbPreviewMode->addItem("Right",FilterThread::RightHalf);
+  _cbPreviewMode->addItem("Duplicate horizontal",FilterThread::DuplicateHorizontal);
+  _cbPreviewMode->addItem("Duplicate vertical",FilterThread::DuplicateVertical);
   _cbPreviewMode->addItem("Original",FilterThread::Original);
 
-#if QT_VERSION >= 0x040600
+#if ( QT_VERSION >= 0x040600 )
   _cbPreviewMode->setItemIcon(0,QIcon::fromTheme("view-fullscreen"));
   _cbPreviewMode->setItemIcon(1,QIcon::fromTheme("go-up"));
   _cbPreviewMode->setItemIcon(2,QIcon::fromTheme("go-previous"));
   _cbPreviewMode->setItemIcon(3,QIcon::fromTheme("go-down"));
   _cbPreviewMode->setItemIcon(4,QIcon::fromTheme("go-next"));
-  _cbPreviewMode->setItemIcon(5,QIcon::fromTheme("go-home"));
+  _cbPreviewMode->setItemIcon(5,QIcon::fromTheme("edit-copy"));
+  _cbPreviewMode->setItemIcon(6,QIcon::fromTheme("edit-copy"));
+  _cbPreviewMode->setItemIcon(7,QIcon::fromTheme("go-home"));
   _tbCamera->setIcon(QIcon::fromTheme("camera-photo",QIcon(":/images/camera.png")));
 #else
   _tbCamera->setIcon(QIcon(":images/camera.png");
-    #endif
+#endif
 
 
-      connect( _cbPreviewMode, SIGNAL(activated(int)),
-               this, SLOT(onPreviewModeChanged(int)));
+  connect( _cbPreviewMode, SIGNAL(activated(int)),
+           this, SLOT(onPreviewModeChanged(int)));
 
   connect( _tbZoomOriginal, SIGNAL( clicked() ),
            _imageView, SLOT( zoomOriginal() ) );

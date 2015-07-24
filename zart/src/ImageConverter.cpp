@@ -156,8 +156,13 @@ void ImageConverter::merge( IplImage * iplImage,
   case MergeRight:
     mergeRight( cameraImage, cimgImage, out );
     break;
+  case DuplicateVertical:
+    mergeBottom(cameraImage, cimgImage, out, false );
+    break;
+  case DuplicateHorizontal:
+    mergeRight(cameraImage, cimgImage, out, false );
+    break;
   }
-
 }
 
 void ImageConverter::mergeTop( IplImage * iplImage,
@@ -246,9 +251,10 @@ void ImageConverter::mergeLeft( IplImage * iplImage,
   }
 }
 
-void ImageConverter::mergeBottom( IplImage * iplImage,
-                                  const cimg_library::CImg<float> & cimgImage,
-                                  QImage * out )
+void ImageConverter::mergeBottom(IplImage * iplImage,
+                                 const cimg_library::CImg<float> & cimgImage,
+                                 QImage * out ,
+                                 bool shift)
 {
   const int height = iplImage->height;
   const int width = iplImage->width;
@@ -256,7 +262,6 @@ void ImageConverter::mergeBottom( IplImage * iplImage,
   unsigned char * endDst;
   const unsigned int qiOffset = ((width*3)%4)?(4-((width*3)%4)):0;
   const unsigned int iplOffset = iplImage->widthStep - 3 * width;
-
 
   // Copy from iplImage
   unsigned char * srcIpl = reinterpret_cast<unsigned char *>( iplImage->imageData );
@@ -274,7 +279,7 @@ void ImageConverter::mergeBottom( IplImage * iplImage,
   }
 
   // Copy from cimgImage
-  const unsigned int cimgOffset = width * (height/2);
+  const unsigned int cimgOffset = (shift ? (width * (height/2)) : 0);
   const int spectrum = cimgImage.spectrum();
   const float *srcR = cimgImage.data( 0,0,0,0 ) + cimgOffset;
   const float *srcG = cimgImage.data( 0,0,0,(spectrum>=2)?1:0 ) + cimgOffset;
@@ -291,18 +296,19 @@ void ImageConverter::mergeBottom( IplImage * iplImage,
   }
 }
 
-void ImageConverter::mergeRight( IplImage * iplImage,
-                                 const cimg_library::CImg<float> & cimgImage,
-                                 QImage * out )
+void ImageConverter::mergeRight(IplImage * iplImage,
+                                const cimg_library::CImg<float> & cimgImage,
+                                QImage * out ,
+                                bool shift)
 {
   const int width = iplImage->width;
   const unsigned int firstHalf = width/2;
   const unsigned int secondHalf = width - width/2;
 
   const int spectrum = cimgImage.spectrum();
-  const float *srcR = cimgImage.data( 0,0,0,0 ) + firstHalf;
-  const float *srcG = cimgImage.data( 0,0,0,(spectrum>=2)?1:0 ) + firstHalf;
-  const float *srcB = cimgImage.data( 0,0,0,(spectrum>=3)?2:0 ) + firstHalf;
+  const float *srcR = cimgImage.data( 0,0,0,0 ) + (shift?firstHalf:0);
+  const float *srcG = cimgImage.data( 0,0,0,(spectrum>=2)?1:0 ) + (shift?firstHalf:0);
+  const float *srcB = cimgImage.data( 0,0,0,(spectrum>=3)?2:0 ) + (shift?firstHalf:0);
 
   unsigned char * srcIpl = reinterpret_cast<unsigned char *>( iplImage->imageData );
   const unsigned int iplOffset = iplImage->widthStep - 3 * width;

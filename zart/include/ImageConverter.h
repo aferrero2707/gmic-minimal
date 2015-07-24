@@ -60,8 +60,7 @@ class QImage;
 
 class ImageConverter {
 public:
-
-  enum MergeDirection { MergeTop, MergeLeft, MergeBottom, MergeRight };
+  enum MergeDirection { MergeTop, MergeLeft, MergeBottom, MergeRight, DuplicateVertical, DuplicateHorizontal };
 
   static void convert( const IplImage * in, QImage * out );
   static void convert( const QImage & in, IplImage ** out  );
@@ -80,10 +79,18 @@ public:
                          QImage * out );
   static void mergeBottom( IplImage * iplImage,
                            const cimg_library::CImg<float> & cimgImage,
-                           QImage * out );
+                           QImage * out,
+                           bool shift = false );
   static void mergeRight( IplImage * iplImage,
                           const cimg_library::CImg<float> & cimgImage,
-                          QImage * out );
+                          QImage * out,
+                          bool shift = true );
+  static void duplicateVertical( IplImage * iplImage,
+                                 const cimg_library::CImg<float> & cimgImage,
+                                 QImage * out );
+  static void duplicateHorizontal( IplImage * iplImage,
+                                   const cimg_library::CImg<float> & cimgImage,
+                                   QImage * out );
 private:
   static IplImage * _image;
 };
