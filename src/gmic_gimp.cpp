@@ -1084,13 +1084,13 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
     const char *s_basename = gmic::basename(sources[l]);
     CImg<char> _s_basename = CImg<char>::string(s_basename);
     cimg::strwindows_reserved(_s_basename);
-    const bool is_parent = sources(l,0)=='.' && sources(l,1)=='.' && (sources(l,2)=='/' || sources(l,2)=='\\');
-    if (is_parent) // Local file has to be in parent folder.
-      cimg_snprintf(filename,filename.width(),"%s%s",
-                    gmic::path_rc(0,true),_s_basename.data());
-    else
+    if (!cimg::strncasecmp(sources[l],"http://",7) ||
+        !cimg::strncasecmp(sources[l],"https://",8)) // Local file should be copied in resources folder.
       cimg_snprintf(filename,filename.width(),"%s%s",
                     gmic::path_rc(),_s_basename.data());
+    else
+      cimg_snprintf(filename,filename.width(),"%s",
+                    sources[l].data());
     const unsigned int omode = cimg::exception_mode();
     try {
       CImg<char> com;
