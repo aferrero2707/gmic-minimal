@@ -1085,10 +1085,10 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
     CImg<char> _s_basename = CImg<char>::string(s_basename);
     cimg::strwindows_reserved(_s_basename);
     if (!cimg::strncasecmp(sources[l],"http://",7) ||
-        !cimg::strncasecmp(sources[l],"https://",8)) // Local file should be copied in resources folder.
+        !cimg::strncasecmp(sources[l],"https://",8)) // Network file should have been copied in resources folder.
       cimg_snprintf(filename,filename.width(),"%s%s",
                     gmic::path_rc(),_s_basename.data());
-    else
+    else // Local file, try to find it at its hard-coded path.
       cimg_snprintf(filename,filename.width(),"%s",
                     sources[l].data());
     const unsigned int omode = cimg::exception_mode();

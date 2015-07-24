@@ -217,7 +217,8 @@ struct gmic {
                          const bool is_ending=true);
   static char *ellipsize(const char *const s, char *const res, const unsigned int l=80,
                          const bool is_ending=true);
-  static const char* path_rc(const char *const custom_path=0, const bool return_parent=false);
+  static const char* path_user(const char *const custom_path=0);
+  static const char* path_rc(const char *const custom_path=0);
   static bool init_rc(const char *const custom_path=0);
   static const gmic_image<char>& get_default_commands();
 

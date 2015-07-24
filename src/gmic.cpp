@@ -2497,19 +2497,55 @@ const CImg<char>& gmic::get_default_commands() {
   return default_commands;
 }
 
-// Get path to resources directory.
-//---------------------------------
-const char* gmic::path_rc(const char *const custom_path, const bool return_parent) {
-  static CImg<char> path_rc, path_parentrc;
-  if (path_rc) return return_parent?path_parentrc:path_rc;
+// Get path to .gmic user file.
+//-----------------------------
+const char* gmic::path_user(const char *const custom_path) {
+  static CImg<char> path_user;
+  if (path_user) return path_user;
+  cimg::mutex(28);
+  const char *_path_user = 0;
+  if (custom_path && cimg::is_directory(custom_path)) _path_user = custom_path;
+  if (!_path_user) _path_user = getenv("GMIC_PATH");
+  if (!_path_user) _path_user = getenv("GMIC_GIMP_PATH");
+  if (!_path_user) {
+#if cimg_OS!=2
+    _path_user = getenv("HOME");
+#else
+    _path_user = getenv("APPDATA");
+#endif
+  }
+  if (!_path_user) _path_user = getenv("TMP");
+  if (!_path_user) _path_user = getenv("TEMP");
+  if (!_path_user) _path_user = getenv("TMPDIR");
+  if (!_path_user) _path_user = "";
+  path_user.assign(1024);
+  cimg_snprintf(path_user,path_user.width(),"%s%c.gmic",
+                _path_user,cimg_file_separator);
+  CImg<char>::string(path_user).move_to(path_user);  // Optimize length.
+  cimg::mutex(28,0);
+  return path_user;
+}
+
+// Get path to the resource directory.
+//------------------------------------
+const char* gmic::path_rc(const char *const custom_path) {
+  static CImg<char> path_rc;
+  CImg<char> path_tmp;
+  if (path_rc) return path_rc;
   cimg::mutex(28);
   const char *_path_rc = 0;
   if (custom_path && cimg::is_directory(custom_path)) _path_rc = custom_path;
   if (!_path_rc) _path_rc = getenv("GMIC_PATH");
   if (!_path_rc) _path_rc = getenv("GMIC_GIMP_PATH");
+  if (!_path_rc) _path_rc = getenv("XDG_CONFIG_HOME");
   if (!_path_rc) {
 #if cimg_OS!=2
     _path_rc = getenv("HOME");
+    if (_path_rc) {
+      path_tmp.assign(std::strlen(_path_rc) + 10);
+      std::sprintf(path_tmp,"%s/.config",_path_rc);
+      if (cimg::is_directory(path_tmp)) _path_rc = path_tmp;
+    }
 #else
     _path_rc = getenv("APPDATA");
 #endif
@@ -2518,20 +2554,12 @@ const char* gmic::path_rc(const char *const custom_path, const bool return_paren
   if (!_path_rc) _path_rc = getenv("TEMP");
   if (!_path_rc) _path_rc = getenv("TMPDIR");
   if (!_path_rc) _path_rc = "";
-#if cimg_OS!=2
-  const char *const file_prefix = ".";
-#else
-  const char *const file_prefix = "";
-#endif
   path_rc.assign(1024);
-  cimg_snprintf(path_rc,path_rc.width(),"%s%c%sgmicrc%c",
-                _path_rc,cimg_file_separator,file_prefix,cimg_file_separator);
+  cimg_snprintf(path_rc,path_rc.width(),"%s%cgmic%c",
+                _path_rc,cimg_file_separator,cimg_file_separator);
   CImg<char>::string(path_rc).move_to(path_rc);  // Optimize length.
-  path_parentrc.assign(path_rc);
-  cimg_snprintf(path_parentrc,path_parentrc.width(),"%s%c%s",
-                _path_rc,cimg_file_separator,file_prefix);
   cimg::mutex(28,0);
-  return return_parent?path_parentrc:path_rc;
+  return path_rc;
 }
 
 // Create resources directory.
@@ -3410,6 +3438,9 @@ void gmic::_gmic(const char *const commands_line,
 
   cimg_snprintf(str,str.width(),"%u",gmic_version);
   set_variable("_version",str,true);
+
+  set_variable("_path_rc",gmic::path_rc(),true);
+  set_variable("_path_user",gmic::path_user(),true);
 
 #ifdef cimg_use_vt100
   set_variable("_vt100","1",true);
@@ -13661,7 +13692,7 @@ int main(int argc, char **argv) {
   gmic_instance.add_commands("cli_start : ");
 
   // Load startup command files.
-  CImg<char> commands_user, commands_update, filename_user, filename_update;
+  CImg<char> commands_user, commands_update, filename_update;
   bool is_invalid_user = false, is_invalid_update = false;
   char sep = 0;
   cimg::exception_mode(0);
@@ -13680,9 +13711,7 @@ int main(int argc, char **argv) {
     commands_update.assign(); // Discard invalid update file.
 
   // User file (in parent of resources directory).
-  filename_user.assign(1024);
-  cimg_snprintf(filename_user,filename_user.width(),"%sgmic",
-                gmic::path_rc(0,true));
+  const char *const filename_user = gmic::path_user();
   try {
     commands_user.load_raw(filename_user).append(CImg<char>::vector(0),'y');
     try { gmic_instance.add_commands(commands_user,filename_user);
@@ -13798,7 +13827,7 @@ int main(int argc, char **argv) {
   if (is_invalid_user) { // Display warning message in case of invalid user command file.
     CImg<char> tmpstr(1024);
     cimg_snprintf(tmpstr,tmpstr.width(),"-warn \"File '%s' is not a valid G'MIC command file.\" ",
-                  filename_user.data());
+                  filename_user);
     items.insert(CImg<char>::string(tmpstr.data(),false),is_first_item_verbose?2:0);
   }
   if (is_invalid_update) { // Display warning message in case of invalid user command file.
@@ -13839,7 +13868,7 @@ int main(int argc, char **argv) {
                     "-l[] -i raw:\"%s\",char -m \"%s\" -onfail -rm -endl "
                     "-rv -help \"%s\",0 -q",
                     filename_update.data(),filename_update.data(),
-                    filename_user.data(),filename_user.data(),
+                    filename_user,filename_user,
                     e.command_help());
       try {
         gmic(tmp_line,images,images_names);
