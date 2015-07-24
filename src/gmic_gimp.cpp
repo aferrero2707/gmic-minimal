@@ -1088,7 +1088,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
         !cimg::strncasecmp(sources[l],"https://",8)) // Network file should have been copied in resources folder.
       cimg_snprintf(filename,filename.width(),"%s%s",
                     gmic::path_rc(),_s_basename.data());
-    else // Local file, try to find it at its hard-coded path.
+    else // Local file, try to locate it at its hard-coded path.
       cimg_snprintf(filename,filename.width(),"%s",
                     sources[l].data());
     const unsigned int omode = cimg::exception_mode();

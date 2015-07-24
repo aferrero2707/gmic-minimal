@@ -369,7 +369,7 @@ def:
 	@echo "#ifndef gmic_gimp" > gmic_def.h
 	@\gmic gmic_def.gmic raw:gmic_def.gmic,char -compress_gmic 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_def/' >> gmic_def.h
 	@echo "#else" >> gmic_def.h
-	@\gmic gmic_def.gmic -update_server \$$_version,0 raw:$(HOME)/.gmicrc/gimp_update\$$_version.gmic,char 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_def/' >> gmic_def.h
+	@\gmic gmic_def.gmic -update_server \$$_version,0 raw:$(HOME)/.config/gmic/gimp_update\$$_version.gmic,char 1 -a y -serialize char,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_def/' >> gmic_def.h
 	@\gmic -v - ../html/img/logoGMIC.ppm -permute cxyz -serialize uchar,1,0 -o -.h,uchar | sed 's/unsigned char/const unsigned char/' | sed 's/unnamed/gmic_logo/' >> gmic_def.h
 	@echo "const unsigned long size_data_gmic_logo = (unsigned long)sizeof(data_gmic_logo);" >> gmic_def.h
 	@echo "#endif" >> gmic_def.h
