@@ -2519,8 +2519,13 @@ const char* gmic::path_user(const char *const custom_path) {
   if (!_path_user) _path_user = getenv("TMPDIR");
   if (!_path_user) _path_user = "";
   path_user.assign(1024);
+#if cimg_OS!=2
   cimg_snprintf(path_user,path_user.width(),"%s%c.gmic",
                 _path_user,cimg_file_separator);
+#else
+  cimg_snprintf(path_user,path_user.width(),"%s%cuser.gmic",
+                _path_user,cimg_file_separator);
+#endif
   CImg<char>::string(path_user).move_to(path_user);  // Optimize length.
   cimg::mutex(28,0);
   return path_user;
@@ -3900,7 +3905,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           const char *s = inbraces.data() + 1;
           if (inbraces.width()>3) {
             inbraces[inbraces.width() - 2] = 0;
-            for (*substr = 0, cimg::strunescape(inbraces); *s; ++s) {
+            for (*substr = 0; *s; ++s) {
               cimg_snprintf(substr,substr.width(),"%d,",(int)(unsigned char)*s);
               CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).append_string_to(substituted_items);
             }
