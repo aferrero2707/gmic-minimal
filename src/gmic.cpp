@@ -2519,13 +2519,8 @@ const char* gmic::path_user(const char *const custom_path) {
   if (!_path_user) _path_user = getenv("TMPDIR");
   if (!_path_user) _path_user = "";
   path_user.assign(1024);
-#if cimg_OS!=2
-  cimg_snprintf(path_user,path_user.width(),"%s/.gmic",
-                _path_user);
-#else
-  cimg_snprintf(path_user,path_user.width(),"%s/user.gmic",
-                _path_user);
-#endif
+  cimg_snprintf(path_user,path_user.width(),"%s%c.gmic",
+                _path_user,cimg_file_separator);
   CImg<char>::string(path_user).move_to(path_user);  // Optimize length.
   cimg::mutex(28,0);
   return path_user;
@@ -2560,8 +2555,8 @@ const char* gmic::path_rc(const char *const custom_path) {
   if (!_path_rc) _path_rc = getenv("TMPDIR");
   if (!_path_rc) _path_rc = "";
   path_rc.assign(1024);
-  cimg_snprintf(path_rc,path_rc.width(),"%s/gmic/",
-                _path_rc);
+  cimg_snprintf(path_rc,path_rc.width(),"%s%cgmic%c",
+                _path_rc,cimg_file_separator,cimg_file_separator);
   CImg<char>::string(path_rc).move_to(path_rc);  // Optimize length.
   cimg::mutex(28,0);
   return path_rc;
@@ -8483,8 +8478,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               } else {
                 std::FILE *file = 0;
                 do {
-                  cimg_snprintf(filename_tmp,filename_tmp.width(),"%s/%s.%s",
-                                cimg::temporary_path(),cimg::filenamerand(),cext);
+                  cimg_snprintf(filename_tmp,filename_tmp.width(),"%s%c%s.%s",
+                                cimg::temporary_path(),cimg_file_separator,
+                                cimg::filenamerand(),cext);
                   if ((file=std::fopen(filename_tmp,"rb"))!=0) std::fclose(file);
                 } while (file);
               }
@@ -12926,8 +12922,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           } else {
             std::FILE *file = 0;
             do {
-              cimg_snprintf(filename_tmp,filename_tmp.width(),"%s/%s.%s",
-                            cimg::temporary_path(),cimg::filenamerand(),cext);
+              cimg_snprintf(filename_tmp,filename_tmp.width(),"%s%c%s.%s",
+                            cimg::temporary_path(),cimg_file_separator,
+                            cimg::filenamerand(),cext);
               if ((file=std::fopen(filename_tmp,"rb"))!=0) std::fclose(file);
             } while (file);
 
