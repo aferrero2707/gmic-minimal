@@ -3905,7 +3905,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           const char *s = inbraces.data() + 1;
           if (inbraces.width()>3) {
             inbraces[inbraces.width() - 2] = 0;
-            for (*substr = 0; *s; ++s) {
+            for (*substr = 0, cimg::strunescape(inbraces); *s; ++s) {
               cimg_snprintf(substr,substr.width(),"%d,",(int)(unsigned char)*s);
               CImg<char>(substr.data(),(unsigned int)std::strlen(substr)).append_string_to(substituted_items);
             }
@@ -4566,6 +4566,10 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           else if (command1=='/' && command2=='/') std::strcpy(command,"-mdiv");
           else if (command1=='*' && command2=='*') std::strcpy(command,"-mmul");
           else if (command1=='!' && command2=='=') std::strcpy(command,"-neq");
+          else if (command1=='\\' && command2=='\\' && !is_get_version && !is_restriction) {
+            CImg<char>::string("-backslash").move_to(_item);
+            *command = 0;
+          }
 
         } else if (!command4 && command2=='3' && command3=='d') switch (command1) {
             // Three-chars shortcuts (ending with '3d').
@@ -4604,7 +4608,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           }
         }
         item = _item;
-        command1 = command[1];
+        command1 = *command?command[1]:item[1];
 
         // Check if a new name has been requested for a command that does not allow that.
         if (new_name && std::strcmp("-input",command) && !is_get_version)
@@ -5000,6 +5004,22 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 gmic_apply(blur_bilateral(images[selection[l]],sigma_s,sigma_r,sampling_s,sampling_r));
             } else arg_error("bilateral");
             is_released = false; ++position; continue;
+          }
+
+          // Escape backslash character.
+          if (!std::strcmp("-backslash",item)) {
+            gmic_substitute_args();
+            CImg<char> res(2*std::strlen(argument) + 1);
+            char *ptrd = res;
+            for (const char *ptrs = argument; *ptrs; ++ptrs) {
+              if (*ptrs=='\\') *(ptrd++) = '\\';
+              *(ptrd++) = *ptrs;
+            }
+            *ptrd = 0;
+            CImg<char>::string(res).move_to(status);
+            _gmic_argument_text(status,res,is_verbose);
+            print(images,0,"Set status to '%s' (with escaped backslash).",res.data());
+            ++position; continue;
           }
 
         } // command1=='b'.
@@ -12948,6 +12968,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         const char
           *const filename = *filename_tmp?filename_tmp:_filename,
           *const ext = cimg::split_filename(filename);
+        const bool is_stdin = *filename=='-' && (!filename[1] || filename[1]=='.');
 
         const char *file_type = 0;
         std::FILE *const file = std::fopen(filename,"rb");
@@ -13402,13 +13423,13 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   const char *native_commands_names[] = {
                     "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s",
                     "t","u","v","w","x","y","z",
-                    "+","-","*","/",">","<","%","^","=","sh","mv","rm","rv","<<",">>","==",">=",
+                    "+","-","*","/","\\\\",">","<","%","^","=","sh","mv","rm","rv","<<",">>","==",">=",
                     "<=","//","**","!=","&","|",
                     "d3d","+3d","/3d","f3d","j3d","l3d","m3d","*3d","o3d","p3d","r3d","s3d","-3d",
                     "t3d","db3d","md3d","rv3d","sl3d","ss3d","div3d",
                     "append","autocrop","add","add3d","abs","and","atan2","acos","asin","atan",
                     "axes",
-                    "blur","boxfilter","bsr","bsl","bilateral","break",
+                    "backslash","blur","boxfilter","bsr","bsl","bilateral","break",
                     "check","check3d","crop","channels","columns","command","camera","cut","cos",
                     "convolve","correlate","color3d","col3d","cosh","continue","cumulate",
                     "cursor",
