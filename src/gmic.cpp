@@ -2663,11 +2663,11 @@ CImgList<char> gmic::commands_line_to_CImgList(const char *const commands_line) 
   }
   if (is_dquoted) {
     CImg<char> str; CImg<char>::string(commands_line).move_to(str); // Discard debug info inside string.
-    char *ptrd = str,c = 0;
+    char *ptrd = str, c = 0;
     bool _is_debug_info = false;
     cimg_for(str,ptrs,char) {
       c = *ptrs;
-      if (c!=1) *(ptrd++) = c;
+      if (c && c!=1) *(ptrd++) = c;
       else { // Try to retrieve first debug line when discarding debug info.
         unsigned int _debug_filename = ~0U, _debug_line = ~0U;
         if (!_is_debug_info && cimg_sscanf(ptrs + 1,"%x,%x",&_debug_line,&(_debug_filename=0))) {
