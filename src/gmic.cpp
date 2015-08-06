@@ -4566,8 +4566,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           else if (command1=='/' && command2=='/') std::strcpy(command,"-mdiv");
           else if (command1=='*' && command2=='*') std::strcpy(command,"-mmul");
           else if (command1=='!' && command2=='=') std::strcpy(command,"-neq");
-          else if (command1=='\\' && command2=='\\' && !is_get_version && !is_restriction) {
-            CImg<char>::string("-backslash").move_to(_item);
+          else if (command1=='u' && command2=='u' && !is_get_version && !is_restriction) {
+            CImg<char>::string("-statunescape").move_to(_item);
             *command = 0;
           }
 
@@ -5004,22 +5004,6 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 gmic_apply(blur_bilateral(images[selection[l]],sigma_s,sigma_r,sampling_s,sampling_r));
             } else arg_error("bilateral");
             is_released = false; ++position; continue;
-          }
-
-          // Escape backslash character.
-          if (!std::strcmp("-backslash",item)) {
-            gmic_substitute_args();
-            CImg<char> res(2*std::strlen(argument) + 1);
-            char *ptrd = res;
-            for (const char *ptrs = argument; *ptrs; ++ptrs) {
-              if (*ptrs=='\\') *(ptrd++) = '\\';
-              *(ptrd++) = *ptrs;
-            }
-            *ptrd = 0;
-            CImg<char>::string(res).move_to(status);
-            _gmic_argument_text(status,res,is_verbose);
-            print(images,0,"Set status to '%s' (with escaped backslash).",res.data());
-            ++position; continue;
           }
 
         } // command1=='b'.
@@ -10561,6 +10545,22 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             is_released = false; ++position; continue;
           }
 
+          // Status with unescaped string.
+          if (!std::strcmp("-statunescape",item)) {
+            gmic_substitute_args();
+            CImg<char> res(2*std::strlen(argument) + 1);
+            char *ptrd = res;
+            for (const char *ptrs = argument; *ptrs; ++ptrs) {
+              if (*ptrs=='\\') *(ptrd++) = '\\';
+              *(ptrd++) = *ptrs;
+            }
+            *ptrd = 0;
+            CImg<char>::string(res).move_to(status);
+            _gmic_argument_text(status,res,is_verbose);
+            print(images,0,"Set status to unescaped string '%s'.",res.data());
+            ++position; continue;
+          }
+
           // Keep slices.
           if (!std::strcmp("-slices",command)) {
             gmic_substitute_args();
@@ -12971,7 +12971,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         const bool is_stdin = *filename=='-' && (!filename[1] || filename[1]=='.');
 
         const char *file_type = 0;
-        std::FILE *const file = std::fopen(filename,"rb");
+        std::FILE *const file = is_stdin?0:std::fopen(filename,"rb");
         long siz = 0;
         if (file) {
           std::fseek(file,0,SEEK_END);
@@ -12980,7 +12980,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           file_type = *ext?0:cimg::ftype(file,0);
           std::fclose(file);
         }
-        if (file && siz==0) { // Empty file -> Insert an empty image.
+        if (!is_stdin && file && siz==0) { // Empty file -> Insert an empty image.
           input_images_names.insert(__filename0);
           input_images.insert(1);
         } else if (!cimg::strcasecmp("off",ext) || (file_type && !std::strcmp(file_type,"off"))) {
@@ -13422,14 +13422,14 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 if (*filename=='-' && filename[1]) { // Check for command misspelling.
                   const char *native_commands_names[] = {
                     "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s",
-                    "t","u","v","w","x","y","z",
+                    "t","u","uu","v","w","x","y","z",
                     "+","-","*","/","\\\\",">","<","%","^","=","sh","mv","rm","rv","<<",">>","==",">=",
                     "<=","//","**","!=","&","|",
                     "d3d","+3d","/3d","f3d","j3d","l3d","m3d","*3d","o3d","p3d","r3d","s3d","-3d",
                     "t3d","db3d","md3d","rv3d","sl3d","ss3d","div3d",
                     "append","autocrop","add","add3d","abs","and","atan2","acos","asin","atan",
                     "axes",
-                    "backslash","blur","boxfilter","bsr","bsl","bilateral","break",
+                    "blur","boxfilter","bsr","bsl","bilateral","break",
                     "check","check3d","crop","channels","columns","command","camera","cut","cos",
                     "convolve","correlate","color3d","col3d","cosh","continue","cumulate",
                     "cursor",
@@ -13454,7 +13454,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     "remove","repeat","resize","reverse","return","rows","rotate",
                     "round","rand","rotate3d","rgb2hsi","rgb2hsl","rgb2hsv","rgb2lab",
                     "rgb2srgb","rol","ror","reverse3d",
-                    "status","skip","set","split","shared","shift","slices","srand","sub","sqrt",
+                    "status","statunescape","skip","set","split","shared","shift","slices","srand","sub","sqrt",
                     "sqr","sign","sin","sort","solve","sub3d","sharpen","smooth","split3d",
                     "svd","sphere3d","specl3d","specs3d","sinc","sinh","srgb2rgb","streamline3d",
                     "structuretensors","select","serialize",
