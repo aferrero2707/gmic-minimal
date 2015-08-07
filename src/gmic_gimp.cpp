@@ -3687,14 +3687,6 @@ bool create_dialog_gui() {
 
   tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tree_view_store));
   gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree_view),true);
-#if GTK_CHECK_VERSION(2,18,0)
-  gtk_widget_set_can_focus(tree_view,false);
-#else
-  GValue val = {0, {{0}, {0}}};
-  g_value_init(&val,G_TYPE_BOOLEAN);
-  g_value_set_boolean(&val,FALSE);
-  g_object_set_property(G_OBJECT(tree_view),"can-focus",&val);
-#endif
   gtk_widget_show(tree_view);
   gtk_container_add(GTK_CONTAINER(scrolled_window),tree_view);
 
