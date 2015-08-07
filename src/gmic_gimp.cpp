@@ -3751,6 +3751,7 @@ bool create_dialog_gui() {
 
   // Show dialog window and wait for user response.
   create_parameters_gui(false);
+  gtk_widget_grab_focus(tree_view);
   gtk_main();
 
   // Destroy dialog box widget and free resources.
