@@ -8423,8 +8423,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                         *ind,gmic_argument_text(),message.data());
                 else throw e;
               }
-              cimglist_for(opacities,o) if (!opacities[o].is_shared()) opacities[o]*=opacity;
 
+              cimglist_for(opacities,o) if (!opacities[o].is_shared()) opacities[o]*=opacity;
               cimg_forY(selection,l) {
                 CImg<T> &img = images[selection[l]];
                 const float
