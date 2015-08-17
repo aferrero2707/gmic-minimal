@@ -289,18 +289,18 @@ STD_GMICOL_LIBS = $(MANDATORY_LIBS) $(PARALLEL_LIBS) $(PNG_LIBS) $(JPEG_LIBS) $(
 all: CImg.h gmic_def.h
 ifeq ($(OS),Unix)
 	@echo "**"
-	@echo "** Generic unix configuration."
+	@echo "** Start building G'MIC with default Unix configuration."
 	@echo "**"
 	$(MAKE) cli gimp lib zart
 else
 ifeq ($(OS),Darwin)
 	@echo "**"
-	@echo "** MacOSX configuration."
+	@echo "** Start building G'MIC with default MacOSX configuration."
 	@echo "**"
 	$(MAKE) cli gimp
 else
 	@echo "**"
-	@echo "** Windows configuration."
+	@echo "** Start building G'MIC with default Windows configuration."
 	@echo "**"
 	$(MAKE) cli gimp
 endif
@@ -358,11 +358,14 @@ gmic: gmic.cpp gmic.h gmic_def.h CImg.h
 	$(CC) -o gmic gmic.cpp -Dgmic_main $(CFLAGS) $(LIBS)
 
 gmic_def.h:
+	@echo "> Retrieving G'MIC standard library ...\r"
 	@wget --quiet -O gmic_def.h http://gmic.eu/gmic_def.h
 	@touch gmic_def.h
-
+	@echo ">   ... done!"
 CImg.h:
+	@echo "> Retrieving CImg Library..."
 	@if [ -f ../../CImg/CImg.h ]; then if [ ! -f ./CImg.h ]; then ln -s ../../CImg/CImg.h .; fi; else wget --quiet -O CImg.h https://github.com/dtschump/CImg/blob/master/CImg.h?raw=true; touch CImg.h; fi
+	@echo ">   ... done!"
 
 # Generate gmic_def.h file (requires 'gmic' to be installed first).
 def:
