@@ -5554,11 +5554,24 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 file = 0;
               }
               if (file) {
-                add_commands(file,add_debug_info?arg_command:0);
-                std::fclose(file);
-              } else
+                CImg<char> _status;
+                status.move_to(_status); // Save status because 'add_commands' can change it.
+                const int _verbosity = verbosity;
+                const bool _is_debug = is_debug;
+                verbosity = -1; is_debug = false;
+                try {
+                  add_commands(file,add_debug_info?arg_command:0);
+                  std::fclose(file);
+                } catch (...) {
+                  std::fclose(file);
+                  file = 0;
+                }
+                verbosity = _verbosity; is_debug = _is_debug;
+                _status.move_to(status);
+              }
+              if (!file)
                 error(images,0,0,
-                      "Command '-command': Unable to reach custom commands file '%s' "
+                      "Command '-command': Unable to load valid custom command file '%s' "
                       "from network.",
                       arg_command_text);
               std::remove(argx);
@@ -13370,14 +13383,33 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           }
         } else if (!cimg::strcasecmp("gmic",ext)) {
 
-          // G'MIC custom commands file
+          // G'MIC command file.
           const bool add_debug_info = (*options!='0');
-          print(images,0,"Input custom commands file '%s'%s",
+          print(images,0,"Input custom command file '%s'%s",
                 _filename0,!add_debug_info?" without debug info":"");
           unsigned int siz = 0;
           for (unsigned int l = 0; l<512; ++l) siz+=commands[l].size();
           std::FILE *const file = cimg::fopen(filename,"rb");
-          add_commands(file,add_debug_info?filename:0);
+
+          bool is_command_error = false;
+          CImg<char> _status;
+          status.move_to(_status); // Save status because 'add_commands' can change it.
+          const int _verbosity = verbosity;
+          const bool _is_debug = is_debug;
+          verbosity = -1; is_debug = false;
+          try {
+            add_commands(file,add_debug_info?filename:0);
+          } catch (...) {
+            is_command_error = true;
+          }
+          verbosity = _verbosity; is_debug = _is_debug;
+          _status.move_to(status);
+          if (is_command_error)
+            error(images,0,0,
+                  "Command '-input': Unable to load valid custom command file '%s' "
+                  "from network.",
+                  _filename0);
+
           cimg::fclose(file);
           if (is_verbose) {
             unsigned int nb_added = 0;
