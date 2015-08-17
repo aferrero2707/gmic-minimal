@@ -4326,6 +4326,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
   CImgList<st_gmic_parallel<T> > threads_data;
   CImg<unsigned int> ind, ind0, ind1;
+  CImg<float> g_vertices;
   CImg<char> name;
   CImg<T> col;
   unsigned int next_debug_line = ~0U, next_debug_filename = ~0U, _debug_line, _debug_filename,
@@ -6608,9 +6609,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 CImg<typename CImg<T>::Tfloat> elev(img.width(),img.height(),1,1,formula,true);
                 CImgList<unsigned int> primitives;
                 CImgList<float> colors;
-                CImg<float> vertices = img.get_elevation3d(primitives,colors,elev);
-                vertices.object3dtoCImg3d(primitives,colors,false);
-                gmic_apply(replace(vertices));
+                img.get_elevation3d(primitives,colors,elev).move_to(g_vertices);
+                g_vertices.object3dtoCImg3d(primitives,colors,false);
+                gmic_apply(replace(g_vertices));
               }
               ++position;
             } else if (cimg_sscanf(argument,"[%255[a-zA-Z0-9_.%+-]%c%c",indices,&sep,&end)==2 &&
@@ -6627,9 +6628,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 CImg<T>& img = gmic_check(images[selection[l]]);
                 CImgList<unsigned int> primitives;
                 CImgList<float> colors;
-                CImg<float> vertices = img.get_elevation3d(primitives,colors,elev);
-                vertices.object3dtoCImg3d(primitives,colors,false);
-                gmic_apply(replace(vertices));
+                img.get_elevation3d(primitives,colors,elev).move_to(g_vertices);
+                g_vertices.object3dtoCImg3d(primitives,colors,false);
+                gmic_apply(replace(g_vertices));
               }
               ++position;
             } else {
@@ -6650,9 +6651,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 if (fact==1 && img.spectrum()==1) elev = img.get_shared();
                 else if (img.spectrum()>1) (img.get_norm().move_to(elev))*=fact;
                 else (elev = img)*=fact;
-                CImg<float> vertices = img.get_elevation3d(primitives,colors,elev);
-                vertices.object3dtoCImg3d(primitives,colors,false);
-                gmic_apply(replace(vertices));
+                img.get_elevation3d(primitives,colors,elev).move_to(g_vertices);
+                g_vertices.object3dtoCImg3d(primitives,colors,false);
+                gmic_apply(replace(g_vertices));
               }
             }
             is_released = false; continue;
@@ -6662,11 +6663,11 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-eigen",command)) {
             print(images,0,"Compute eigen-values/vectors of symmetric matri%s or matrix field%s.",
                   selection.height()>1?"ce":"x",gmic_selection);
-            CImg<float> val, vec;
             unsigned int off = 0;
             cimg_forY(selection,l) {
               const unsigned int uind = selection[l] + off;
               name = images_names[uind];
+              CImg<float> val, vec;
               gmic_check(images[uind]).gmic_symmetric_eigen(val,vec);
               if (is_get_version) {
                 images_names.insert(name.copymark());
@@ -7308,7 +7309,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 const unsigned int uind = selection[l];
                 CImg<T>& img = gmic_check(images[uind]);
                 if (img) {
-                  CImg<float> vertices;
+                  g_vertices.assign();
                   CImgList<unsigned int> primitives;
                   CImgList<unsigned char> colors;
                   CImg<unsigned char> palette;
@@ -7328,17 +7329,17 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     }
                     CImgList<unsigned int> prims;
                     const CImg<float> pts = img.get_shared_channel(k).get_isoline3d(prims,(float)nvalue);
-                    vertices.append_object3d(primitives,pts,prims);
+                    g_vertices.append_object3d(primitives,pts,prims);
                     colors.insert(prims.size(),CImg<unsigned char>::vector(palette(0,k),
                                                                            palette(1,k),
                                                                            palette(2,k)));
                   }
-                  if (!vertices)
+                  if (!g_vertices)
                     warn(images,0,false,
                          "Command '-isoline3d': Isovalue %g%s not found in image [%u].",
                          value,sep=='%'?"%":"",uind);
-                  vertices.object3dtoCImg3d(primitives,colors,false);
-                  gmic_apply(replace(vertices));
+                  g_vertices.object3dtoCImg3d(primitives,colors,false);
+                  gmic_apply(replace(g_vertices));
                 } else gmic_apply(replace(img));
               }
             } else if ((cimg_sscanf(argument,"'%4095[^']',%lf%c",
@@ -7371,9 +7372,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               if (sepx=='%') dx = -dx;
               if (sepy=='%') dy = -dy;
               CImgList<unsigned int> primitives;
-              CImg<T> vertices = CImg<T>::isoline3d(primitives,(const char*)formula,(float)value,
-                                                    x0,y0,x1,y1,(int)dx,(int)dy);
-              vertices.object3dtoCImg3d(primitives,false).move_to(images);
+              CImg<T>::isoline3d(primitives,(const char*)formula,(float)value,
+                                 x0,y0,x1,y1,(int)dx,(int)dy).move_to(g_vertices);
+              g_vertices.object3dtoCImg3d(primitives,false).move_to(images);
               cimg_snprintf(title,_title.size(),"[3d isoline %g of '%s']",value,formula);
               CImg<char>::string(title).move_to(images_names);
             } else arg_error("isoline3d");
@@ -7398,7 +7399,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 const unsigned int uind = selection[l];
                 CImg<T>& img = gmic_check(images[uind]);
                 if (img) {
-                  CImg<float> vertices;
+                  g_vertices.assign();
                   CImgList<unsigned int> primitives;
                   CImgList<unsigned char> colors;
                   CImg<unsigned char> palette;
@@ -7418,12 +7419,12 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     }
                     CImgList<unsigned int> prims;
                     const CImg<float> pts = channel.get_isosurface3d(prims,(float)nvalue);
-                    vertices.append_object3d(primitives,pts,prims);
+                    g_vertices.append_object3d(primitives,pts,prims);
                     colors.insert(prims.size(),CImg<unsigned char>::vector(palette(0,k),
                                                                            palette(1,k),
                                                                            palette(2,k)));
                   }
-                  if (!vertices) {
+                  if (!g_vertices) {
                     if (img.depth()>1)
                       warn(images,0,false,
                            "Command '-isosurface3d': Isovalue %g%s not found in image [%u].",
@@ -7434,8 +7435,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                            "isovalue %g%s not found.",
                            uind,value,sep=='%'?"%":"");
                   }
-                  vertices.object3dtoCImg3d(primitives,colors,false);
-                  gmic_apply(replace(vertices));
+                  g_vertices.object3dtoCImg3d(primitives,colors,false);
+                  gmic_apply(replace(g_vertices));
                 } else gmic_apply(replace(img));
               }
             } else if ((cimg_sscanf(argument,"'%4095[^']',%lf%c",
@@ -7490,9 +7491,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               if (sepy=='%') dy = -dy;
               if (sepz=='%') dz = -dz;
               CImgList<unsigned int> primitives;
-              CImg<T> vertices = CImg<T>::isosurface3d(primitives,(const char*)formula,(float)value,
-                                                       x0,y0,z0,x1,y1,z1,(int)dx,(int)dy,(int)dz);
-              vertices.object3dtoCImg3d(primitives,false).move_to(images);
+              CImg<T>::isosurface3d(primitives,(const char*)formula,(float)value,
+                                    x0,y0,z0,x1,y1,z1,(int)dx,(int)dy,(int)dz).move_to(g_vertices);
+              g_vertices.object3dtoCImg3d(primitives,false).move_to(images);
               cimg_snprintf(title,_title.size(),"[3d isosurface %g of '%s']",value,formula);
               CImg<char>::string(title).move_to(images_names);
             } else arg_error("isosurface3d");
@@ -8409,14 +8410,14 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               CImgList<unsigned int> primitives;
               CImgList<float> colors, opacities;
               CImgList<unsigned char> _colors;  // 'uchar' colors when rendering with light.
-              CImg<float> vertices(img0,false);
+              g_vertices.assign(img0,false);
               try {
                 if (_render3d>=3) {
-                  vertices.CImg3dtoobject3d(primitives,_colors,opacities,false);
+                  g_vertices.CImg3dtoobject3d(primitives,_colors,opacities,false);
                   if (light3d) _colors.insert(light3d,~0U,true);
-                } else vertices.CImg3dtoobject3d(primitives,colors,opacities,false);
+                } else g_vertices.CImg3dtoobject3d(primitives,colors,opacities,false);
               } catch (CImgException &e) {
-                if (!vertices.is_CImg3d(true,&(*message=0)))
+                if (!g_vertices.is_CImg3d(true,&(*message=0)))
                   error(images,0,0,
                         "Command '-object3d': Invalid 3d object [%u], specified "
                         "in argument '%s' (%s).",
@@ -8432,13 +8433,13 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   ny = sepy=='%'?y*(img.height() - 1)/100:y;
                 CImg<float> zbuffer(is_zbuffer?img.width():0,is_zbuffer?img.height():0,1,1,0);
                 if (colors) {
-                  gmic_apply(draw_object3d(nx,ny,z,vertices,primitives,colors,opacities,
+                  gmic_apply(draw_object3d(nx,ny,z,g_vertices,primitives,colors,opacities,
                                            _render3d,_is_double3d,_focale3d,
                                            _light3d_x,_light3d_y,_light3d_z,
                                            _specular_lightness3d,_specular_shininess3d,
                                            zbuffer));
                 } else {
-                  gmic_apply(draw_object3d(nx,ny,z,vertices,primitives,_colors,opacities,
+                  gmic_apply(draw_object3d(nx,ny,z,g_vertices,primitives,_colors,opacities,
                                            _render3d,_is_double3d,_focale3d,
                                            _light3d_x,_light3d_y,_light3d_z,
                                            _specular_lightness3d,_specular_shininess3d,
@@ -8446,6 +8447,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 }
               }
             } else arg_error("object3d");
+            g_vertices.assign();
             is_released = false; ++position; continue;
           }
 
@@ -8546,12 +8548,12 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 if (selection.height()!=1) cimg::number_filename(filename,l,6,nfilename);
                 CImgList<unsigned int> primitives;
                 CImgList<float> colors, opacities;
-                CImg<float> vertices(img,false);
+                g_vertices.assign(img,false);
                 try {
-                  vertices.CImg3dtoobject3d(primitives,colors,opacities,false).
+                  g_vertices.CImg3dtoobject3d(primitives,colors,opacities,false).
                     save_off(primitives,colors,nfilename);
                 } catch (CImgException &e) {
-                  if (!vertices.is_CImg3d(true,&(*message=0)))
+                  if (!g_vertices.is_CImg3d(true,&(*message=0)))
                     error(images,0,0,
                           "Command '-output': 3d object file '%s', invalid 3d object [%u] "
                           "in selected image%s (%s).",
@@ -8559,6 +8561,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   else throw e;
                 }
               }
+              g_vertices.assign();
             } else if (!cimg::strcasecmp(ext,"cpp") || !cimg::strcasecmp(ext,"c") ||
                        !cimg::strcasecmp(ext,"hpp") || !cimg::strcasecmp(ext,"h") ||
                        !cimg::strcasecmp(ext,"pan")) {
@@ -9375,7 +9378,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 *nargument = argument + cimg_snprintf(strint,strint.width(),"%u",
                                                       (unsigned int)N) + 1,
                 *const eargument = argument + std::strlen(argument);
-              CImg<float> coords0((unsigned int)N,2,1,1,0);
+              g_vertices.assign((unsigned int)N,2,1,1,0);
               CImg<bool> percents((unsigned int)N,2,1,1,0);
               for (unsigned int n = 0; n<(unsigned int)N; ++n) if (nargument<eargument) {
                   sepx = sepy = 0;
@@ -9385,8 +9388,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                        (cimg_sscanf(argx,"%f%c%c",&x0,&sepx,&end)==2 && sepx=='%')) &&
                       (cimg_sscanf(argy,"%f%c",&y0,&end)==1 ||
                        (cimg_sscanf(argy,"%f%c%c",&y0,&sepy,&end)==2 && sepy=='%'))) {
-                    coords0(n,0) = x0; percents(n,0) = (sepx=='%');
-                    coords0(n,1) = y0; percents(n,1) = (sepy=='%');
+                    g_vertices(n,0) = x0; percents(n,0) = (sepx=='%');
+                    g_vertices(n,1) = y0; percents(n,1) = (sepy=='%');
                     nargument+=std::strlen(argx) + std::strlen(argy) + 2;
                   } else arg_error("polygon");
                 } else arg_error("polygon");
@@ -9419,20 +9422,21 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                       *_color?_color:"default");
               cimg_forY(selection,l) {
                 CImg<T> &img = images[selection[l]];
-                CImg<int> coords(coords0);
+                CImg<int> coords(g_vertices.width(),2,1,1,0);
                 cimg_forX(coords,p) {
                   if (percents(p,0))
-                    coords(p,0) = (int)cimg::round(coords0(p,0)*(img.width() - 1)/100);
-                  else coords(p,0) = (int)cimg::round(coords(p,0));
+                    coords(p,0) = (int)cimg::round(g_vertices(p,0)*(img.width() - 1)/100);
+                  else coords(p,0) = (int)cimg::round(g_vertices(p,0));
                   if (percents(p,1))
-                    coords(p,1) = (int)cimg::round(coords0(p,1)*(img.height() - 1)/100);
-                  else coords(p,1) = (int)cimg::round(coords(p,1));
+                    coords(p,1) = (int)cimg::round(g_vertices(p,1)*(img.height() - 1)/100);
+                  else coords(p,1) = (int)cimg::round(g_vertices(p,1));
                 }
                 col.assign(img.spectrum(),1,1,1,0).fill(_color,true);
                 if (sep1=='x') { gmic_apply(draw_polygon(coords,col.data(),opacity,pattern)); }
                 else gmic_apply(draw_polygon(coords,col.data(),opacity));
               }
             } else arg_error("polygon");
+            g_vertices.assign();
             is_released = false; ++position; continue;
           }
 
@@ -10078,12 +10082,11 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     gmic_selection,
                     u,v,w,
                     angle);
-              const CImg<float> rot = CImg<float>::rotation_matrix(u,v,w,
-                                                                   (float)(angle*cimg::PI/180));
+              CImg<float>::rotation_matrix(u,v,w,(float)(angle*cimg::PI/180)).move_to(g_vertices);
               cimg_forY(selection,l) {
                 const unsigned int uind = selection[l];
                 CImg<T>& img = images[uind];
-                try { gmic_apply(rotate_CImg3d(rot)); }
+                try { gmic_apply(rotate_CImg3d(g_vertices)); }
                 catch (CImgException &e) {
                   if (!img.is_CImg3d(true,&(*message=0)))
                     error(images,0,0,
@@ -10094,6 +10097,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 }
               }
             } else arg_error("rotate3d");
+            g_vertices.assign();
             is_released = false; ++position; continue;
           }
 
@@ -10960,8 +10964,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     radius,
                     recursions);
               CImgList<unsigned int> primitives;
-              CImg<float> vertices = CImg<T>::sphere3d(primitives,radius,(unsigned int)recursions);
-              vertices.object3dtoCImg3d(primitives,false).move_to(images);
+              CImg<T>::sphere3d(primitives,radius,(unsigned int)recursions).move_to(g_vertices);
+              g_vertices.object3dtoCImg3d(primitives,false).move_to(images);
               CImg<char>::string("[3d sphere]").move_to(images_names);
             } else arg_error("sphere3d");
             is_released = false; ++position; continue;
@@ -11043,16 +11047,16 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   nx = cimg::round(sepx=='%'?x*(img.width() - 1)/100:x),
                   ny = cimg::round(sepy=='%'?y*(img.height() - 1)/100:y),
                   nz = cimg::round(sepz=='%'?z*(img.depth() - 1)/100:z);
-                CImg<T> vertices = img.get_streamline(nx,ny,nz,L,dl,interp,
-                                                      (bool)is_backward,(bool)is_oriented_only);
+                img.get_streamline(nx,ny,nz,L,dl,interp,
+                                   (bool)is_backward,(bool)is_oriented_only).move_to(g_vertices);
                 CImgList<unsigned int> primitives;
                 CImgList<unsigned char> colors;
-                if (vertices.width()>1) {
-                  primitives.assign(vertices.width() - 1,1,2);
+                if (g_vertices.width()>1) {
+                  primitives.assign(g_vertices.width() - 1,1,2);
                   cimglist_for(primitives,l) { primitives(l,0) = (unsigned int)l; primitives(l,1) = l + 1U; }
                   colors.assign(primitives.size(),1,3,1,1,200);
                 } else {
-                  vertices.assign();
+                  g_vertices.assign();
                   warn(images,0,false,
                        "Command '-streamline3d': Empty streamline starting from "
                        "(%g%s,%g%s,%g%s) in image [%u].",
@@ -11061,8 +11065,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                        z,sepz=='%'?"%":"",
                        uind);
                 }
-                vertices.object3dtoCImg3d(primitives,colors,false);
-                gmic_apply(replace(vertices));
+                g_vertices.object3dtoCImg3d(primitives,colors,false);
+                gmic_apply(replace(g_vertices));
               }
             } else if ((cimg_sscanf(argument,"'%4095[^']',%f,%f,%f%c",
                                     formula,&x,&y,&z,&end)==4 ||
@@ -11082,22 +11086,22 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               print(images,0,"Extract 3d streamline from formula '%s', starting from (%g,%g,%g).",
                     formula,
                     x,y,z);
-              CImg<T> vertices = CImg<T>::streamline((const char *)formula,x,y,z,L,dl,interp,
-                                                     (bool)is_backward,(bool)is_oriented_only);
+              CImg<T>::streamline((const char *)formula,x,y,z,L,dl,interp,
+                                  (bool)is_backward,(bool)is_oriented_only).move_to(g_vertices);
               CImgList<unsigned int> primitives;
               CImgList<unsigned char> colors;
-              if (vertices.width()>1) {
-                primitives.assign(vertices.width() - 1,1,2);
+              if (g_vertices.width()>1) {
+                primitives.assign(g_vertices.width() - 1,1,2);
                 cimglist_for(primitives,l) { primitives(l,0) = (unsigned int)l; primitives(l,1) = l + 1U; }
                 colors.assign(primitives.size(),1,3,1,1,200);
               } else {
-                vertices.assign();
+                g_vertices.assign();
                 warn(images,0,false,
                      "Command '-streamline3d': Empty streamline starting from (%g,%g,%g) "
                      "in expression '%s'.",
                      x,y,z,formula);
               }
-              vertices.object3dtoCImg3d(primitives,colors,false).move_to(images);
+              g_vertices.object3dtoCImg3d(primitives,colors,false).move_to(images);
               cimg_snprintf(title,_title.size(),"[3d streamline of '%s' at (%g,%g,%g)]",
                             formula,x,y,z);
               CImg<char>::string(title).move_to(images_names);
@@ -13007,9 +13011,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
           CImgList<unsigned int> primitives;
           CImgList<float> colors;
-          CImg<float> vertices = CImg<float>::get_load_off(primitives,colors,filename);
+          CImg<float>::get_load_off(primitives,colors,filename).move_to(g_vertices);
           const CImg<float> opacities(1,primitives.size(),1,1,1);
-          vertices.object3dtoCImg3d(primitives,colors,opacities,false).move_to(input_images);
+          g_vertices.object3dtoCImg3d(primitives,colors,opacities,false).move_to(input_images);
           input_images_names.insert(__filename0);
         } else if (!cimg::strcasecmp(ext,"cimg") && *options) {
 
