@@ -8517,6 +8517,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             *cext = *_filename = *filename_tmp = *options = 0;
             CImgList<unsigned int> empty_indices;
             CImgList<T> output_images;
+            CImg<char> _eselec;
 
             if (cimg_sscanf(argument,"%11[a-zA-Z]:%4095[^,],%255s",  // Detect forced file format.
                             cext,_filename.data(),options.data())<2 ||
@@ -8596,7 +8597,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -8674,7 +8675,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -8741,7 +8742,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -8782,7 +8783,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -8819,7 +8820,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -8857,7 +8858,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -9022,7 +9023,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
@@ -9047,7 +9048,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg_forY(selection,l) if (!gmic_check(images[selection(l)]))
                 CImg<unsigned int>::vector(selection(l)).move_to(empty_indices);
               if (empty_indices) {
-                const CImg<char> _eselec = selection2string(empty_indices>'y',images_names,1);
+                selection2string(empty_indices>'y',images_names,1).move_to(_eselec);
                 const char *const eselec = _eselec.data();
                 warn(images,0,false,
                      "Command '-output': Image%s %s empty.",
