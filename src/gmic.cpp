@@ -6429,45 +6429,44 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           // Draw ellipse.
           if (!std::strcmp("-ellipse",command)) {
             gmic_substitute_args();
-            CImg<char> argR(256), argr(256);
             float x = 0, y = 0, R = 0, r = 0, angle = 0;
-            sep0 = sep1 = sepx = sepy = *argx = *argy = *argR = *argr = *color = 0;
+            sep0 = sep1 = sepx = sepy = *argx = *argy = *argz = *argc = *color = 0;
             pattern = ~0U; opacity = 1;
             if ((cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-]%c",
-                             argx,argy,argR.data(),&end)==3 ||
+                             argx,argy,argz,&end)==3 ||
                  cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                              "%255[0-9.eE%+-]%c",
-                             argx,argy,argR.data(),argr.data(),&end)==4 ||
+                             argx,argy,argz,argc,&end)==4 ||
                  cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                              "%255[0-9.eE%+-],%f%c",
-                             argx,argy,argR.data(),argr.data(),&angle,&end)==5 ||
+                             argx,argy,argz,argc,&angle,&end)==5 ||
                  cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                              "%255[0-9.eE%+-],%f,%f%c",
-                             argx,argy,argR.data(),argr.data(),&angle,&opacity,&end)==6 ||
+                             argx,argy,argz,argc,&angle,&opacity,&end)==6 ||
                  (cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                               "%255[0-9.eE%+-],%f,%f,0%c%x%c",
-                              argx,argy,argR.data(),argr.data(),&angle,&opacity,&sep1,&pattern,
+                              argx,argy,argz,argc,&angle,&opacity,&sep1,&pattern,
                               &end)==8 &&
                   sep1=='x') ||
                  (cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                               "%255[0-9.eE%+-],%f,%f,%4095[0-9.eEinfa,+-]%c",
-                              argx,argy,argR.data(),argr.data(),&angle,&opacity,color,&end)==7 &&
+                              argx,argy,argz,argc,&angle,&opacity,color,&end)==7 &&
                   (bool)(pattern=~0U))||
                  (*color=0,cimg_sscanf(argument,"%255[0-9.eE%+-],%255[0-9.eE%+-],%255[0-9.eE%+-],"
                                        "%255[0-9.eE%+-],%f,%f,0%c%x,%4095[0-9.eEinfa,+-]%c",
-                                       argx,argy,argR.data(),argr.data(),&angle,&opacity,&sep1,
+                                       argx,argy,argz,argc,&angle,&opacity,&sep1,
                                        &pattern,color,&end)==9 &&
                   sep1=='x')) &&
                 (cimg_sscanf(argx,"%f%c",&x,&end)==1 ||
                  (cimg_sscanf(argx,"%f%c%c",&x,&sepx,&end)==2 && sepx=='%')) &&
                 (cimg_sscanf(argy,"%f%c",&y,&end)==1 ||
                  (cimg_sscanf(argy,"%f%c%c",&y,&sepy,&end)==2 && sepy=='%')) &&
-                (cimg_sscanf(argR,"%f%c",&R,&end)==1 ||
-                 (cimg_sscanf(argR,"%f%c%c",&R,&sep1,&end)==2 && sep1=='%')) &&
-                (!*argr ||
-                 cimg_sscanf(argr,"%f%c",&r,&end)==1 ||
-                 (cimg_sscanf(argr,"%f%c%c",&r,&sep0,&end)==2 && sep0=='%'))) {
-              if (!*argr) r = R;
+                (cimg_sscanf(argz,"%f%c",&R,&end)==1 ||
+                 (cimg_sscanf(argz,"%f%c%c",&R,&sep1,&end)==2 && sep1=='%')) &&
+                (!*argc ||
+                 cimg_sscanf(argc,"%f%c",&r,&end)==1 ||
+                 (cimg_sscanf(argc,"%f%c%c",&r,&sep0,&end)==2 && sep0=='%'))) {
+              if (!*argc) r = R;
               print(images,0,"Draw %s ellipse at (%g%s,%g%s) with radii (%g%s,%g%s) on image%s, "
                     "with orientation %g°, opacity %g and color (%s).",
                     sep1=='x'?"outlined":"filled",
