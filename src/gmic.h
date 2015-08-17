@@ -235,9 +235,9 @@ struct gmic {
   gmic& add_commands(const char *const data_commands, const char *const commands_file=0);
   gmic& add_commands(std::FILE *const file, const char *const filename=0);
 
-  gmic_image<char> scope2string(const bool is_debug=false) const;
-  gmic_image<char> scope2string(const gmic_image<unsigned int>& scope_selection, const bool is_debug=false) const;
-  gmic_image<char> scope2string(const gmic_image<unsigned int>* scope_selection, const bool is_debug=false) const;
+  gmic_image<char> callstack2string(const bool is_debug=false) const;
+  gmic_image<char> callstack2string(const gmic_image<unsigned int>& callstack_selection, const bool is_debug=false) const;
+  gmic_image<char> callstack2string(const gmic_image<unsigned int>* callstack_selection, const bool is_debug=false) const;
 
   gmic_image<unsigned int> selection2cimg(const char *const string, const unsigned int indice_max,
                                           const gmic_list<char>& names,
@@ -264,15 +264,15 @@ struct gmic {
                                    gmic_list<T>& parent_images, gmic_list<char>& parent_images_names,
 				   const unsigned int *const variables_sizes);
   template<typename T>
-  gmic& print(const gmic_list<T>& list, const gmic_image<unsigned int> *const scope_selection,
+  gmic& print(const gmic_list<T>& list, const gmic_image<unsigned int> *const callstack_selection,
 	      const char *format, ...);
 
   template<typename T>
-  gmic& warn(const gmic_list<T>& list, const gmic_image<unsigned int> *const scope_selection,
+  gmic& warn(const gmic_list<T>& list, const gmic_image<unsigned int> *const callstack_selection,
              const bool force_visible, const char *format, ...);
 
   template<typename T>
-  gmic& error(const gmic_list<T>& list, const gmic_image<unsigned int> *const scope_selection,
+  gmic& error(const gmic_list<T>& list, const gmic_image<unsigned int> *const callstack_selection,
 	      const char *const command, const char *format, ...);
 
   template<typename T>
@@ -327,7 +327,7 @@ struct gmic {
 
   gmic_list<char> *const commands, *const commands_names, *const commands_has_arguments,
     *const _variables, *const _variables_names, **const variables, **const variables_names,
-    commands_files, scope;
+    commands_files, callstack;
   gmic_list<unsigned int> dowhiles, repeatdones;
   gmic_image<unsigned char> light3d;
   gmic_image<char> status;
