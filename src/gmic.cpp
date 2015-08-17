@@ -13404,12 +13404,16 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           }
           verbosity = _verbosity; is_debug = _is_debug;
           _status.move_to(status);
-          if (is_command_error)
-            error(images,0,0,
-                  "Command '-input': Unable to load valid custom command file '%s' "
-                  "from network.",
-                  _filename0);
-
+          if (is_command_error) {
+            if (is_network_file)
+              error(images,0,0,
+                    "Command '-input': Unable to load valid custom command file '%s' from network.",
+                    _filename0);
+            else
+              error(images,0,0,
+                    "Command '-input': File '%s' is not recognized as a custom command file.",
+                    _filename0);
+          }
           cimg::fclose(file);
           if (is_verbose) {
             unsigned int nb_added = 0;
@@ -13435,7 +13439,16 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                   _filename0,options.data());
 
           try {
-            input_images.load(filename);
+
+            try {
+              input_images.load(filename);
+            } catch (CImgIOException&) {
+              if (is_network_file)
+                error(images,0,0,
+                      "Command '-input': Unable to load valid image file '%s' from network.",
+                      _filename0);
+              else throw;
+            }
 
             // If .gmz file without extension, process images names anyway.
             bool is_gmz = false;
