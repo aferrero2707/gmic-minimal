@@ -183,15 +183,13 @@ struct gmic {
 
   gmic(const char *const commands_line,
        const char *const custom_commands=0,
-       const bool include_default_commands=true,
+       const bool include_stl=true,
        float *const p_progress=0, bool *const p_is_cancel=0);
 
   template<typename T>
   gmic(const char *const commands_line,
-       gmic_list<T>& images, gmic_list<char>& images_names,
-       const char *const custom_commands=0,
-       const bool include_default_commands=true,
-       float *const p_progress=0, bool *const p_is_cancel=0);
+       gmic_list<T>& images, gmic_list<char>& images_names, const char *const custom_commands=0,
+       const bool include_stl=true, float *const p_progress=0, bool *const p_is_cancel=0);
 
   // Run G'MIC pipeline on an already-constructed object.
   gmic& run(const char *const commands_line,
@@ -220,12 +218,12 @@ struct gmic {
   static const char* path_user(const char *const custom_path=0);
   static const char* path_rc(const char *const custom_path=0);
   static bool init_rc(const char *const custom_path=0);
-  static const gmic_image<char>& get_default_commands();
+  static const gmic_image<char>& uncompress_stl();
 
   template<typename T>
   void _gmic(const char *const commands_line,
              gmic_list<T>& images, gmic_list<char>& images_names,
-             const char *const custom_commands, const bool include_default_commands,
+             const char *const custom_commands, const bool include_stl,
              float *const p_progress, bool *const p_is_cancel);
 
   inline gmic& set_variable(const char *const name, const char *const value,
@@ -236,8 +234,10 @@ struct gmic {
   gmic& add_commands(std::FILE *const file, const char *const filename=0);
 
   gmic_image<char> callstack2string(const bool is_debug=false) const;
-  gmic_image<char> callstack2string(const gmic_image<unsigned int>& callstack_selection, const bool is_debug=false) const;
-  gmic_image<char> callstack2string(const gmic_image<unsigned int>* callstack_selection, const bool is_debug=false) const;
+  gmic_image<char> callstack2string(const gmic_image<unsigned int>& callstack_selection,
+                                    const bool is_debug=false) const;
+  gmic_image<char> callstack2string(const gmic_image<unsigned int>* callstack_selection,
+                                    const bool is_debug=false) const;
 
   gmic_image<unsigned int> selection2cimg(const char *const string, const unsigned int indice_max,
                                           const gmic_list<char>& names,
@@ -323,7 +323,7 @@ struct gmic {
              bool *const is_noargs);
 
   // Class variables.
-  static gmic_image<char> default_commands;
+  static gmic_image<char> stl;
 
   gmic_list<char> *const commands, *const commands_names, *const commands_has_arguments,
     *const _variables, *const _variables_names, **const variables, **const variables_names,
