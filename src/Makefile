@@ -358,12 +358,12 @@ gmic: gmic.cpp gmic.h gmic_stl.h CImg.h
 	$(CC) -o gmic gmic.cpp -Dgmic_main $(CFLAGS) $(LIBS)
 
 gmic_stl.h:
-	@echo "> Retrieving G'MIC Standard Library files...\r"
+	@echo "> Retrieve G'MIC Standard Library files...\r"
 	@wget --quiet -O gmic_stl.h http://gmic.eu/gmic_stl.h
 	@touch gmic_stl.h
 	@echo ">   ... done!"
 CImg.h:
-	@echo "> Retrieving CImg Library files..."
+	@echo "> Retrieve CImg Library files..."
 	@if [ -f ../../CImg/CImg.h ]; then if [ ! -f ./CImg.h ]; then ln -s ../../CImg/CImg.h .; fi; else wget --quiet -O CImg.h https://github.com/dtschump/CImg/blob/master/CImg.h?raw=true; touch CImg.h; fi
 	@echo ">   ... done!"
 
