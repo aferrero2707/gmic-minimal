@@ -2977,6 +2977,8 @@ CImg<unsigned int> gmic::selection2cimg(const char *const string, const unsigned
                                         const CImgList<char>& names,
                                         const char *const command, const bool is_selection,
                                         const bool allow_new_name, CImg<char> &new_name) {
+
+  // Try to detect common cases to be faster.
   if (string && !*string) return CImg<unsigned int>(); // Empty selection.
   if (!string || (*string=='^' && !string[1])) { // Whole selection.
     CImg<unsigned int> res(1,indice_max); cimg_forY(res,y) res[y] = (unsigned int)y; return res;
@@ -2985,8 +2987,19 @@ CImg<unsigned int> gmic::selection2cimg(const char *const string, const unsigned
   const int
     ctypel = is_selection?'[':'\'',
     ctyper = is_selection?']':'\'';
-  CImg<bool> is_selected(1,indice_max,1,1,false);
 
+  if (*string>='0' && *string<='9' && !string[1]) { // Single digit.
+    const unsigned int ind = *string - '0';
+    if (ind<indice_max) return CImg<unsigned int>::vector(ind);
+  }
+
+  if (*string=='-' && string[1]>='0' && string[2]<='9' && !string[2]) { // Single negative digit.
+    const unsigned int ind = indice_max - string[1] + '0';
+    if (ind<indice_max) return CImg<unsigned int>::vector(ind);
+  }
+
+  // Manage remaining cases.
+  CImg<bool> is_selected(1,indice_max,1,1,false);
   bool is_inverse = *string=='^';
   const char *it = string + (is_inverse?1:0);
   for (bool stopflag = false; !stopflag; ) {
