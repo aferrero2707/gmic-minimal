@@ -2982,13 +2982,10 @@ CImg<unsigned int> gmic::selection2cimg(const char *const string, const unsigned
   if (string && !*string) return CImg<unsigned int>(); // Empty selection.
   if (!string || (*string=='^' && !string[1])) { // Whole selection.
     CImg<unsigned int> res(1,indice_max); cimg_forY(res,y) res[y] = (unsigned int)y; return res;
-  }
-  if (*string>='0' && *string<='9' && !string[1]) { // Single digit.
+  } else if (*string>='0' && *string<='9' && !string[1]) { // Single digit.
     const unsigned int ind = *string - '0';
     if (ind<indice_max) return CImg<unsigned int>::vector(ind);
-  }
-
-  if (*string=='-' && string[1]>='0' && string[2]<='9' && !string[2]) { // Single negative digit.
+  } else if (*string=='-' && string[1]>='0' && string[2]<='9' && !string[2]) { // Single negative digit.
     const unsigned int ind = indice_max - string[1] + '0';
     if (ind<indice_max) return CImg<unsigned int>::vector(ind);
   }
