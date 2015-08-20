@@ -2069,7 +2069,7 @@ const CImg<T>& gmic_print(const char *const title, const bool is_debug,
 #else // #ifdef cimg_plugin
 
 #include "gmic.h"
-#include "gmic_stl.h"
+#include "gmic_stdlib.h"
 using namespace cimg_library;
 #undef min
 #undef max
@@ -2443,7 +2443,7 @@ char *gmic::ellipsize(const char *const s, char *const res, const unsigned int l
     variables(new CImgList<char>*[512]), variables_names(new CImgList<char>*[512]), \
     display_window(new CImgDisplay[10]), is_running(false)
 
-CImg<char> gmic::stl = CImg<char>::empty();
+CImg<char> gmic::stdlib = CImg<char>::empty();
 
 gmic::gmic():gmic_new_attr {
   CImgList<gmic_pixel_type> images;
@@ -2454,13 +2454,13 @@ gmic::gmic():gmic_new_attr {
 }
 
 gmic::gmic(const char *const commands_line, const char *const custom_commands,
-           const bool include_stl, float *const p_progress, bool *const p_is_cancel):
+           const bool include_stdlib, float *const p_progress, bool *const p_is_cancel):
   gmic_new_attr {
   CImgList<gmic_pixel_type> images;
   CImgList<char> images_names;
   _gmic(commands_line,
         images,images_names,custom_commands,
-        include_stl,p_progress,p_is_cancel);
+        include_stdlib,p_progress,p_is_cancel);
 }
 
 gmic::~gmic() {
@@ -2478,10 +2478,10 @@ gmic::~gmic() {
 
 // Uncompress G'MIC standard library commands.
 //---------------------------------------------
-const CImg<char>& gmic::uncompress_stl() {
-  if (!stl) try {
-      CImgList<char>::get_unserialize(CImg<unsigned char>(data_gmic_stl,1,size_data_gmic_stl,1,1,true))[0].
-        move_to(stl);
+const CImg<char>& gmic::uncompress_stdlib() {
+  if (!stdlib) try {
+      CImgList<char>::get_unserialize(CImg<unsigned char>(data_gmic_stdlib,1,size_data_gmic_stdlib,1,1,true))[0].
+        move_to(stdlib);
     } catch (...) {
       cimg::mutex(29);
       std::fprintf(cimg::output(),
@@ -2489,9 +2489,9 @@ const CImg<char>& gmic::uncompress_stl() {
                    cimg::t_red,cimg::t_normal);
       std::fflush(cimg::output());
       cimg::mutex(29,0);
-      stl.assign(1,1,1,1,0);
+      stdlib.assign(1,1,1,1,0);
     }
-  return stl;
+  return stdlib;
 }
 
 // Get path to .gmic user file.
@@ -3388,11 +3388,11 @@ gmic& gmic::remove_images(CImgList<T> &images, CImgList<char> &images_names,
 //----------------------
 template<typename T>
 gmic::gmic(const char *const commands_line, CImgList<T>& images, CImgList<char>& images_names,
-           const char *const custom_commands, const bool include_stl,
+           const char *const custom_commands, const bool include_stdlib,
            float *const p_progress, bool *const p_is_cancel):gmic_new_attr {
   _gmic(commands_line,
         images,images_names,
-        custom_commands,include_stl,
+        custom_commands,include_stdlib,
         p_progress,p_is_cancel);
 }
 
@@ -3400,7 +3400,7 @@ gmic::gmic(const char *const commands_line, CImgList<T>& images, CImgList<char>&
 template<typename T>
 void gmic::_gmic(const char *const commands_line,
                  CImgList<T>& images, CImgList<char>& images_names,
-                 const char *const custom_commands, const bool include_stl,
+                 const char *const custom_commands, const bool include_stdlib,
                  float *const p_progress, bool *const p_is_cancel) {
 
   // Initialize class variables and default G'MIC environment.
@@ -3431,7 +3431,7 @@ void gmic::_gmic(const char *const commands_line,
     _variables_names[l].assign();
     variables_names[l] = &_variables_names[l];
   }
-  if (include_stl) add_commands(gmic::uncompress_stl().data());
+  if (include_stdlib) add_commands(gmic::uncompress_stdlib().data());
   add_commands(custom_commands);
 
   // Set pre-defined global variables.
@@ -13858,7 +13858,7 @@ int main(int argc, char **argv) {
     CImgList<char> images_names;
     if (!is_global_help && commands_user) commands_user.move_to(images);
     if (commands_update) images.insert(commands_update);
-    if (!is_global_help || !commands_update) images.insert(gmic::stl);
+    if (!is_global_help || !commands_update) images.insert(gmic::stdlib);
     commands_update.assign();
 
     for (int i = 1; i<argc; ++i) {
@@ -13900,7 +13900,7 @@ int main(int argc, char **argv) {
       } catch (...) { // Fallback in case default version of '-help' has been overloaded.
         images.assign();
         images_names.assign();
-        images.insert(gmic::stl);
+        images.insert(gmic::stdlib);
         gmic("-v - -l -help \"\" -onfail -endl -q",images,images_names);
       }
     } else { // Help for a specified command.
@@ -13913,7 +13913,7 @@ int main(int argc, char **argv) {
         cimg_snprintf(tmp_line,tmp_line.width(),"-v - -l -help \"%s\",1 -onfail -endl -q",help_argument);
         images.assign();
         images_names.assign();
-        images.insert(gmic::stl);
+        images.insert(gmic::stdlib);
         gmic(tmp_line,images,images_names);
       }
     }
@@ -13981,7 +13981,7 @@ int main(int argc, char **argv) {
       std::fflush(cimg::output());
       CImgList<gmic_pixel_type> images;
       CImgList<char> images_names;
-      images.insert(gmic::stl);
+      images.insert(gmic::stdlib);
       CImg<char> tmp_line(1024);
       cimg_snprintf(tmp_line,tmp_line.width(),
                     "-v - "
@@ -13997,7 +13997,7 @@ int main(int argc, char **argv) {
         cimg_snprintf(tmp_line,tmp_line.width(),"-v - -help \"%s\",1 -q",e.command_help());
         images.assign();
         images_names.assign();
-        images.insert(gmic::stl);
+        images.insert(gmic::stdlib);
         gmic(tmp_line,images,images_names);
       }
     } else { std::fprintf(cimg::output(),"\n\n"); std::fflush(cimg::output()); }
@@ -14011,7 +14011,7 @@ int main(int argc, char **argv) {
 // Explicitely instanciate constructors and destructor when building the library.
 template gmic::gmic(const char *const commands_line,
                     gmic_list<gmic_pixel_type>& images, gmic_list<char>& images_names,
-                    const char *const custom_commands, const bool include_stl,
+                    const char *const custom_commands, const bool include_stdlib,
                     float *const p_progress, bool *const p_is_cancel);
 
 template gmic& gmic::run(const char *const commands_line,

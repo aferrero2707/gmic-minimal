@@ -183,13 +183,13 @@ struct gmic {
 
   gmic(const char *const commands_line,
        const char *const custom_commands=0,
-       const bool include_stl=true,
+       const bool include_stdlib=true,
        float *const p_progress=0, bool *const p_is_cancel=0);
 
   template<typename T>
   gmic(const char *const commands_line,
        gmic_list<T>& images, gmic_list<char>& images_names, const char *const custom_commands=0,
-       const bool include_stl=true, float *const p_progress=0, bool *const p_is_cancel=0);
+       const bool include_stdlib=true, float *const p_progress=0, bool *const p_is_cancel=0);
 
   // Run G'MIC pipeline on an already-constructed object.
   gmic& run(const char *const commands_line,
@@ -218,12 +218,12 @@ struct gmic {
   static const char* path_user(const char *const custom_path=0);
   static const char* path_rc(const char *const custom_path=0);
   static bool init_rc(const char *const custom_path=0);
-  static const gmic_image<char>& uncompress_stl();
+  static const gmic_image<char>& uncompress_stdlib();
 
   template<typename T>
   void _gmic(const char *const commands_line,
              gmic_list<T>& images, gmic_list<char>& images_names,
-             const char *const custom_commands, const bool include_stl,
+             const char *const custom_commands, const bool include_stdlib,
              float *const p_progress, bool *const p_is_cancel);
 
   inline gmic& set_variable(const char *const name, const char *const value,
@@ -325,7 +325,7 @@ struct gmic {
              bool *const is_noargs);
 
   // Class variables.
-  static gmic_image<char> stl;
+  static gmic_image<char> stdlib;
 
   gmic_list<char> *const commands, *const commands_names, *const commands_has_arguments,
     *const _variables, *const _variables_names, **const variables, **const variables_names,

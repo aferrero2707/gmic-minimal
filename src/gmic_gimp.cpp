@@ -44,7 +44,7 @@
 //--------------------------------
 #define cimg_display_type 0
 #include "gmic.h"
-#include "gmic_stl.h"
+#include "gmic_stdlib.h"
 #if !defined(__MACOSX__) && !defined(__APPLE__)
 #include <pthread.h>
 #endif
@@ -1128,7 +1128,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
   }
 
   if (!is_default_update) { // Add hardcoded default filters if no updates of the default commands.
-    _gmic_additional_commands.insert(gmic::uncompress_stl());
+    _gmic_additional_commands.insert(gmic::uncompress_stdlib());
     CImg<char>::string("\n#@gimp ________\n",false).unroll('y').move_to(_gmic_additional_commands);
   }
   CImg<char>::vector(0).move_to(_gmic_additional_commands);
