@@ -7690,7 +7690,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               CImg<char>::string(argx).move_to(callstack);
             } else CImg<char>::string("*local").move_to(callstack);
             if (is_very_verbose)
-              print(images,0,"Start '-local..-endlocal' block, with image%s.",
+              print(images,0,"Start '-local..-endlocal' block, with selected image%s.",
                     gmic_selection.data());
             CImgList<T> nimages(selection.height());
             CImgList<char> nimages_names(selection.height());
