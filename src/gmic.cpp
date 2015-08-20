@@ -2893,7 +2893,7 @@ gmic& gmic::add_commands(const char *const data_commands,
       CImg<char> body = CImg<char>::string(com);
       CImg<char>::vector((char)command_has_arguments(body)).
         move_to(commands_has_arguments[ind],pos[ind]);
-      if (commands_file) { // Insert code with debug info.
+      if (commands_file && body.width()>1 && body[body.width()-2]!=':') { // Insert code with debug info.
         if (commands_files.width()<2)
           l_debug_info = cimg_snprintf(debug_info.data() + 1,debug_info.width() - 2,"%x",line_number);
         else
