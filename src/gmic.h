@@ -244,9 +244,11 @@ struct gmic {
                                           const char *const command, const bool is_selection,
                                           const bool allow_new_name, gmic_image<char>& new_name);
 
-  gmic_image<char> selection2string(const gmic_image<unsigned int>& selection,
-                                    const gmic_list<char>& images_names,
-                                    const unsigned int display_selection) const;
+  gmic_image<char>& selection2string(const gmic_image<unsigned int>& selection,
+                                     const gmic_list<char>& images_names,
+                                     const unsigned int display_selection,
+                                     const bool is_verbose,
+                                     gmic_image<char>& res) const;
 
   gmic_list<char> commands_line_to_CImgList(const char *const commands_line);
 
