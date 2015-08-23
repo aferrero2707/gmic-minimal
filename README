@@ -19,10 +19,10 @@
 # Summary
 #---------
 
- G'MIC is an open and full-featured framework for image processing, providing
- several different user interfaces to convert/manipulate/filter/visualize
- generic image datasets, from 1d scalar signals to 3d+t sequences of
- multi-spectral volumetric images.
+ G'MIC is an open and full-featured framework for image processing.
+ It provides several different user interfaces to convert/manipulate/filter/visualize
+ generic image datasets, ranging from 1d scalar signals to 3d+t sequences of
+ multi-spectral volumetric images, including 2d color images.
 
  Technically speaking, what it does is:
 
