@@ -4026,11 +4026,13 @@ CImg<char> gmic::substitute_item(const char *const source,
 
           if (!feature[1]) switch (*feature) { // Single-char feature.
             case 'b' : { // Image basename.
-              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-              cimg::split_filename(images_names[ind].data(),substr);
-              const char *const basename = gmic::basename(substr);
-              std::memmove(substr,basename,std::strlen(basename) + 1);
-              strreplace_bw(substr);
+              if (ind>=0) {
+                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+                cimg::split_filename(images_names[ind].data(),substr);
+                const char *const basename = gmic::basename(substr);
+                std::memmove(substr,basename,std::strlen(basename) + 1);
+                strreplace_bw(substr);
+              }
               is_substituted = true;
             } break;
             case 'c' : // Coordinates of minimal value.
@@ -4050,11 +4052,13 @@ CImg<char> gmic::substitute_item(const char *const source,
               is_substituted = true;
               break;
             case 'f' : { // Image folder name.
-              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-              std::strcpy(substr,images_names[ind]);
-              const char *const basename = gmic::basename(substr);
-              substr[basename - substr.data()] = 0;
-              strreplace_bw(substr);
+              if (ind>=0) {
+                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+                std::strcpy(substr,images_names[ind]);
+                const char *const basename = gmic::basename(substr);
+                substr[basename - substr.data()] = 0;
+                strreplace_bw(substr);
+              }
               is_substituted = true;
             } break;
             case 'h' : // Image height.
@@ -4062,9 +4066,11 @@ CImg<char> gmic::substitute_item(const char *const source,
               is_substituted = true;
               break;
             case 'n' : // Image name.
-              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-              cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
-              strreplace_bw(substr);
+              if (ind>=0) {
+                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+                cimg_snprintf(substr,substr.width(),"%s",images_names[ind].data());
+                strreplace_bw(substr);
+              }
               is_substituted = true;
               break;
             case 's' : // Number of image channels.
@@ -4087,10 +4093,12 @@ CImg<char> gmic::substitute_item(const char *const source,
               *substr = 0; is_substituted = true;
             } break;
             case 'x' : // Image extension.
-              substr.assign(cimg::max(substr.width(),images_names[ind].width()));
-              cimg_snprintf(substr,substr.width(),"%s",
-                            cimg::split_filename(images_names[ind].data()));
-              strreplace_bw(substr);
+              if (ind>=0) {
+                substr.assign(cimg::max(substr.width(),images_names[ind].width()));
+                cimg_snprintf(substr,substr.width(),"%s",
+                              cimg::split_filename(images_names[ind].data()));
+                strreplace_bw(substr);
+              }
               is_substituted = true;
               break;
             case 'w' : // Image width.
