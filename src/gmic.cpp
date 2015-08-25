@@ -2268,7 +2268,7 @@ static DWORD WINAPI gmic_parallel(void *arg)
     st.gmic_instance.is_debug_info = false;
     st.gmic_instance._run(st.commands_line,pos,*st.images,*st.images_names,
                           *st.parent_images,*st.parent_images_names,
-                          st.variables_sizes,0);
+                          st.variables_sizes,0,0);
   } catch (gmic_exception &e) {
 
     // Send all remaining running threads the 'cancel' signal.
@@ -4260,7 +4260,7 @@ CImg<char> gmic::substitute_item(const char *const source,
           CImg<char>::string("*substitute").move_to(callstack);
           CImg<unsigned int> nvariables_sizes(512);
           cimg_forX(nvariables_sizes,l) nvariables_sizes[l] = variables[l]->size();
-          _run(ncommands_line,nposition,images,images_names,parent_images,parent_images_names,nvariables_sizes,0);
+          _run(ncommands_line,nposition,images,images_names,parent_images,parent_images_names,nvariables_sizes,0,inbraces);
           for (unsigned int l = 0; l<nvariables_sizes._width - 2; ++l) if (variables[l]->size()>nvariables_sizes[l]) {
               variables_names[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
               variables[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
@@ -4336,7 +4336,7 @@ gmic& gmic::_run(const gmic_list<char>& commands_line,
   is_cancel_thread = false;
   *progress = -1;
   cimglist_for(commands_line,l) if (!std::strcmp("-debug",commands_line[l].data())) { is_debug = true; break; }
-  return _run(commands_line,position,images,images_names,images,images_names,variables_sizes,0);
+  return _run(commands_line,position,images,images_names,images,images_names,variables_sizes,0,0);
 }
 
 template<typename T>
@@ -4344,7 +4344,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                  CImgList<T>& images, CImgList<char>& images_names,
                  CImgList<T>& parent_images, CImgList<char>& parent_images_names,
                  const unsigned int *const variables_sizes,
-                 bool *const is_noarg) {
+                 bool *const is_noarg, const char *const parent_arguments) {
 #if cimg_display!=0
   CImgDisplay *const _display_window = (CImgDisplay*)display_window;
 #endif
@@ -5104,7 +5104,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     is_filename?(is_cond?"found":"not found"):(is_cond?"true":"false"));
             if (!is_cond) {
               if (is_first_item && callstack.size()>1 && callstack.back()[0]!='*')
-                arg_error(callstack.back().data());
+                gmic::error(images,0,callstack.back(),"Command '-%s': Invalid arguments '%s'.",
+                            callstack.back().data(),_gmic_argument_text(parent_arguments,argument_text,true));
               else error(images,0,0,
                          "Command '-check': Expression '%s' is false (and no file with this name exists).",
                          gmic_argument_text());
@@ -5561,7 +5562,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           if (!std::strcmp("-command",item)) {
             gmic_substitute_args();
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
-            const char *arg_command_text = gmic_argument_text();
+            const char *arg_command_text = gmic_argument_text_printed();
+            unsigned int offset_argument_text = 0;
             char *arg_command = name;
             strreplace_fw(arg_command);
 
@@ -5571,7 +5573,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             bool add_debug_info = true;
             if ((*arg_command=='0' || *arg_command=='1') && arg_command[1]==',') {
               add_debug_info = (*arg_command=='1');
-              arg_command+=2; arg_command_text+=2;
+              arg_command+=2; arg_command_text+=2; offset_argument_text = 2;
             }
 
             std::FILE *file = std::fopen(arg_command,"rb");
@@ -5611,7 +5613,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 error(images,0,0,
                       "Command '-command': Unable to load valid custom command file '%s' "
                       "from network.",
-                      arg_command_text);
+                      gmic_argument_text() + offset_argument_text);
               std::remove(argx);
             } else {
               print(images,0,"Import custom commands from expression '%s'",
@@ -7727,7 +7729,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             try {
               if (next_debug_line!=~0U) { debug_line = next_debug_line; next_debug_line = ~0U; }
               if (next_debug_filename!=~0U) { debug_filename = next_debug_filename; next_debug_filename = ~0U; }
-              _run(commands_line,position,nimages,nimages_names,images,images_names,variables_sizes,is_noarg);
+              _run(commands_line,position,nimages,nimages_names,images,images_names,variables_sizes,is_noarg,0);
             } catch (gmic_exception &e) {
               int nb_locals = 0;
               for (nb_locals = 1; nb_locals && position<commands_line.size(); ++position) {
@@ -7747,7 +7749,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 if (is_very_verbose) print(images,0,"Reach '-onfail' block.");
                 try {
                   _run(commands_line,++position,nimages,nimages_names,
-                       parent_images,parent_images_names,variables_sizes,is_noarg);
+                       parent_images,parent_images_names,variables_sizes,is_noarg,0);
                 } catch (gmic_exception &e) {
                   cimg::swap(exception._command_help,e._command_help);
                   cimg::swap(exception._message,e._message);
@@ -12687,7 +12689,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               }
               try {
                 is_debug_info = false;
-                _run(ncommands_line,nposition,nimages,nimages_names,images,images_names,nvariables_sizes,&_is_noarg);
+                _run(ncommands_line,nposition,nimages,nimages_names,images,images_names,nvariables_sizes,&_is_noarg,
+                     argument);
               } catch (gmic_exception &e) {
                 cimg::swap(exception._command_help,e._command_help);
                 cimg::swap(exception._message,e._message);
@@ -12720,7 +12723,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
               try {
                 is_debug_info = false;
-                _run(ncommands_line,nposition,nimages,nimages_names,images,images_names,nvariables_sizes,&_is_noarg);
+                _run(ncommands_line,nposition,nimages,nimages_names,images,images_names,nvariables_sizes,&_is_noarg,
+                     argument);
               } catch (gmic_exception &e) {
                 cimg::swap(exception._command_help,e._command_help);
                 cimg::swap(exception._message,e._message);

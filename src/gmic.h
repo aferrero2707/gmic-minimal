@@ -322,7 +322,7 @@ struct gmic {
              gmic_list<T>& images, gmic_list<char>&images_names,
              gmic_list<T>& parent_images, gmic_list<char>& parent_images_names,
              const unsigned int *const variables_sizes,
-             bool *const is_noargs);
+             bool *const is_noargs, const char *const parent_arguments);
 
   // Class variables.
   static gmic_image<char> stdlib;
