@@ -361,11 +361,11 @@ gmic_stdlib.h:
 	@echo "> Retrieve G'MIC Standard Library...\r"
 	@wget --quiet -O gmic_stdlib.h http://gmic.eu/gmic_stdlib.h
 	@touch gmic_stdlib.h
-	@echo ">   ... done!"
+	@echo ">   ...done!"
 CImg.h:
 	@echo "> Retrieve CImg Library..."
 	@if [ -f ../../CImg/CImg.h ]; then if [ ! -f ./CImg.h ]; then ln -s ../../CImg/CImg.h .; fi; else wget --quiet -O CImg.h https://github.com/dtschump/CImg/blob/master/CImg.h?raw=true; touch CImg.h; fi
-	@echo ">   ... done!"
+	@echo ">   ...done!"
 
 # Generate gmic_stdlib.h file (requires 'gmic' to be installed first).
 stdlib:
