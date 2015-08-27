@@ -4017,7 +4017,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             while (*feature!=',') ++feature; ++feature;
           } else ind = images.width() - 1;
 
-          CImg<T> &img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
+          const CImg<T> &img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
           *substr = 0;
           if (!*feature)
             error(images,0,0,
@@ -5100,7 +5100,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             name.assign(argument,(unsigned int)std::strlen(argument) + 1);
             strreplace_fw(name);
             bool is_cond = false, is_filename = false;
-            CImg<T> &img = images.size()?images.back():CImg<T>::empty();
+            const CImg<T> &img = images.size()?images.back():CImg<T>::empty();
             try { if (img.eval(name)) is_cond = true; }
             catch (CImgException&) {
               is_filename = true;
