@@ -88,7 +88,7 @@ CImg<T>& operator_eq(const char *const expression) {
   try {
     const CImg<T> _base = cimg::_is_self_expr(expression)?+*this:CImg<T>(),
       &base = _base?_base:*this;
-    _cimg_math_parser mp(base,*this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_eq");
+    _cimg_math_parser mp(base,this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_eq");
     T *ptrd = *expression=='<'?end() - 1:_data;
     if (*expression=='<') cimg_rofXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd == (T)mp(x,y,z,c)); --ptrd; }
     else if (*expression=='>') cimg_forXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd == (T)mp(x,y,z,c)); ++ptrd; }
@@ -148,7 +148,7 @@ CImg<T>& operator_neq(const char *const expression) {
   try {
     const CImg<T> _base = cimg::_is_self_expr(expression)?+*this:CImg<T>(),
       &base = _base?_base:*this;
-    _cimg_math_parser mp(base,*this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_neq");
+    _cimg_math_parser mp(base,this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_neq");
     T *ptrd = *expression=='<'?end() - 1:_data;
     if (*expression=='<') cimg_rofXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd != (T)mp(x,y,z,c)); --ptrd; }
     else if (*expression=='>') cimg_forXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd != (T)mp(x,y,z,c)); ++ptrd; }
@@ -208,7 +208,7 @@ CImg<T>& operator_gt(const char *const expression) {
   try {
     const CImg<T> _base = cimg::_is_self_expr(expression)?+*this:CImg<T>(),
       &base = _base?_base:*this;
-    _cimg_math_parser mp(base,*this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_gt");
+    _cimg_math_parser mp(base,this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_gt");
     T *ptrd = *expression=='<'?end() - 1:_data;
     if (*expression=='<') cimg_rofXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd > (T)mp(x,y,z,c)); --ptrd; }
     else if (*expression=='>') cimg_forXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd > (T)mp(x,y,z,c)); ++ptrd; }
@@ -268,7 +268,7 @@ CImg<T>& operator_ge(const char *const expression) {
   try {
     const CImg<T> _base = cimg::_is_self_expr(expression)?+*this:CImg<T>(),
       &base = _base?_base:*this;
-    _cimg_math_parser mp(base,*this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_ge");
+    _cimg_math_parser mp(base,this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_ge");
     T *ptrd = *expression=='<'?end() - 1:_data;
     if (*expression=='<') cimg_rofXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd >= (T)mp(x,y,z,c)); --ptrd; }
     else if (*expression=='>') cimg_forXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd >= (T)mp(x,y,z,c)); ++ptrd; }
@@ -328,7 +328,7 @@ CImg<T>& operator_lt(const char *const expression) {
   try {
     const CImg<T> _base = cimg::_is_self_expr(expression)?+*this:CImg<T>(),
       &base = _base?_base:*this;
-    _cimg_math_parser mp(base,*this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_lt");
+    _cimg_math_parser mp(base,this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_lt");
     T *ptrd = *expression=='<'?end() - 1:_data;
     if (*expression=='<') cimg_rofXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd < (T)mp(x,y,z,c)); --ptrd; }
     else if (*expression=='>') cimg_forXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd < (T)mp(x,y,z,c)); ++ptrd; }
@@ -388,7 +388,7 @@ CImg<T>& operator_le(const char *const expression) {
   try {
     const CImg<T> _base = cimg::_is_self_expr(expression)?+*this:CImg<T>(),
       &base = _base?_base:*this;
-    _cimg_math_parser mp(base,*this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_le");
+    _cimg_math_parser mp(base,this,expression + (*expression=='>' || *expression=='<'?1:0),"operator_le");
     T *ptrd = *expression=='<'?end() - 1:_data;
     if (*expression=='<') cimg_rofXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd <= (T)mp(x,y,z,c)); --ptrd; }
     else if (*expression=='>') cimg_forXYZC(*this,x,y,z,c) { *ptrd = (T)(*ptrd <= (T)mp(x,y,z,c)); ++ptrd; }
@@ -4017,7 +4017,7 @@ CImg<char> gmic::substitute_item(const char *const source,
             while (*feature!=',') ++feature; ++feature;
           } else ind = images.width() - 1;
 
-          const CImg<T> &img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
+          CImg<T> &img = ind>=0?gmic_check(images[ind]):CImg<T>::empty();
           *substr = 0;
           if (!*feature)
             error(images,0,0,
