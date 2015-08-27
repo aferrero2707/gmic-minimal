@@ -4268,7 +4268,8 @@ CImg<char> gmic::substitute_item(const char *const source,
           CImg<char>::string("*substitute").move_to(callstack);
           CImg<unsigned int> nvariables_sizes(512);
           cimg_forX(nvariables_sizes,l) nvariables_sizes[l] = variables[l]->size();
-          _run(ncommands_line,nposition,images,images_names,parent_images,parent_images_names,nvariables_sizes,0,inbraces);
+          _run(ncommands_line,nposition,images,images_names,parent_images,parent_images_names,
+               nvariables_sizes,0,inbraces);
           for (unsigned int l = 0; l<nvariables_sizes._width - 2; ++l) if (variables[l]->size()>nvariables_sizes[l]) {
               variables_names[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
               variables[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
