@@ -12607,7 +12607,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                       if (is_braces) {
                         if ((*inbraces>='a' && *inbraces<='z') ||
                             (*inbraces>='A' && *inbraces<='Z') ||
-                            *inbraces=='_' || !*inbraces) {
+                            *inbraces=='_' || !*inbraces ||
+                            std::strchr(inbraces,' ')) {
                           CImg<char>(nsource++,1).move_to(substituted_items);
                         } else {
                           CImg<unsigned int> inds;
