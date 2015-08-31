@@ -2722,6 +2722,7 @@ gmic& gmic::print(const char *format, ...) {
 // Print error message, and quit interpreter.
 //-------------------------------------------
 gmic& gmic::error(const char *const format, ...) {
+  if (*_cimg_is_abort.ptr) throw CImgAbortException("");
   va_list ap;
   va_start(ap,format);
   CImg<char> message(1024);
@@ -3229,6 +3230,7 @@ gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const callst
 template<typename T>
 gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const callstack_selection,
                   const char *const command, const char *const format, ...) {
+  if (*_cimg_is_abort.ptr) throw CImgAbortException("");
   va_list ap;
   va_start(ap,format);
   CImg<char> message(1024);
@@ -12253,7 +12255,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
         // Quit.
         if (!std::strcmp("-quit",item)) {
-          print(images,0,"Quit G'MIC interpreter.\n");
+          print(images,0,"Quit G'MIC interpreter.");
           dowhiles.assign();
           repeatdones.assign();
           position = commands_line.size();
@@ -13660,7 +13662,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
       if (new_name) new_name.move_to(images_names[selection[0]]);
       is_released = false;
-    }
+    } // End main parsing loop of _run().
 
     // Wait for remaining threads to finish.
 #ifdef gmic_is_parallel
@@ -13741,10 +13743,24 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
     if (is_debug) debug(images,"%sExit scope '%s/'.%s\n",
                         cimg::t_bold,callstack.back().data(),cimg::t_normal);
-    if (!is_quit && callstack.size()==1) {
-      print(images,0,"End G'MIC interpreter.\n");
-      is_quit = true;
+
+    if (callstack.size()==1) {
+      if (is_quit) {
+        std::fputc('\n',cimg::output());
+        std::fflush(cimg::output());
+      } else {
+        print(images,0,"End G'MIC interpreter.\n");
+        is_quit = true;
+      }
     }
+  } catch (CImgAbortException &) { // Special case of abort (abort from a CImg method).
+    // Do the same as for a cancellation point.
+    const bool is_very_verbose = verbosity>0 || is_debug;
+    if (is_very_verbose) print(images,0,"Abort G'MIC interpreter.");
+    dowhiles.assign();
+    repeatdones.assign();
+    position = commands_line.size();
+    is_released = is_quit = true;
   } catch (CImgException &e) {
     CImg<char> error_message(e.what(),(unsigned int)std::strlen(e.what()) + 1);
     for (char *str = std::strstr(error_message,"CImg"); str; str = std::strstr(str,"CImg")) {
