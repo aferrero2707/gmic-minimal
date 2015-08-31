@@ -4356,6 +4356,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                  CImgList<T>& parent_images, CImgList<char>& parent_images_names,
                  const unsigned int *const variables_sizes,
                  bool *const is_noarg, const char *const parent_arguments) {
+
 #if cimg_display!=0
   CImgDisplay *const _display_window = (CImgDisplay*)display_window;
 #endif
@@ -4430,6 +4431,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
     // Begin command line parsing.
     if (!commands_line && is_start) { print(images,0,"Start G'MIC interpreter."); is_start = false; }
     while (position<commands_line.size() && !is_quit && !is_return) {
+
       _cimg_is_abort.ptr = is_abort;
       const bool is_first_item = !position;
 
@@ -13788,6 +13790,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
     if (next_debug_line!=~0U) { debug_line = next_debug_line; next_debug_line = ~0U; }
     if (next_debug_filename!=~0U) { debug_filename = next_debug_filename; next_debug_filename = ~0U; }
   }
+
   return *this;
 }
 
