@@ -4341,7 +4341,7 @@ gmic& gmic::_run(const gmic_list<char>& commands_line,
   is_return = false;
   check_elif = false;
   if (p_progress) progress = p_progress; else { _progress = -1; progress = &_progress; }
-  if (p_is_abort) is_abort = cimg_is_abort = p_is_abort; else { _is_abort = false; is_abort = cimg_is_abort = &_is_abort; }
+  if (p_is_abort) is_abort = p_is_abort; else { _is_abort = false; is_abort = &_is_abort; }
   is_abort_thread = false;
   *progress = -1;
   cimglist_for(commands_line,l) if (!std::strcmp("-debug",commands_line[l].data())) { is_debug = true; break; }
@@ -4428,6 +4428,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
     // Begin command line parsing.
     if (!commands_line && is_start) { print(images,0,"Start G'MIC interpreter."); is_start = false; }
     while (position<commands_line.size() && !is_quit && !is_return) {
+      _cimg_is_abort.ptr = is_abort;
       const bool is_first_item = !position;
 
       // Process debug info.
