@@ -12398,8 +12398,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             const int ind = (int)hashcode(command + 1,false);
             cimglist_for(commands_names[ind],l) {
               custom_command = commands_names[ind][l].data();
-              const char *const command_code = commands[ind][l].data();
               if (!std::strcmp(command + 1,custom_command)) {
+                const char *const command_code = commands[ind][l].data();
                 custom_command_found = true;
                 if (is_debug) {
                   CImg<char> command_code_text(264);
@@ -12416,6 +12416,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                         custom_command,command_code_text.data(),
                         commands_has_arguments[ind](l,0)?"takes arguments":"takes no arguments");
                 }
+
                 CImgList<char> arguments(32);
                 // Set $0 to be the command name.
                 CImg<char>::string(custom_command).move_to(arguments[0]);
@@ -12457,12 +12458,31 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 // Substitute arguments in custom command expression.
                 CImgList<char> substituted_items;
                 CImg<char> inbraces;
+
+                /*                std::fprintf(stderr,"\nDEBUG0:\n  command_code=%p (%s)\n  commands[%u][%u].data()=%p (%s)\n",
+                             command_code,command_code,
+                             ind,l,commands[ind][l].data(),commands[ind][l].data());
+                */
+
                 for (const char *nsource = command_code; *nsource;)
                   if (*nsource!='$') {
+
+                    /*
+                      std::fprintf(stderr,"\nDEBUG:\n  nsource=%p (%s)\n  command_code=%p (%s)\n  commands[%u][%u].data()=%p (%s)\n",
+                      nsource,nsource,
+                      command_code,command_code,
+                      ind,l,commands[ind][l].data(),commands[ind][l].data());
+                    */
+
                     // If not starting with '$'.
                     const char *const nsource0 = nsource;
                     nsource = std::strchr(nsource0,'$');
                     if (!nsource) nsource = &commands[ind][l].back();
+
+                    // if (!nsource) nsource = nsource0 + std::strlen(nsource0);  // Ca marche!
+
+                    //std::fprintf(stderr,"\nDEBUG : diff=%u\n",(unsigned int)(nsource - nsource0));
+
                     CImg<char>(nsource0,(unsigned int)(nsource - nsource0)).move_to(substituted_items);
                   } else { // '$' expression found.
                     CImg<char> substr(324);
