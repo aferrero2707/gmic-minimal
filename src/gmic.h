@@ -150,6 +150,13 @@ namespace cimg_library {
 
 #include <locale>
 #define cimg_plugin "gmic.cpp"
+
+static volatile bool *cimg_is_abort;
+#ifdef cimg_use_openmp
+#define cimg_test_abort() if (*cimg_is_abort && !omp_get_thread_num()) throw CImgAbortException("");
+#else
+#define cimg_test_abort() if (*cimg_is_abort) throw CImgAbortException("")
+#endif
 #include "./CImg.h"
 
 #if cimg_OS==2
@@ -184,21 +191,21 @@ struct gmic {
   gmic(const char *const commands_line,
        const char *const custom_commands=0,
        const bool include_stdlib=true,
-       float *const p_progress=0, bool *const p_is_cancel=0);
+       float *const p_progress=0, bool *const p_is_abort=0);
 
   template<typename T>
   gmic(const char *const commands_line,
        gmic_list<T>& images, gmic_list<char>& images_names, const char *const custom_commands=0,
-       const bool include_stdlib=true, float *const p_progress=0, bool *const p_is_cancel=0);
+       const bool include_stdlib=true, float *const p_progress=0, bool *const p_is_abort=0);
 
   // Run G'MIC pipeline on an already-constructed object.
   gmic& run(const char *const commands_line,
-            float *const p_progress=0, bool *const p_is_cancel=0);
+            float *const p_progress=0, bool *const p_is_abort=0);
 
   template<typename T>
   gmic& run(const char *const commands_line,
             gmic_list<T> &images, gmic_list<char> &images_names,
-            float *const p_progress=0, bool *const p_is_cancel=0);
+            float *const p_progress=0, bool *const p_is_abort=0);
 
   // Functions below should be considered as *private*, and should not be
   // used in user's code.
@@ -224,7 +231,7 @@ struct gmic {
   void _gmic(const char *const commands_line,
              gmic_list<T>& images, gmic_list<char>& images_names,
              const char *const custom_commands, const bool include_stdlib,
-             float *const p_progress, bool *const p_is_cancel);
+             float *const p_progress, bool *const p_is_abort);
 
   inline gmic& set_variable(const char *const name, const char *const value,
                             const bool add_new_variable,
@@ -315,7 +322,7 @@ struct gmic {
   template<typename T>
   gmic& _run(const gmic_list<char>& commands_line,
              gmic_list<T> &images, gmic_list<char> &images_names,
-             float *const p_progress, bool *const p_is_cancel);
+             float *const p_progress, bool *const p_is_abort);
 
   template<typename T>
   gmic& _run(const gmic_list<char>& commands_line, unsigned int& position,
@@ -341,7 +348,7 @@ struct gmic {
   int verbosity, render3d, renderd3d;
   bool is_released, is_debug, is_running, is_start, is_return, is_quit, is_double3d, is_debug_info, check_elif;
   const char *starting_commands_line;
-  volatile bool _is_cancel, *is_cancel, is_cancel_thread;
+  volatile bool _is_abort, *is_abort, is_abort_thread;
 };
 
 // Class 'gmic_exception'.

@@ -2271,12 +2271,12 @@ static DWORD WINAPI gmic_parallel(void *arg)
                           st.variables_sizes,0,0);
   } catch (gmic_exception &e) {
 
-    // Send all remaining running threads the 'cancel' signal.
+    // Send all remaining running threads the 'abort' signal.
 #ifdef gmic_is_parallel
     CImgList<st_gmic_parallel<T> > &threads_data = *st.threads_data;
     cimglist_for(threads_data,i) cimg_forY(threads_data[i],l)
       if (&threads_data(i,l)!=&st && threads_data(i,l).is_thread_running) {
-        threads_data(i,l).gmic_instance.is_cancel_thread = true;
+        threads_data(i,l).gmic_instance.is_abort_thread = true;
 #if cimg_OS!=2
         pthread_join(threads_data(i,l).thread_id,0);
 #else // #if cimg_OS!=2
@@ -2454,13 +2454,13 @@ gmic::gmic():gmic_new_attr {
 }
 
 gmic::gmic(const char *const commands_line, const char *const custom_commands,
-           const bool include_stdlib, float *const p_progress, bool *const p_is_cancel):
+           const bool include_stdlib, float *const p_progress, bool *const p_is_abort):
   gmic_new_attr {
   CImgList<gmic_pixel_type> images;
   CImgList<char> images_names;
   _gmic(commands_line,
         images,images_names,custom_commands,
-        include_stdlib,p_progress,p_is_cancel);
+        include_stdlib,p_progress,p_is_abort);
 }
 
 gmic::~gmic() {
@@ -3389,11 +3389,11 @@ gmic& gmic::remove_images(CImgList<T> &images, CImgList<char> &images_names,
 template<typename T>
 gmic::gmic(const char *const commands_line, CImgList<T>& images, CImgList<char>& images_names,
            const char *const custom_commands, const bool include_stdlib,
-           float *const p_progress, bool *const p_is_cancel):gmic_new_attr {
+           float *const p_progress, bool *const p_is_abort):gmic_new_attr {
   _gmic(commands_line,
         images,images_names,
         custom_commands,include_stdlib,
-        p_progress,p_is_cancel);
+        p_progress,p_is_abort);
 }
 
 // This method is shared by all constructors. It initializes all the interpreter environment.
@@ -3401,7 +3401,7 @@ template<typename T>
 void gmic::_gmic(const char *const commands_line,
                  CImgList<T>& images, CImgList<char>& images_names,
                  const char *const custom_commands, const bool include_stdlib,
-                 float *const p_progress, bool *const p_is_cancel) {
+                 float *const p_progress, bool *const p_is_abort) {
 
   // Initialize class variables and default G'MIC environment.
   setlocale(LC_NUMERIC,"C");
@@ -3465,7 +3465,7 @@ void gmic::_gmic(const char *const commands_line,
   // Launch the G'MIC interpreter.
   const CImgList<char> items = commands_line?commands_line_to_CImgList(commands_line):CImgList<char>::empty();
   try {
-    _run(items,images,images_names,p_progress,p_is_cancel);
+    _run(items,images,images_names,p_progress,p_is_abort);
   } catch (gmic_exception &e) {
     print(images,0,"Abort G'MIC interpreter.\n");
     throw e;
@@ -4290,17 +4290,17 @@ CImg<char> gmic::substitute_item(const char *const source,
 // Main parsing procedures.
 //-------------------------
 gmic& gmic::run(const char *const commands_line,
-                float *const p_progress, bool *const p_is_cancel) {
+                float *const p_progress, bool *const p_is_abort) {
   gmic_list<gmic_pixel_type> images;
   gmic_list<char> images_names;
   return run(commands_line,images,images_names,
-             p_progress,p_is_cancel);
+             p_progress,p_is_abort);
 }
 
 template<typename T>
 gmic& gmic::run(const char *const commands_line,
                 gmic_list<T> &images, gmic_list<char> &images_names,
-                float *const p_progress, bool *const p_is_cancel) {
+                float *const p_progress, bool *const p_is_abort) {
   cimg::mutex(26);
   if (is_running)
     error(images,0,0,
@@ -4311,7 +4311,7 @@ gmic& gmic::run(const char *const commands_line,
   starting_commands_line = commands_line;
   is_debug = false;
   _run(commands_line_to_CImgList(commands_line),
-       images,images_names,p_progress,p_is_cancel);
+       images,images_names,p_progress,p_is_abort);
   is_running = false;
   return *this;
 }
@@ -4319,7 +4319,7 @@ gmic& gmic::run(const char *const commands_line,
 template<typename T>
 gmic& gmic::_run(const gmic_list<char>& commands_line,
                  gmic_list<T> &images, gmic_list<char> &images_names,
-                 float *const p_progress, bool *const p_is_cancel) {
+                 float *const p_progress, bool *const p_is_abort) {
   CImg<unsigned int> variables_sizes(512,1,1,1,0);
   unsigned int position = 0;
   setlocale(LC_NUMERIC,"C");
@@ -4341,8 +4341,8 @@ gmic& gmic::_run(const gmic_list<char>& commands_line,
   is_return = false;
   check_elif = false;
   if (p_progress) progress = p_progress; else { _progress = -1; progress = &_progress; }
-  if (p_is_cancel) is_cancel = p_is_cancel; else { _is_cancel = false; is_cancel = &_is_cancel; }
-  is_cancel_thread = false;
+  if (p_is_abort) is_abort = cimg_is_abort = p_is_abort; else { _is_abort = false; is_abort = cimg_is_abort = &_is_abort; }
+  is_abort_thread = false;
   *progress = -1;
   cimglist_for(commands_line,l) if (!std::strcmp("-debug",commands_line[l].data())) { is_debug = true; break; }
   return _run(commands_line,position,images,images_names,images,images_names,variables_sizes,0,0);
@@ -4574,8 +4574,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       }
 
       // Cancellation point.
-      if (*is_cancel || is_cancel_thread) {
-        if (is_very_verbose) print(images,0,"Cancel G'MIC interpreter.\n");
+      if (*is_abort || is_abort_thread) {
+        if (is_very_verbose) print(images,0,"Abort G'MIC interpreter.\n");
         dowhiles.assign();
         repeatdones.assign();
         position = commands_line.size();
@@ -9256,9 +9256,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               gi.verbosity = verbosity;
               gi.render3d = render3d;
               gi.renderd3d = renderd3d;
-              gi._is_cancel = _is_cancel;
-              gi.is_cancel = is_cancel;
-              gi.is_cancel_thread = false;
+              gi._is_abort = _is_abort;
+              gi.is_abort = is_abort;
+              gi.is_abort_thread = false;
               gi.nb_carriages = nb_carriages;
               gi.reference_time = reference_time;
               _threads_data[l].images = &images;
@@ -12257,7 +12257,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           repeatdones.assign();
           position = commands_line.size();
           is_released = is_quit = true;
-          *is_cancel = true;
+          *is_abort = true;
           break;
         }
 
@@ -13664,7 +13664,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
     // Wait for remaining threads to finish.
 #ifdef gmic_is_parallel
     cimglist_for(threads_data,i) cimg_forY(threads_data[i],l) {
-      if (!threads_data(i,l).is_thread_running) threads_data(i,l).gmic_instance.is_cancel_thread = true;
+      if (!threads_data(i,l).is_thread_running) threads_data(i,l).gmic_instance.is_abort_thread = true;
 #if cimg_OS!=2
       pthread_join(threads_data(i,l).thread_id,0);
 #else // #if cimg_OS!=2
@@ -14026,11 +14026,11 @@ int main(int argc, char **argv) {
 template gmic::gmic(const char *const commands_line,
                     gmic_list<gmic_pixel_type>& images, gmic_list<char>& images_names,
                     const char *const custom_commands, const bool include_stdlib,
-                    float *const p_progress, bool *const p_is_cancel);
+                    float *const p_progress, bool *const p_is_abort);
 
 template gmic& gmic::run(const char *const commands_line,
                          gmic_list<gmic_pixel_type> &images, gmic_list<char> &images_names,
-                         float *const p_progress=0, bool *const p_is_cancel=0);
+                         float *const p_progress=0, bool *const p_is_abort=0);
 
 template CImgList<float>::~CImgList();
 template CImgList<char>::~CImgList();
