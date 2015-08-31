@@ -75,7 +75,8 @@ public:
   QSize captureSize();
   void setCaptureSize(int width, int height);
   void setCaptureSize(const QSize & size);
-  static QList<int> getWebcamList();
+  static const QList<int> & getWebcamList();
+  static const QList<int> & getCachedWebcamList();
   static void retrieveWebcamResolutions(const QList<int> & camList, QSplashScreen * splashScreen = 0, QStatusBar * statusBar = 0);
   static const QList<QSize> & webcamResolutions(int index);
   static void clearSavedSettings();
@@ -83,6 +84,7 @@ private:
   CvCapture *_capture;
   int _cameraIndex;
   QSize _captureSize;
+  static QList<int> _webcamList;
   static QVector< QList<QSize> > _webcamResolutions;
 };
 

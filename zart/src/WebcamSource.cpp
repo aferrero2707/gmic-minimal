@@ -51,11 +51,13 @@
 #include <QSettings>
 #include <QSplashScreen>
 #include <QStatusBar>
+#include <QList>
 #include <set>
 #include <algorithm>
 using namespace std;
 
 QVector< QList<QSize> > WebcamSource::_webcamResolutions;
+QList<int> WebcamSource::_webcamList;
 
 namespace {
 class QSizeCompare {
@@ -88,17 +90,17 @@ WebcamSource::capture()
   setImage(cvQueryFrame( _capture ));
 }
 
-QList<int>
+const QList<int> &
 WebcamSource::getWebcamList()
 {
-  QList<int> camList;
+  _webcamList.clear();
 #if defined(_IS_UNIX_)
   int i = 0;
   for ( i = 0; i < 6 ; ++i ) {
     QFile file(QString("/dev/video%1").arg(i));
     if ( file.open(QFile::ReadOnly) ) {
       file.close();
-      camList.push_back(i);
+      _webcamList.push_back(i);
     }
   }
 #else
@@ -108,11 +110,17 @@ WebcamSource::getWebcamList()
     capture = cvCaptureFromCAM( i );
     if ( capture ) {
       cvReleaseCapture( &capture );
-      camList.push_back(i);
+      _webcamList.push_back(i);
     }
   }
 #endif
-  return camList;
+  return _webcamList;
+}
+
+const QList<int> &
+WebcamSource::getCachedWebcamList()
+{
+  return _webcamList;
 }
 
 void

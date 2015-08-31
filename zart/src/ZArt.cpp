@@ -78,23 +78,23 @@ int main( int argc, char *argv[] )
   QStringList args = app.arguments();
   QStringList::iterator it = args.begin();
   while (it != args.end()) {
-     if ( it->startsWith("-h") || it->startsWith("--help") ) {
-        cout << "Usage:" << endl
-             << "       "
-             << QFileInfo(argv[0]).baseName().toLatin1().constData()
-              << " [options]" << endl
-              << "  " << "Options: " << endl
-              << "      --help | -h   : print this help." << endl
-              << endl;
-        exit(EXIT_SUCCESS);
-     }
+    if ( it->startsWith("-h") || it->startsWith("--help") ) {
+      cout << "Usage:" << endl
+           << "       "
+           << QFileInfo(argv[0]).baseName().toLatin1().constData()
+          << " [options]" << endl
+          << "  " << "Options: " << endl
+          << "      --help | -h   : print this help." << endl
+          << endl;
+      exit(EXIT_SUCCESS);
+    }
     ++it;
   }
   QSplashScreen splashScreen(QPixmap(":/images/splash.png"));
   splashScreen.show();
   app.processEvents();
   WebcamSource::retrieveWebcamResolutions(WebcamSource::getWebcamList(),
-					  &splashScreen);
+                                          &splashScreen);
   if ( ! gmic::init_rc() ) {
     cerr << "[ZArt] Warning: Could not create resources directory.\n";
   }
