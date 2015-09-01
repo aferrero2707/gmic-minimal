@@ -12699,7 +12699,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             CImgList<T> nimages(selection.height());
             unsigned int nposition = 0;
             gmic_exception exception;
-
+            const unsigned int
+              previous_debug_filename = debug_filename,
+              previous_debug_line = debug_line;
             CImg<char>::string(custom_command).move_to(callstack);
             if (is_get_version) {
               cimg_forY(selection,l) {
@@ -12776,6 +12778,8 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 		variables[l]->remove(nvariables_sizes[l],variables[l]->size() - 1);
 	      }
             callstack.remove();
+            debug_filename = previous_debug_filename;
+            debug_line = previous_debug_line;
             is_return = false;
             if (has_arguments && !_is_noarg) ++position;
             if (exception._message) throw exception;
