@@ -2722,7 +2722,6 @@ gmic& gmic::print(const char *format, ...) {
 // Print error message, and quit interpreter.
 //-------------------------------------------
 gmic& gmic::error(const char *const format, ...) {
-  if (*_cimg_is_abort.ptr) throw CImgAbortException("");
   va_list ap;
   va_start(ap,format);
   CImg<char> message(1024);
@@ -3230,7 +3229,6 @@ gmic& gmic::warn(const CImgList<T>& list, const CImg<unsigned int> *const callst
 template<typename T>
 gmic& gmic::error(const CImgList<T>& list, const CImg<unsigned int> *const callstack_selection,
                   const char *const command, const char *const format, ...) {
-  if (*_cimg_is_abort.ptr) throw CImgAbortException("");
   va_list ap;
   va_start(ap,format);
   CImg<char> message(1024);
