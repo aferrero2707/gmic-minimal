@@ -1782,7 +1782,9 @@ void process_preview();
 
 // Secure function for invalidate preview.
 void _gimp_preview_invalidate() {
+  cimg::mutex(25);
   if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
+  cimg::mutex(25,0);
   const int active_layer_id = gimp_image_get_active_layer(image_id);
   if (gimp_layer_get_edit_mask(active_layer_id))
     gimp_layer_set_edit_mask(active_layer_id,(gboolean)0);
@@ -2051,7 +2053,9 @@ void on_dialog_reset_clicked() {
 }
 
 void on_dialog_cancel_clicked() {
+  cimg::mutex(25);
   if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
+  cimg::mutex(25,0);
   reset_button_parameters();
   _create_dialog_gui = false;
   gtk_main_quit();
@@ -2404,7 +2408,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     const unsigned long time0 = cimg::time();
-    p_spt = (void*)&spt;
+    cimg::mutex(25); p_spt = (void*)&spt; cimg::mutex(25,0);
     spt.is_thread = true;
     pthread_mutex_init(&spt.is_running,0);
     pthread_mutex_init(&spt.wait_lock,0);
@@ -2455,7 +2459,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
     pthread_mutex_unlock(&spt.is_running);
     pthread_mutex_destroy(&spt.is_running);
     is_abort = spt.is_abort;
-    p_spt = (void*)0;
+    cimg::mutex(25); p_spt = (void*)0; cimg::mutex(25,0);
 #else
     gimp_progress_update(0.5);
     process_thread(&spt);
@@ -2880,7 +2884,7 @@ void process_preview() {
 
     bool is_abort = false;
 #if !defined(__MACOSX__) && !defined(__APPLE__)
-    p_spt = (void*)&spt;
+    cimg::mutex(25); p_spt = (void*)&spt; cimg::mutex(25,0);
     spt.is_thread = true;
     pthread_mutex_init(&spt.is_running,0);
     pthread_mutex_init(&spt.wait_lock,0);
@@ -2899,7 +2903,7 @@ void process_preview() {
     pthread_mutex_unlock(&spt.is_running);
     pthread_mutex_destroy(&spt.is_running);
     is_abort = spt.is_abort;
-    p_spt = (void*)0;
+    cimg::mutex(25); p_spt = (void*)0; cimg::mutex(25,0);
 #else
     gimp_progress_update(0.5);
     process_thread(&spt);
@@ -3889,7 +3893,9 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
 
       // Display dialog window.
       if (create_dialog_gui()) {
+        cimg::mutex(25);
         if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
+        cimg::mutex(25,0);
         process_image(0,false);
         const char *const commands_line = get_commands_line(false);
         if (commands_line) { // Remember command line for the next use of the filter.
