@@ -83,6 +83,7 @@ double preview_image_factor = 0;               // If alternative preview image u
 unsigned int indice_faves = 0;                 // The starting index of favorite filters.
 unsigned int nb_available_filters = 0;         // The number of available filters (non-testing).
 std::FILE *logfile = 0;                        // The log file if any.
+void *p_spt = 0;                               // A pointer to the current running G'MIC thread if any (or 0).
 GimpRunMode run_mode;                          // Run-mode used to call the plug-in.
 GtkTreeStore *tree_view_store = 0;             // The list of the filters as a GtkTreeView model.
 GimpDrawable *drawable_preview = 0;            // The drawable used by the preview window.
@@ -1710,6 +1711,69 @@ void set_preview_factor() {
   }
 }
 
+// Process image data with the G'MIC interpreter.
+//-----------------------------------------------
+
+// This structure stores the arguments required by the processing thread.
+struct st_process_thread {
+  CImgList<gmic_pixel_type> images;
+  CImgList<char> images_names;
+  CImg<char> error_message, status;
+  bool is_thread, is_preview;
+  unsigned int verbosity_mode;
+  const char *commands_line;
+  float progress;
+  bool is_abort;
+#if !defined(__MACOSX__) && !defined(__APPLE__)
+  pthread_mutex_t is_running, wait_lock;
+  pthread_cond_t wait_cond;
+  pthread_t thread;
+#endif
+};
+
+// Thread that runs the G'MIC interpreter.
+void *process_thread(void *arg) {
+  st_process_thread &spt = *(st_process_thread*)arg;
+#if !defined(__MACOSX__) && !defined(__APPLE__)
+  if (spt.is_thread) {
+    pthread_mutex_lock(&spt.is_running);
+    pthread_mutex_lock(&spt.wait_lock);
+    pthread_cond_signal(&spt.wait_cond);
+    pthread_mutex_unlock(&spt.wait_lock);
+  }
+#endif
+  try {
+    if (spt.verbosity_mode>1) {
+      CImg<char> cl = CImg<char>::string(spt.commands_line);
+      std::fprintf(cimg::output(),
+                   "\n[gmic_gimp]./%s/ %s\n",
+                   spt.is_preview?"preview":"apply",
+                   cl.data());
+      std::fflush(cimg::output());
+    }
+    gmic gmic_instance(spt.commands_line,spt.images,spt.images_names,gmic_additional_commands,true,
+                       &spt.progress,&spt.is_abort);
+    gmic_instance.status.move_to(spt.status);
+  } catch (gmic_exception &e) {
+    spt.images.assign();
+    spt.images_names.assign();
+    CImg<char>::string(e.what()).move_to(spt.error_message);
+    if (spt.verbosity_mode>1) {
+      std::fprintf(cimg::output(),
+                   "\n[gmic_gimp]./error/ %s\n",
+                   spt.error_message.data());
+      std::fflush(cimg::output());
+    }
+  }
+#if !defined(__MACOSX__) && !defined(__APPLE__)
+  if (spt.is_thread) {
+    pthread_mutex_unlock(&spt.is_running);
+    pthread_exit(0);
+  }
+#endif
+  return 0;
+}
+
 // Handle GUI event functions.
 //----------------------------
 void create_parameters_gui(const bool);
@@ -1718,6 +1782,7 @@ void process_preview();
 
 // Secure function for invalidate preview.
 void _gimp_preview_invalidate() {
+  if (p_spt) ((st_process_thread*)p_spt)->is_abort = true;
   const int active_layer_id = gimp_image_get_active_layer(image_id);
   if (gimp_layer_get_edit_mask(active_layer_id))
     gimp_layer_set_edit_mask(active_layer_id,(gboolean)0);
@@ -2250,67 +2315,6 @@ void on_filter_doubleclicked(GtkWidget *const tree_view) {
   }
 }
 
-// Process image data with the G'MIC interpreter.
-//-----------------------------------------------
-
-// This structure stores the arguments required by the processing thread.
-struct st_process_thread {
-  CImgList<gmic_pixel_type> images;
-  CImgList<char> images_names;
-  CImg<char> error_message, status;
-  bool is_thread, is_preview;
-  unsigned int verbosity_mode;
-  const char *commands_line;
-  float progress;
-#if !defined(__MACOSX__) && !defined(__APPLE__)
-  pthread_mutex_t is_running, wait_lock;
-  pthread_cond_t wait_cond;
-  pthread_t thread;
-#endif
-};
-
-// Thread that runs the G'MIC interpreter.
-void *process_thread(void *arg) {
-  st_process_thread &spt = *(st_process_thread*)arg;
-#if !defined(__MACOSX__) && !defined(__APPLE__)
-  if (spt.is_thread) {
-    pthread_mutex_lock(&spt.is_running);
-    pthread_mutex_lock(&spt.wait_lock);
-    pthread_cond_signal(&spt.wait_cond);
-    pthread_mutex_unlock(&spt.wait_lock);
-  }
-#endif
-  try {
-    if (spt.verbosity_mode>1) {
-      CImg<char> cl = CImg<char>::string(spt.commands_line);
-      std::fprintf(cimg::output(),
-                   "\n[gmic_gimp]./%s/ %s\n",
-                   spt.is_preview?"preview":"apply",
-                   cl.data());
-      std::fflush(cimg::output());
-    }
-    gmic gmic_instance(spt.commands_line,spt.images,spt.images_names,gmic_additional_commands,true,&spt.progress);
-    gmic_instance.status.move_to(spt.status);
-  } catch (gmic_exception &e) {
-    spt.images.assign();
-    spt.images_names.assign();
-    CImg<char>::string(e.what()).move_to(spt.error_message);
-    if (spt.verbosity_mode>1) {
-      std::fprintf(cimg::output(),
-                   "\n[gmic_gimp]./error/ %s\n",
-                   spt.error_message.data());
-      std::fflush(cimg::output());
-    }
-  }
-#if !defined(__MACOSX__) && !defined(__APPLE__)
-  if (spt.is_thread) {
-    pthread_mutex_unlock(&spt.is_running);
-    pthread_exit(0);
-  }
-#endif
-  return 0;
-}
-
 // Process the selected image/layers.
 //------------------------------------
 void process_image(const char *const commands_line, const bool is_apply) {
@@ -2355,6 +2359,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   spt.verbosity_mode = get_verbosity_mode();
   spt.images_names.assign();
   spt.progress = -1;
+  spt.is_abort = false;
 
   const CImg<int> layers = get_input_layers(spt.images);
   CImg<int> layer_dimensions(spt.images.size(),4);
@@ -2398,6 +2403,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     const unsigned long time0 = cimg::time();
+    p_spt = (void*)&spt;
     spt.is_thread = true;
     pthread_mutex_init(&spt.is_running,0);
     pthread_mutex_init(&spt.wait_lock,0);
@@ -2446,6 +2452,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
     pthread_join(spt.thread,0);
     pthread_mutex_unlock(&spt.is_running);
     pthread_mutex_destroy(&spt.is_running);
+    p_spt = (void*)0;
 #else
     gimp_progress_update(0.5);
     process_thread(&spt);
@@ -2741,6 +2748,7 @@ void process_preview() {
     spt.commands_line = commands_line;
     spt.verbosity_mode = get_verbosity_mode();
     spt.progress = -1;
+    spt.is_abort = false;
 
     CImg<char> layer_name(256);
     const unsigned int input_mode = get_input_mode();
@@ -2864,9 +2872,36 @@ void process_preview() {
 
     // Run G'MIC.
     CImg<unsigned char> original_preview;
+    CImg<char> progress_label;
     if (spt.images) original_preview = spt.images[0];
     else original_preview.assign(wp,hp,1,4,0);
+
+#if !defined(__MACOSX__) && !defined(__APPLE__)
+    p_spt = (void*)&spt;
+    spt.is_thread = true;
+    pthread_mutex_init(&spt.is_running,0);
+    pthread_mutex_init(&spt.wait_lock,0);
+    pthread_cond_init(&spt.wait_cond,0);
+    pthread_mutex_lock(&spt.wait_lock);
+    pthread_create(&(spt.thread),0,process_thread,(void*)&spt);
+    pthread_cond_wait(&spt.wait_cond,&spt.wait_lock);  // Wait for the thread to lock the mutex.
+    pthread_mutex_unlock(&spt.wait_lock);
+    pthread_mutex_destroy(&spt.wait_lock);
+
+    while (pthread_mutex_trylock(&spt.is_running)) { // Loop that allows to get a responsive interface.
+      while (gtk_events_pending()) { gtk_main_iteration(); }
+      cimg::wait(333);
+    }
+
+    pthread_join(spt.thread,0);
+    pthread_mutex_unlock(&spt.is_running);
+    pthread_mutex_destroy(&spt.is_running);
+    p_spt = (void*)0;
+#else
+    gimp_progress_update(0.5);
     process_thread(&spt);
+    gimp_progress_update(1.0);
+#endif
 
     // Manage possible errors.
     if (spt.error_message) {
