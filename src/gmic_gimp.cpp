@@ -1312,7 +1312,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
           CImg<char>::string(label).move_to(gmic_entries);
           CImg<char>::string("_none_").move_to(gmic_commands);
           CImg<char>::string("_none_").move_to(gmic_preview_commands);
-          std::sprintf(line,"note = note{\"<span foreground=\"red\"><b>Warning : </b></span>This fave links to an "
+          cimg_sprintf(line,"note = note{\"<span foreground=\"red\"><b>Warning : </b></span>This fave links to an "
                        "unreferenced entry/set of G'MIC commands :\n\n"
                        "   - '<span foreground=\"purple\">%s</span>' as the entry name (%s%s%s%s%s).\n\n"
                        "   - '<span foreground=\"purple\">%s</span>' as the command to compute the filter "
@@ -1819,7 +1819,7 @@ void _gimp_preview_invalidate() {
 // Resize preview widget.
 void resize_preview(const unsigned int size=2) {
   CImg<char> tmp(256);
-  std::sprintf(tmp,
+  cimg_sprintf(tmp,
                "style \"gimp-large-preview\"\n"
                "{\n"
                "  GimpPreview::size = %u\n"
@@ -2112,7 +2112,7 @@ void on_dialog_add_fave_clicked(GtkWidget *const tree_view) {
       cimglist_for(gmic_faves,l) {
         std::fprintf(file,"%s\n",gmic_faves[l].data());
         if (!std::strcmp(label,gmic_entries[indice_faves + l].data()))
-          std::sprintf(label,"%s (%u)",basename.data(),++ind);
+          cimg_sprintf(label,"%s (%u)",basename.data(),++ind);
       }
       CImg<char> entry = gmic_entries[filter];
       for (char *p = std::strchr(label,'}'); p; p = std::strchr(p,'}')) *p = _rbrace;  // Convert '}' if necessary.

@@ -2545,7 +2545,7 @@ const char* gmic::path_rc(const char *const custom_path) {
     _path_rc = getenv("HOME");
     if (_path_rc) {
       path_tmp.assign(std::strlen(_path_rc) + 10);
-      std::sprintf(path_tmp,"%s/.config",_path_rc);
+      cimg_sprintf(path_tmp,"%s/.config",_path_rc);
       if (cimg::is_directory(path_tmp)) _path_rc = path_tmp;
     }
 #else
