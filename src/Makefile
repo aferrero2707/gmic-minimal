@@ -131,6 +131,10 @@ ifneq ($(OS),Darwin)
 CHECKIMAGE_CFLAGS = -Dgmic_check_image
 endif
 
+# Flags to enable more cancellation points in CImg library methods.
+# (may slow down the code a little bit).
+CIMG_ABORT_CFLAGS = -Dcimg_use_abort
+
 # Flags to enable parallelization using OpenMP.
 OPENMP_CFLAGS = -fopenmp -Dcimg_use_openmp
 OPENMP_LIBS = -lgomp
@@ -244,7 +248,7 @@ STATIC_CLI_LIBS = $(PARALLEL_LIBS) \
 
 # GIMP interface: Standard build.
 #--------------------------------
-STD_GIMP_CFLAGS = $(MANDATORY_CFLAGS) $(PNG_CFLAGS) $(CURL_CFLAGS) $(FFTW_CFLAGS) -Dcimg_use_rng
+STD_GIMP_CFLAGS = $(MANDATORY_CFLAGS) $(CIMG_ABORT_CFLAGS) $(PNG_CFLAGS) $(CURL_CFLAGS) $(FFTW_CFLAGS) -Dcimg_use_rng
 STD_GIMP_LIBS = $(MANDATORY_LIBS) $(PNG_LIBS) $(CURL_LIBS) $(FFTW_LIBS)
 ifeq ($(OS),Unix) # Unix.
 STD_GIMP_CFLAGS += $(PARALLEL_CFLAGS) $(OPENMP_CFLAGS) $(X11_CFLAGS)
@@ -261,7 +265,7 @@ endif
 
 # Libgmic interface: Standard build.
 #-----------------------------------
-STD_LIB_CFLAGS = $(MANDATORY_CFLAGS) $(PNG_CFLAGS) $(JPEG_CFLAGS) $(TIFF_CFLAGS) $(CURL_CFLAGS) $(FFTW_CFLAGS)
+STD_LIB_CFLAGS = $(MANDATORY_CFLAGS) $(CIMG_ABORT_CFLAGS) $(PNG_CFLAGS) $(JPEG_CFLAGS) $(TIFF_CFLAGS) $(CURL_CFLAGS) $(FFTW_CFLAGS)
 STD_LIB_LIBS = $(MANDATORY_LIBS) $(PNG_LIBS) $(JPEG_LIBS) $(TIFF_LIBS) $(CURL_LIBS) $(FFTW_LIBS)
 ifeq ($(OS),Unix) # Unix.
 STD_LIB_CFLAGS += $(PARALLEL_CFLAGS) $(OPENMP_CFLAGS) $(X11_CFLAGS)

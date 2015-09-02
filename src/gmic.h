@@ -151,6 +151,7 @@ namespace cimg_library {
 #include <locale>
 #define cimg_plugin "gmic.cpp"
 
+#ifdef cimg_use_abort
 static struct cimg_is_abort {
   bool value;
   volatile bool *ptr;
@@ -160,7 +161,8 @@ static struct cimg_is_abort {
 #define cimg_test_abort() if (*_cimg_is_abort.ptr && !omp_get_thread_num()) throw CImgAbortException("");
 #else
 #define cimg_test_abort() if (*_cimg_is_abort.ptr) throw CImgAbortException("")
-#endif
+#endif // #ifdef cimg_use_openmp
+#endif // #ifdef cimg_use_abort
 #include "./CImg.h"
 
 #if cimg_OS==2
