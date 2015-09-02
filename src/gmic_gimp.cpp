@@ -1782,7 +1782,7 @@ void process_preview();
 
 // Secure function for invalidate preview.
 void _gimp_preview_invalidate() {
-  if (p_spt) ((st_process_thread*)p_spt)->is_abort = true;
+  if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
   const int active_layer_id = gimp_image_get_active_layer(image_id);
   if (gimp_layer_get_edit_mask(active_layer_id))
     gimp_layer_set_edit_mask(active_layer_id,(gboolean)0);
@@ -2051,6 +2051,7 @@ void on_dialog_reset_clicked() {
 }
 
 void on_dialog_cancel_clicked() {
+  if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
   reset_button_parameters();
   _create_dialog_gui = false;
   gtk_main_quit();
@@ -2359,7 +2360,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
   spt.verbosity_mode = get_verbosity_mode();
   spt.images_names.assign();
   spt.progress = -1;
-  spt.is_abort = false;
 
   const CImg<int> layers = get_input_layers(spt.images);
   CImg<int> layer_dimensions(spt.images.size(),4);
@@ -2400,6 +2400,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   cimglist_for(gmic_button_parameters,l) set_filter_parameter(filter,gmic_button_parameters(l,0),"0");
 
   // Create processing thread and wait for its completion.
+  bool is_abort = false;
   if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     const unsigned long time0 = cimg::time();
@@ -2409,6 +2410,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
     pthread_mutex_init(&spt.wait_lock,0);
     pthread_cond_init(&spt.wait_cond,0);
     pthread_mutex_lock(&spt.wait_lock);
+    spt.is_abort = false;
     pthread_create(&(spt.thread),0,process_thread,(void*)&spt);
     pthread_cond_wait(&spt.wait_cond,&spt.wait_lock);  // Wait for the thread to lock the mutex.
     pthread_mutex_unlock(&spt.wait_lock);
@@ -2452,6 +2454,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
     pthread_join(spt.thread,0);
     pthread_mutex_unlock(&spt.is_running);
     pthread_mutex_destroy(&spt.is_running);
+    is_abort = spt.is_abort;
     p_spt = (void*)0;
 #else
     gimp_progress_update(0.5);
@@ -2478,7 +2481,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
       std::fflush(cimg::output());
     }
     status = GIMP_PDB_CALLING_ERROR;
-  } else {
+  } else if (!is_abort) {
 
     // Get output layers dimensions and check if input/output layers have compatible dimensions.
     unsigned int max_width = 0, max_height = 0, max_channels = 0;
@@ -2748,7 +2751,6 @@ void process_preview() {
     spt.commands_line = commands_line;
     spt.verbosity_mode = get_verbosity_mode();
     spt.progress = -1;
-    spt.is_abort = false;
 
     CImg<char> layer_name(256);
     const unsigned int input_mode = get_input_mode();
@@ -2876,6 +2878,7 @@ void process_preview() {
     if (spt.images) original_preview = spt.images[0];
     else original_preview.assign(wp,hp,1,4,0);
 
+    bool is_abort = false;
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     p_spt = (void*)&spt;
     spt.is_thread = true;
@@ -2883,25 +2886,26 @@ void process_preview() {
     pthread_mutex_init(&spt.wait_lock,0);
     pthread_cond_init(&spt.wait_cond,0);
     pthread_mutex_lock(&spt.wait_lock);
+    spt.is_abort = false;
     pthread_create(&(spt.thread),0,process_thread,(void*)&spt);
     pthread_cond_wait(&spt.wait_cond,&spt.wait_lock);  // Wait for the thread to lock the mutex.
     pthread_mutex_unlock(&spt.wait_lock);
     pthread_mutex_destroy(&spt.wait_lock);
-
     while (pthread_mutex_trylock(&spt.is_running)) { // Loop that allows to get a responsive interface.
       while (gtk_events_pending()) { gtk_main_iteration(); }
       cimg::wait(333);
     }
-
     pthread_join(spt.thread,0);
     pthread_mutex_unlock(&spt.is_running);
     pthread_mutex_destroy(&spt.is_running);
+    is_abort = spt.is_abort;
     p_spt = (void*)0;
 #else
     gimp_progress_update(0.5);
     process_thread(&spt);
     gimp_progress_update(1.0);
 #endif
+    if (is_abort) return;
 
     // Manage possible errors.
     if (spt.error_message) {
