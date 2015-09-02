@@ -90,6 +90,7 @@ GimpDrawable *drawable_preview = 0;            // The drawable used by the previ
 GtkWidget *dialog_window = 0;                  // The plug-in dialog window.
 GtkWidget *left_pane = 0;                      // The left pane, containing the preview window.
 GtkWidget *gui_preview = 0;                    // The preview window.
+GtkWidget *gui_preview_zoom_buttons = 0;       // The zoom buttons attached to the preview widget.
 GtkWidget *relabel_hbox = 0;                   // The entire widget to relabel filter.
 GtkWidget *relabel_entry = 0;                  // The text entry to relabel filter.
 GtkWidget *tree_view = 0;                      // The filter treeview.
@@ -1239,16 +1240,20 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
           if (err>=3) { // Filter has a specified preview command.
             cimg::strpare(preview_command,' ',false,true);
             char *const preview_mode = std::strchr(preview_command,'(');
+            unsigned int is_zoom_buttons = 1;
             double factor = 1;
             char sep = 0;
-            if (preview_mode && cimg_sscanf(preview_mode + 1,"%lf%c",&factor,&sep)==2 && factor>=0 && sep==')')
+            if (preview_mode &&
+                (cimg_sscanf(preview_mode + 1,"%lf)(%u%c",&factor,&is_zoom_buttons,&sep)==3 ||
+                 cimg_sscanf(preview_mode + 1,"%lf%c",&factor,&sep)==2) &&
+                factor>=0 && is_zoom_buttons<=1 && sep==')')
               *preview_mode = 0;
-            else factor = -1;
+            else { factor = -1; is_zoom_buttons = 1; }
             CImg<char>::string(preview_command).move_to(gmic_preview_commands);
-            CImg<double>::vector(factor).move_to(gmic_preview_factors);
+            CImg<double>::vector(factor,(double)is_zoom_buttons).move_to(gmic_preview_factors);
           } else {
             CImg<char>::string("_none_").move_to(gmic_preview_commands);
-            CImg<double>::vector(-1).move_to(gmic_preview_factors);
+            CImg<double>::vector(-1,1).move_to(gmic_preview_factors);
           }
           gtk_tree_store_append(tree_view_store,&iter,level?&parent[level - 1]:0);
           gtk_tree_store_set(tree_view_store,&iter,0,gmic_entries.size() - 1,1,nentry,
@@ -1340,7 +1345,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
                        preview_found>=0?"</i>":"");
 
           CImg<char>::string(line).move_to(gmic_arguments);
-          CImg<double>::vector(0).move_to(gmic_preview_factors);
+          CImg<double>::vector(0,0).move_to(gmic_preview_factors);
           set_filter_nbparams(gmic_entries.size() - 1,0);
         } else { // Entry found.
           CImg<char>::string(label).move_to(gmic_entries);
@@ -1695,6 +1700,7 @@ void set_preview_factor() {
   const unsigned int filter = get_current_filter();
   if (filter && gmic_preview_factors[filter] && GIMP_IS_PREVIEW(gui_preview)) {
     double factor = gmic_preview_factors(filter,0);
+    bool is_zoom_buttons = (bool)gmic_preview_factors(filter,1);
     if (factor>=0) {
       if (!factor) { // Compute factor so that 1:1 preview of the image is displayed.
         int _pw = 0, _ph = 0;
@@ -1707,7 +1713,9 @@ void set_preview_factor() {
         factor = std::sqrt((dw*dw + dh*dh)/(pw*pw + ph*ph));
       }
       gimp_zoom_model_zoom(gimp_zoom_preview_get_model(GIMP_ZOOM_PREVIEW(gui_preview)),GIMP_ZOOM_TO,factor);
-    }
+    } else is_zoom_buttons = true;
+    if (is_zoom_buttons) gtk_widget_show(gui_preview_zoom_buttons);
+    else gtk_widget_hide(gui_preview_zoom_buttons);
   }
 }
 
@@ -1821,6 +1829,9 @@ void _gimp_preview_invalidate() {
     GtkBoxChild *const child1 = (GtkBoxChild*)children1->data;
     GtkWidget *const preview_button = child1->widget;
     g_signal_connect(preview_button,"toggled",G_CALLBACK(on_preview_button_changed),0);
+    GList *const children2 = children1->next;
+    GtkBoxChild *const child2 = (GtkBoxChild*)children2->data;
+    gui_preview_zoom_buttons = child2->widget;
     gtk_widget_show(gui_preview);
     gtk_box_pack_end(GTK_BOX(left_pane),gui_preview,true,true,0);
     g_signal_connect(gui_preview,"invalidated",G_CALLBACK(process_preview),0);
