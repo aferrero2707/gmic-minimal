@@ -107,11 +107,7 @@ DEBUG_CFLAGS = -ansi -pedantic -Dcimg_verbosity=3 -g -fsanitize=address # -fsani
 
 # Flags to enable optimizations.
 ifeq ($(notdir $(CC)),g++)
-ifeq ($(OS),Darwin)
 OPT_CFLAGS = -O2 -mtune=generic
-else
-OPT_CFLAGS = -O2 -fno-ipa-sra -mtune=generic
-endif
 else
 ifeq ($(notdir $(CC)),icpc)
 OPT_CFLAGS = -fast
