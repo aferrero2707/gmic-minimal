@@ -2888,7 +2888,7 @@ void process_preview() {
     pthread_mutex_lock(&spt.wait_lock);
     spt.is_abort = false;
     pthread_create(&(spt.thread),0,process_thread,(void*)&spt);
-    pthread_cond_wait(&spt.wait_cond,&spt.wait_lock);  // Wait for the thread to lock the mutex.
+    pthread_cond_wait(&spt.wait_cond,&spt.wait_lock); // Wait for the thread to lock the mutex.
     pthread_mutex_unlock(&spt.wait_lock);
     pthread_mutex_destroy(&spt.wait_lock);
     while (pthread_mutex_trylock(&spt.is_running)) { // Loop that allows to get a responsive interface.
@@ -3889,6 +3889,7 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
 
       // Display dialog window.
       if (create_dialog_gui()) {
+        if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
         process_image(0,false);
         const char *const commands_line = get_commands_line(false);
         if (commands_line) { // Remember command line for the next use of the filter.
