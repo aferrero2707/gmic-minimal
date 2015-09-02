@@ -1780,6 +1780,12 @@ void create_parameters_gui(const bool);
 void process_image(const char *const, const bool is_apply);
 void process_preview();
 
+void on_preview_button_changed(const GtkToggleButton *const) {
+  cimg::mutex(25);
+  if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
+  cimg::mutex(25,0);
+}
+
 // Secure function for invalidate preview.
 void _gimp_preview_invalidate() {
   cimg::mutex(25);
@@ -1810,6 +1816,11 @@ void _gimp_preview_invalidate() {
     }
     drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(preview_image_id?preview_image_id:image_id));
     gui_preview = gimp_zoom_preview_new(drawable_preview);
+    GtkWidget *controls = gimp_preview_get_controls(GIMP_PREVIEW(gui_preview));
+    GList *const children1 = ((GtkBox*)controls)->children;
+    GtkBoxChild *const child1 = (GtkBoxChild*)children1->data;
+    GtkWidget *const preview_button = child1->widget;
+    g_signal_connect(preview_button,"toggled",G_CALLBACK(on_preview_button_changed),0);
     gtk_widget_show(gui_preview);
     gtk_box_pack_end(GTK_BOX(left_pane),gui_preview,true,true,0);
     g_signal_connect(gui_preview,"invalidated",G_CALLBACK(process_preview),0);
