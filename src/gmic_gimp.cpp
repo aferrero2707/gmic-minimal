@@ -893,8 +893,8 @@ const char *t(const char *const s) {
     }
     _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
        "(zoom factor has been modified)</span>",
-       "\n<span color=\"#AA0000\"><b>Advertencia:</b> Previsualizaci\303\263n puede ser inexacta\n"
-       "(factor de zoom se ha modificado)</span>");
+       "\n<span color=\"#AA0000\"><b>Advertencia:</b> La vista previa puede ser inexacta\n"
+       "(el factor de zoom ha sido modificado)</span>");
     _t("G'MIC for GIMP","G'MIC para GIMP");
     _t("<i>Select a filter...</i>","<i>Selecciona un filtro...</i>");
     _t("<i>No parameters to set...</i>","<i>Sin par\303\241metros...</i>");
