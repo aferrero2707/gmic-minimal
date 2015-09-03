@@ -402,7 +402,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC per al GIMP");
     _t("<i>Select a filter...</i>","<i>Selecciona un filtre...</i>");
     _t("<i>No parameters to set...</i>","<i>Sense par\303\240metres...</i>");
-    _t("<b> Input / Output : </b>","<b> Entrades / Sortides : </b>");
+    _t("<b> Input / Output </b>","<b> Entrades / Sortides </b>");
     _t("Input layers...","Capes d'entrada...");
     _t("None","Cap");
     _t("Active (default)","Actiu (predet.)");
@@ -442,7 +442,7 @@ const char *t(const char *const s) {
     _t("Small","Petita");
     _t("Normal","Normal");
     _t("Large","Gran");
-    _t(" Available filters (%u) :"," Filtres disponibles (%u) :");
+    _t(" Available filters (%u)"," Filtres disponibles (%u)");
     _t("Update","Actualitzaci\303\263");
     _t("Rename","Canviar");
   }
@@ -457,7 +457,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC voor GIMP");
     _t("<i>Select a filter...</i>","<i>Kies een filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Geen parameters nodig...</i>");
-    _t("<b> Input / Output : </b>","<b> Input / Output : </b>");
+    _t("<b> Input / Output </b>","<b> Input / Output </b>");
     _t("Input layers...","Input lagen...");
     _t("None","Geen");
     _t("Active (default)","Actieve laag (standaard)");
@@ -497,7 +497,7 @@ const char *t(const char *const s) {
     _t("Small","Klein");
     _t("Normal","Normale");
     _t("Large","Groot");
-    _t(" Available filters (%u) :"," Beschikbare filters (%u) :");
+    _t(" Available filters (%u)"," Beschikbare filters (%u)");
     _t("Rename","Hernoemen");
   }
 
@@ -515,7 +515,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC pour GIMP");
     _t("<i>Select a filter...</i>","<i>Choisissez un filtre...</i>");
     _t("<i>No parameters to set...</i>","<i>Pas de param&#232;tres...</i>");
-    _t("<b> Input / Output : </b>","<b> Entr&#233;es / Sorties : </b>");
+    _t("<b> Input / Output </b>","<b> Entr&#233;es / Sorties </b>");
     _t("Input layers...","Calques d'entr\303\251e...");
     _t("None","Aucun");
     _t("Active (default)","Actif (d\303\251faut)");
@@ -555,7 +555,7 @@ const char *t(const char *const s) {
     _t("Small","Petit");
     _t("Normal","Normal");
     _t("Large","Grand");
-    _t(" Available filters (%u) :"," Filtres disponibles (%u) :");
+    _t(" Available filters (%u)"," Filtres disponibles (%u)");
     _t("Update","Actualiser");
     _t("Rename","Renommer");
     _t("Add filter to faves","Ajouter le filtre aux favoris");
@@ -579,7 +579,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC f\303\274r GIMP");
     _t("<i>Select a filter...</i>","<i>W\303\244hlen Sie einen Filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Keine w\303\244hlbaren Parameter...</i>");
-    _t("<b> Input / Output : </b>","<b> Eingabe / Ausgabe : </b>");
+    _t("<b> Input / Output </b>","<b> Eingabe / Ausgabe </b>");
     _t("Input layers...","Eingabeebenen...");
     _t("None","Keine");
     _t("Active (default)","Aktive (Standard)");
@@ -619,7 +619,7 @@ const char *t(const char *const s) {
     _t("Small","Klein");
     _t("Normal","Normal");
     _t("Large","Gross");
-    _t(" Available filters (%u) :"," Verf\303\274gbare Filter (%u) :");
+    _t(" Available filters (%u)"," Verf\303\274gbare Filter (%u)");
     _t("Rename","Umbenennen");
     _t("Add filter to faves","Filter zu Favoriten hinzuf\303\274gen");
     _t("Remove filter from faves","Filter aus Favoriten entfernen");
@@ -642,7 +642,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC per GIMP");
     _t("<i>Select a filter...</i>","<i>Sciegliete un Filtro...</i>");
     _t("<i>No parameters to set...</i>","<i>Filtro senza Parametri...</i>");
-    _t("<b> Input / Output : </b>","<b> Input / Output : </b>");
+    _t("<b> Input / Output </b>","<b> Input / Output </b>");
     _t("Input layers...","Input da Layers...");
     _t("None","Nessuno");
     _t("Active (default)","Layer Attivo (default)");
@@ -682,7 +682,7 @@ const char *t(const char *const s) {
     _t("Small","Piccolo");
     _t("Normal","Normale");
     _t("Large","Grande");
-    _t(" Available filters (%u) :"," Filtri disponibili (%u) :");
+    _t(" Available filters (%u)"," Filtri disponibili (%u)");
     _t("Update","Aggiornare");
     _t("Add filter to faves","Aggiungi filtro ai favoriti");
     _t("Remove filter from faves","Rimuovi filtro dai favoriti");
@@ -702,7 +702,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC dla GIMP");
     _t("<i>Select a filter...</i>","<i>Wybierz filtr...</i>");
     _t("<i>No parameters to set...</i>","<i>Brak parametr\304\205w do ustawienia...</i>");
-    _t("<b> Input / Output : </b>","<b> Wej\305\233cie / Wyj\305\233cie : </b>");
+    _t("<b> Input / Output </b>","<b> Wej\305\233cie / Wyj\305\233cie </b>");
     _t("Input layers...","Warstwy wej\305\233cia...");
     _t("None","Brak");
     _t("Active (default)","Aktywna (domy\305\233lnie)");
@@ -742,7 +742,7 @@ const char *t(const char *const s) {
     _t("Small","Mala");
     _t("Normal","Normalne");
     _t("Large","Duza");
-    _t(" Available filters (%u) :"," Dost\304\231pne filtry (%u) :");
+    _t(" Available filters (%u)"," Dost\304\231pne filtry (%u)");
     _t("Update","Uaktualnij");
     _t("Rename","Zmiana nazwy");
   }
@@ -757,7 +757,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC para o GIMP");
     _t("<i>Select a filter...</i>","<i>Escolha um filtro</i>");
     _t("<i>No parameters to set...</i>","<i>Sem par\303\242metros para configurar...</i>");
-    _t("<b> Input / Output : </b>","<b> Entrada / Saida : </b>");
+    _t("<b> Input / Output </b>","<b> Entrada / Saida </b>");
     _t("Input layers...","Camadas de Entrada...");
     _t("None","Nenhuma");
     _t("Active (default)","Ativo (Padr\303\243o)");
@@ -797,7 +797,7 @@ const char *t(const char *const s) {
     _t("Small","Pequeno");
     _t("Normal","Normal");
     _t("Large","Grande");
-    _t(" Available filters (%u) :"," Filtros dispon\303\255veis (%u) :");
+    _t(" Available filters (%u)"," Filtros dispon\303\255veis (%u)");
     _t("Update","Atualizar");
     _t("Rename","Renomear");
   }
@@ -812,7 +812,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC za GIMP");
     _t("<i>Select a filter...</i>","<i>Izaberite filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Nema parametara za pode\305\241avanje...</i>");
-    _t("<b> Input / Output : </b>","<b> Ulazni podaci / Rezultati : </b>");
+    _t("<b> Input / Output </b>","<b> Ulazni podaci / Rezultati </b>");
     _t("Input layers...","Ulazni slojevi...");
     _t("None","Nijedan");
     _t("Active (default)","Aktivan (podrazumevana opcija)");
@@ -852,7 +852,7 @@ const char *t(const char *const s) {
     _t("Small","Mali");
     _t("Normal","Normalno");
     _t("Large","Veliki");
-    _t(" Available filters (%u) :"," Raspolo\305\276ivi filteri (%u) :");
+    _t(" Available filters (%u)"," Raspolo\305\276ivi filteri (%u)");
     _t("Rename","Preimenovati");
   }
 
@@ -866,7 +866,7 @@ const char *t(const char *const s) {
     _t("G'MIC for GIMP","G'MIC para GIMP");
     _t("<i>Select a filter...</i>","<i>Selecciona un filtro...</i>");
     _t("<i>No parameters to set...</i>","<i>Sin par\303\241metros...</i>");
-    _t("<b> Input / Output : </b>","<b> Entrada / Salida : </b>");
+    _t("<b> Input / Output </b>","<b> Entrada / Salida </b>");
     _t("Input layers...","Capas de entrada...");
     _t("None","Ninguna");
     _t("Active (default)","Activa (predet.)");
@@ -906,7 +906,7 @@ const char *t(const char *const s) {
     _t("Small","Pequena");
     _t("Normal","Normal");
     _t("Large","Grande");
-    _t(" Available filters (%u) :"," Filtros disponibles (%u) :");
+    _t(" Available filters (%u)"," Filtros disponibles (%u)");
     _t("Update","Actualitzaci\303\263n");
     _t("Rename","Renombrar");
     _t("Update","Aggiornare");
@@ -920,7 +920,7 @@ const char *t(const char *const s) {
   // English translation (default)
   if (!s) {
     static const char *const ns = "Filters update from Internet (partially) failed !\n\n"
-      "Unable to reach these filters sources :\n";
+      "Unable to reach these filters sources:\n";
     return ns;
   }
   return s;
@@ -990,7 +990,7 @@ void flush_tree_view(GtkWidget *const tree_view) {
   gtk_tree_view_remove_column(GTK_TREE_VIEW(tree_view),gtk_tree_view_get_column(GTK_TREE_VIEW(tree_view),0));
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   CImg<char> tree_view_title(64);
-  cimg_snprintf(tree_view_title,tree_view_title.width(),t(" Available filters (%u) :"),nb_available_filters);
+  cimg_snprintf(tree_view_title,tree_view_title.width(),t(" Available filters (%u)"),nb_available_filters);
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(tree_view_title,renderer,"markup",1,NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view),column);
 }
@@ -1028,7 +1028,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
   gmic_preview_commands.assign(1);
   gmic_preview_factors.assign(1);
   gmic_arguments.assign(1);
-  if (try_net_update && !is_silent) gimp_progress_init(" G'MIC : Update filters...");
+  if (try_net_update && !is_silent) gimp_progress_init(" G'MIC: Update filters...");
 
   // Get filter definition files from external web servers.
   CImg<char> filename(1024);
@@ -1042,7 +1042,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
     const char *const s_basename = gmic::basename(sources[l]);
     CImg<char> _s_basename = CImg<char>::string(s_basename);
     cimg::strwindows_reserved(_s_basename);
-    if (!is_silent) gimp_progress_set_text_printf(" G'MIC : Update filters '%s'...",s_basename);
+    if (!is_silent) gimp_progress_set_text_printf(" G'MIC: Update filters '%s'...",s_basename);
     cimg_snprintf(filename,filename.width(),"%s%s",
                   gmic::path_rc(),_s_basename.data());
 
@@ -1090,7 +1090,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
     if (!is_silent) gimp_progress_pulse();
     std::remove(filename_tmp);
   }
-  if (!is_silent) gimp_progress_set_text(" G'MIC : Update filters...");
+  if (!is_silent) gimp_progress_set_text(" G'MIC: Update filters...");
 
   // Read local source files.
   CImgList<char> _gmic_additional_commands;
@@ -1331,8 +1331,8 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
           CImg<char>::string(label).move_to(gmic_entries);
           CImg<char>::string("_none_").move_to(gmic_commands);
           CImg<char>::string("_none_").move_to(gmic_preview_commands);
-          cimg_sprintf(line,"note = note{\"<span foreground=\"red\"><b>Warning : </b></span>This fave links to an "
-                       "unreferenced entry/set of G'MIC commands :\n\n"
+          cimg_sprintf(line,"note = note{\"<span foreground=\"red\"><b>Warning: </b></span>This fave links to an "
+                       "unreferenced entry/set of G'MIC commands:\n\n"
                        "   - '<span foreground=\"purple\">%s</span>' as the entry name (%s%s%s%s%s).\n\n"
                        "   - '<span foreground=\"purple\">%s</span>' as the command to compute the filter "
                        "(%s%s%s%s%s).\n\n"
@@ -1383,7 +1383,7 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
                            2,tree_view_sort_str(label),-1);
       } else if (get_verbosity_mode()>1)
         std::fprintf(cimg::output(),
-                     "\n[gmic_gimp]./update/ Malformed line %u in fave file '%s' : '%s'.\n",
+                     "\n[gmic_gimp]./update/ Malformed line %u in fave file '%s': '%s'.\n",
                      line_nb,filename_gmic_faves.data(),line.data());
     }
     std::fclose(file_gmic_faves);
@@ -2391,19 +2391,19 @@ void process_image(const char *const commands_line, const bool is_apply) {
     GtkWidget *const markup2ascii = gtk_label_new(0);
     gtk_label_set_markup(GTK_LABEL(markup2ascii),gmic_entries[filter].data());
     CImg<char>::string(gtk_label_get_text(GTK_LABEL(markup2ascii))).move_to(progress_label);
-    gimp_progress_init_printf(" G'MIC : %s...",progress_label.data());
+    gimp_progress_init_printf(" G'MIC: %s...",progress_label.data());
     const char *const cl = _commands_line +
       (!std::strncmp(_commands_line,"-v -99 ",7)?7:
        !std::strncmp(_commands_line,"-v 0 ",5)?5:
        !std::strncmp(_commands_line,"-debug ",7)?7:0);
-    cimg_snprintf(new_label,new_label.width(),"[G'MIC] %s : %s",gtk_label_get_text(GTK_LABEL(markup2ascii)),cl);
+    cimg_snprintf(new_label,new_label.width(),"[G'MIC] %s: %s",gtk_label_get_text(GTK_LABEL(markup2ascii)),cl);
     gmic::ellipsize(new_label,240,false);
     gtk_widget_destroy(markup2ascii);
   } else {
-    cimg_snprintf(new_label,new_label.width(),"G'MIC : %s...",_commands_line);
+    cimg_snprintf(new_label,new_label.width(),"G'MIC: %s...",_commands_line);
     gmic::ellipsize(new_label,240,false);
     gimp_progress_init_printf("%s",new_label.data());
-    cimg_snprintf(new_label,new_label.width(),"[G'MIC] : %s",_commands_line);
+    cimg_snprintf(new_label,new_label.width(),"[G'MIC]: %s",_commands_line);
     gmic::ellipsize(new_label,240,false);
   }
 
@@ -2492,12 +2492,12 @@ void process_image(const char *const commands_line, const bool is_apply) {
       if (!(i%3)) {
         const unsigned long t = (cimg::time() - time0)/1000;
         if (used_memory)
-          gimp_progress_set_text_printf(" G'MIC : %s... [%lu second%s, %u Mb]",
+          gimp_progress_set_text_printf(" G'MIC: %s... [%lu second%s, %u Mb]",
                                         progress_label.data(),
                                         t,t!=1?"s":"",
                                         used_memory);
         else
-          gimp_progress_set_text_printf(" G'MIC : %s... [%lu second%s]",
+          gimp_progress_set_text_printf(" G'MIC: %s... [%lu second%s]",
                                         progress_label.data(),
                                         t,t!=1?"s":"");
       }
@@ -2530,7 +2530,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
       gtk_dialog_run(GTK_DIALOG(message));
       gtk_widget_destroy(message);
     } else {
-      std::fprintf(cimg::output(),"\n[gmic_gimp]./error/ When running command '%s', this error occured :\n%s\n",
+      std::fprintf(cimg::output(),"\n[gmic_gimp]./error/ When running command '%s', this error occured:\n%s\n",
                    _commands_line,spt.error_message.data());
       std::fflush(cimg::output());
     }
@@ -2590,7 +2590,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
           gimp_drawable_merge_shadow(drawable->drawable_id,true);
           gimp_drawable_update(drawable->drawable_id,x1,y1,x2 - x1,y2 - y1);
           gimp_drawable_detach(drawable);
-        } else { // Indirect replacement : create new layers.
+        } else { // Indirect replacement: create new layers.
           gimp_selection_none(image_id);
 #if GIMP_MINOR_VERSION<=6
         const int layer_pos = gimp_image_get_layer_position(image_id,layers[0]);
@@ -2818,7 +2818,7 @@ void process_preview() {
            (input_mode==4 && nb_layers==1 && !gimp_drawable_get_visible(*layers)) ||
            (input_mode==5 && nb_layers==1))) {
 
-        // Single input layer : get the default thumbnail provided by GIMP.
+        // Single input layer: get the default thumbnail provided by GIMP.
         spt.images.assign(1);
         spt.images_names.assign(1);
 
@@ -2882,7 +2882,7 @@ void process_preview() {
         CImg<char>::string(layer_name).move_to(spt.images_names[0]);
       } else {
 
-        // Multiple input layers : compute a 'hand-made' set of thumbnails.
+        // Multiple input layers: compute a 'hand-made' set of thumbnails.
         CImgList<unsigned char> images_uchar;
         const CImg<int> layers = get_input_layers(images_uchar);
         if (images_uchar) {
@@ -3117,7 +3117,7 @@ void create_parameters_gui(const bool reset_params) {
     gtk_frame_set_label(GTK_FRAME(right_frame),NULL);
   } else { // Filter selected -> Build the table for setting the parameters.
     CImg<char> s_label(256);
-    cimg_snprintf(s_label,s_label.width(),"<b>  %s :  </b>",gmic_entries[filter].data());
+    cimg_snprintf(s_label,s_label.width(),"<b>  %s  </b>",gmic_entries[filter].data());
     GtkWidget *const frame_title = gtk_label_new(NULL);
     gtk_widget_show(frame_title);
     gtk_label_set_markup(GTK_LABEL(frame_title),s_label);
@@ -3686,7 +3686,7 @@ bool create_dialog_gui() {
 
   GtkWidget *const frame_title = gtk_label_new(NULL);
   gtk_widget_show(frame_title);
-  gtk_label_set_markup(GTK_LABEL(frame_title),t("<b> Input / Output : </b>"));
+  gtk_label_set_markup(GTK_LABEL(frame_title),t("<b> Input / Output </b>"));
   gtk_frame_set_label_widget(GTK_FRAME(left_frame),frame_title);
 
   GtkWidget *const left_table = gtk_table_new(5,1,false);
