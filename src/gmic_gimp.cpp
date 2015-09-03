@@ -97,6 +97,7 @@ GtkWidget *tree_view = 0;                      // The filter treeview.
 GtkWidget *tree_mode_stock = 0;                // A temporary stock button for the expand/collapse button.
 GtkWidget *tree_mode_button = 0;               // Expand/Collapse button for the treeview.
 GtkWidget *refresh_stock = 0;                  // A temporary stock button for the refresh button.
+GtkWidget *reset_zoom_stock = 0;               // A temporary stock button for the reset zoom button.
 GtkWidget *fave_stock = 0;                     // A temporary stock button for the fave button.
 GtkWidget *delete_stock = 0;                   // A temporary stock button for the fave button 2.
 GtkWidget *fave_add_button = 0;                // Fave button.
@@ -507,9 +508,10 @@ const char *t(const char *const s) {
         "Acc&#232;s impossible aux sources de filtres :\n";
       return ns;
     }
-    _t("<small><b>Warning:</b> Preview may be inaccurate (zoom factor has been modified)</small>",
-       "<small><b>Avertissement:</b> L'aper\303\247u est probablement inexact "
-       "(le facteur de zoom a \303\251t\303\251 modifi\303\251)</small>");
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Avertissement:</b> L'aper\303\247u est probablement inexact\n"
+       "(le facteur de zoom a \303\251t\303\251 modifi\303\251)</span>");
     _t("G'MIC for GIMP","G'MIC pour GIMP");
     _t("<i>Select a filter...</i>","<i>Choisissez un filtre...</i>");
     _t("<i>No parameters to set...</i>","<i>Pas de param&#232;tres...</i>");
@@ -570,6 +572,10 @@ const char *t(const char *const s) {
         "Kann diese Filter Quellen erreichen :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Achtung:</b> Vorschau evtl. inkorrekt\n"
+       "wegen ge\303\244nderter Vergr\303\266\303\237erung.﻿</span>");
     _t("G'MIC for GIMP","G'MIC f\303\274r GIMP");
     _t("<i>Select a filter...</i>","<i>W\303\244hlen Sie einen Filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Keine w\303\244hlbaren Parameter...</i>");
@@ -629,6 +635,10 @@ const char *t(const char *const s) {
         "Impossibile raggiungere queste fonti filtri :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Attenzione:</b> L'anteprima pu\303\262 essere inaccurata\n"
+       "(il fattore di zoom \303\250 stato modificato)</span>");
     _t("G'MIC for GIMP","G'MIC per GIMP");
     _t("<i>Select a filter...</i>","<i>Sciegliete un Filtro...</i>");
     _t("<i>No parameters to set...</i>","<i>Filtro senza Parametri...</i>");
@@ -1796,6 +1806,10 @@ void on_preview_button_changed(GtkToggleButton *const toggle_button) {
   if (!gtk_toggle_button_get_active(toggle_button)) gtk_widget_hide(gui_preview_warning);
 }
 
+void on_dialog_reset_zoom_button_clicked(GtkCheckButton *const) {
+  set_preview_factor();
+}
+
 // Secure function for invalidate preview.
 void _gimp_preview_invalidate() {
   cimg::mutex(25);
@@ -1832,10 +1846,19 @@ void _gimp_preview_invalidate() {
     GtkWidget *const preview_button = child1->widget;
     g_signal_connect(preview_button,"toggled",G_CALLBACK(on_preview_button_changed),0);
 
-    /*    GList *const children2 = children1->next;
+    // Add 'reset zoom' button.
+    GList *const children2 = children1->next;
     GtkBoxChild *const child2 = (GtkBoxChild*)children2->data;
-    GtkWidget *const zoom_button = child2->widget;
-    */
+    GtkWidget
+      *const zoom_buttons = child2->widget,
+      *const reset_zoom_button = gtk_button_new();
+    reset_zoom_stock = gtk_button_new_from_stock(GTK_STOCK_REFRESH);
+    GtkWidget *const reset_zoom_image = gtk_button_get_image(GTK_BUTTON(reset_zoom_stock));
+    gtk_button_set_image(GTK_BUTTON(reset_zoom_button),reset_zoom_image);
+    gtk_widget_show(reset_zoom_button);
+    gtk_box_pack_start(GTK_BOX(zoom_buttons),reset_zoom_button,false,false,0);
+    gtk_widget_set_tooltip_text(reset_zoom_button,t("Reset zoom"));
+    g_signal_connect(reset_zoom_button,"clicked",G_CALLBACK(on_dialog_reset_zoom_button_clicked),0);
 
     gtk_widget_show(gui_preview);
     gtk_box_pack_end(GTK_BOX(left_pane),gui_preview,true,true,0);
@@ -3118,6 +3141,7 @@ void create_parameters_gui(const bool reset_params) {
       } else break;
     }
 
+    unsigned int current_table_line = 0;
     if (!nb_arguments) { // Filter requires no parameters -> 1x1 table with default message.
       table = gtk_table_new(1,1,false);
       gtk_widget_show(table);
@@ -3141,7 +3165,7 @@ void create_parameters_gui(const bool reset_params) {
 
       // Parse arguments list and add recognized one to the table.
       if (event_infos) delete[] event_infos; event_infos = new void*[2*nb_arguments];
-      unsigned int current_argument = 0, current_table_line = 0;
+      unsigned int current_argument = 0;
       const bool is_fave = filter>=indice_faves;
       for (const char *argument = gmic_arguments[filter].data(); *argument; ) {
         int err = cimg_sscanf(argument,"%255[^=]=%31[ a-zA-Z_](%65535[^)]",
@@ -3551,6 +3575,14 @@ void create_parameters_gui(const bool reset_params) {
       }
       set_filter_nbparams(filter,current_argument);
     }
+
+    // Add preview warning message (initially hidden).
+    gui_preview_warning = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(gui_preview_warning),
+                         t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+                           "(zoom factor has been modified)</span>"));
+    gtk_table_attach(GTK_TABLE(table),gui_preview_warning,0,3,(int)current_table_line,(int)current_table_line + 1,
+                     (GtkAttachOptions)(GTK_EXPAND | GTK_FILL),GTK_SHRINK,0,0);
   }
 
   gtk_container_add(GTK_CONTAINER(right_frame),table);
@@ -3651,11 +3683,6 @@ bool create_dialog_gui() {
   gtk_widget_show(left_frame);
   gtk_container_set_border_width(GTK_CONTAINER(left_frame),4);
   gtk_container_add(GTK_CONTAINER(left_align),left_frame);
-
-  gui_preview_warning = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(gui_preview_warning),
-                       t("<small><b>Warning:</b> Preview may be inaccurate (zoom factor has been modified)</small>"));
-  gtk_box_pack_end(GTK_BOX(left_pane),gui_preview_warning,false,false,0);
 
   GtkWidget *const frame_title = gtk_label_new(NULL);
   gtk_widget_show(frame_title);
