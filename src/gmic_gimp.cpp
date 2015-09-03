@@ -399,6 +399,10 @@ const char *t(const char *const s) {
         "No es possible arribar a aquestes fonts de filtres :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Av\303\255s:</b> Previsualitzaci\303\263 pot ser inexacta\n"
+       "(factor de zoom s'ha modificat)</span>");
     _t("G'MIC for GIMP","G'MIC per al GIMP");
     _t("<i>Select a filter...</i>","<i>Selecciona un filtre...</i>");
     _t("<i>No parameters to set...</i>","<i>Sense par\303\240metres...</i>");
@@ -445,6 +449,7 @@ const char *t(const char *const s) {
     _t(" Available filters (%u)"," Filtres disponibles (%u)");
     _t("Update","Actualitzaci\303\263");
     _t("Rename","Canviar");
+    _t("Reset zoom","Restablir zoom");
   }
 
   // Dutch translation
@@ -454,6 +459,10 @@ const char *t(const char *const s) {
         "Kan deze filters bronnen te bereiken :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Waarschuwing:</b> Voorbeeld kan onnauwkeurig zijn\n"
+       "(zoomfactor is gewijzigd)</span>");
     _t("G'MIC for GIMP","G'MIC voor GIMP");
     _t("<i>Select a filter...</i>","<i>Kies een filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Geen parameters nodig...</i>");
@@ -499,6 +508,7 @@ const char *t(const char *const s) {
     _t("Large","Groot");
     _t(" Available filters (%u)"," Beschikbare filters (%u)");
     _t("Rename","Hernoemen");
+    _t("Reset zoom","Reset zoom");
   }
 
   // French translation
@@ -563,6 +573,7 @@ const char *t(const char *const s) {
     _t("Update filters","Actualiser les filtres");
     _t("Enable Internet updates","Autoriser les mises \303\240 jour Internet");
     _t("Expand/collapse","D\303\251plier/Replier");
+    _t("Reset zoom","R\303\251initialize le zoom");
   }
 
   // German translation
@@ -626,6 +637,7 @@ const char *t(const char *const s) {
     _t("Update filters","Filter updaten");
     _t("Enable Internet updates","Internet-Updates aktivieren");
     _t("Expand/collapse","Ein-/Ausklappen﻿");
+    _t("Reset zoom","Reset Zoom");
   }
 
   // Italian translation
@@ -689,6 +701,7 @@ const char *t(const char *const s) {
     _t("Update filters","Aggiorna filtri");
     _t("Enable Internet updates","Abilita aggiornamenti Internet");
     _t("Expand/collapse","Espandi/comprimi");
+    _t("Reset zoom","Reimpostare lo zoom");
   }
 
   // Polish translation
@@ -699,6 +712,10 @@ const char *t(const char *const s) {
         "Brak dost\304\231pu do tych \305\272r\303\263de\305\202 filtr\303\263w :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Uwaga:</b> Podgl\304\205d mo\305\274e si\304\231 r\303\263\305\274ni\304\207 od efektu ko\305\204cowego\n"
+       "ze wzgl\304\231du na zmian\304\231 przybli\305\274enia</span>");
     _t("G'MIC for GIMP","G'MIC dla GIMP");
     _t("<i>Select a filter...</i>","<i>Wybierz filtr...</i>");
     _t("<i>No parameters to set...</i>","<i>Brak parametr\304\205w do ustawienia...</i>");
@@ -745,6 +762,7 @@ const char *t(const char *const s) {
     _t(" Available filters (%u)"," Dost\304\231pne filtry (%u)");
     _t("Update","Uaktualnij");
     _t("Rename","Zmiana nazwy");
+    _t("Reset zoom","Zresetowa\304\207 zoomu");
   }
 
   // Portuguese translation
@@ -754,6 +772,10 @@ const char *t(const char *const s) {
         "Incapaz de chegar a essas fontes de filtros :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Aten\303\247\303\243o:</b> a pr\303\251-visualiza\303\247\303\243o pode estar incorreta\n"
+       "(o fator amplia\303\247\303\243o foi modificado)</span>");
     _t("G'MIC for GIMP","G'MIC para o GIMP");
     _t("<i>Select a filter...</i>","<i>Escolha um filtro</i>");
     _t("<i>No parameters to set...</i>","<i>Sem par\303\242metros para configurar...</i>");
@@ -800,6 +822,7 @@ const char *t(const char *const s) {
     _t(" Available filters (%u)"," Filtros dispon\303\255veis (%u)");
     _t("Update","Atualizar");
     _t("Rename","Renomear");
+    _t("Reset zoom","Redefinir zoom");
   }
 
   // Serbian translation
@@ -809,6 +832,10 @@ const char *t(const char *const s) {
         "Nije mogu\304\207e dospeti do izvorne lokacije ovih filtera :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Upozorenje :</b> Pregled mo\305\276e biti neta\304\215na\n"
+       "( zum faktor je modifikovan )</span>");
     _t("G'MIC for GIMP","G'MIC za GIMP");
     _t("<i>Select a filter...</i>","<i>Izaberite filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Nema parametara za pode\305\241avanje...</i>");
@@ -854,6 +881,7 @@ const char *t(const char *const s) {
     _t("Large","Veliki");
     _t(" Available filters (%u)"," Raspolo\305\276ivi filteri (%u)");
     _t("Rename","Preimenovati");
+    _t("Reset zoom","Reset zum");
   }
 
   // Spanish translation (Castillan)
@@ -863,6 +891,10 @@ const char *t(const char *const s) {
         "No es posible acceder a estas fuentes de filtros :\n";
       return ns;
     }
+    _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
+       "(zoom factor has been modified)</span>",
+       "\n<span color=\"#AA0000\"><b>Advertencia:</b> Previsualizaci\303\263n puede ser inexacta\n"
+       "(factor de zoom se ha modificado)</span>");
     _t("G'MIC for GIMP","G'MIC para GIMP");
     _t("<i>Select a filter...</i>","<i>Selecciona un filtro...</i>");
     _t("<i>No parameters to set...</i>","<i>Sin par\303\241metros...</i>");
@@ -915,6 +947,7 @@ const char *t(const char *const s) {
     _t("Update filters","Actualiza filtros");
     _t("Enable Internet updates","Permite actualizaciones de Internet");
     _t("Expand/collapse","Expande/Colapsa");
+    _t("Reset zoom","Restablecer zoom");
   }
 
   // English translation (default)
