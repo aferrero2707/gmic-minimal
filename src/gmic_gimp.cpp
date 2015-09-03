@@ -507,6 +507,9 @@ const char *t(const char *const s) {
         "Acc&#232;s impossible aux sources de filtres :\n";
       return ns;
     }
+    _t("<small><b>Warning:</b> Preview may be inaccurate (zoom factor has been modified)</small>",
+       "<small><b>Avertissement:</b> L'aper\303\247u est probablement inexact "
+       "(le facteur de zoom a \303\251t\303\251 modifi\303\251)</small>");
     _t("G'MIC for GIMP","G'MIC pour GIMP");
     _t("<i>Select a filter...</i>","<i>Choisissez un filtre...</i>");
     _t("<i>No parameters to set...</i>","<i>Pas de param&#232;tres...</i>");
@@ -3051,7 +3054,8 @@ void process_preview() {
     default_factor = std::sqrt((dw*dw + dh*dh)/(pw*pw + ph*ph));
   }
   const bool is_accurate_when_zoomed = gmic_preview_factors(filter,1);
-  if (is_accurate_when_zoomed || cimg::abs(factor-default_factor)<0.1) gtk_widget_hide(gui_preview_warning);
+  if (default_factor<0 || is_accurate_when_zoomed || cimg::abs(factor-default_factor)<0.1)
+    gtk_widget_hide(gui_preview_warning);
   else gtk_widget_show(gui_preview_warning);
 
   // Update rendered image in preview widget.
