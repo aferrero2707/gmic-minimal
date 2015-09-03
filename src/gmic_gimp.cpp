@@ -90,7 +90,7 @@ GimpDrawable *drawable_preview = 0;            // The drawable used by the previ
 GtkWidget *dialog_window = 0;                  // The plug-in dialog window.
 GtkWidget *left_pane = 0;                      // The left pane, containing the preview window.
 GtkWidget *gui_preview = 0;                    // The preview window.
-GtkWidget *gui_preview_zoom_buttons = 0;       // The zoom buttons attached to the preview widget.
+GtkWidget *gui_preview_warning = 0;            // Warning label displaying for unaccurate preview.
 GtkWidget *relabel_hbox = 0;                   // The entire widget to relabel filter.
 GtkWidget *relabel_entry = 0;                  // The text entry to relabel filter.
 GtkWidget *tree_view = 0;                      // The filter treeview.
@@ -1240,17 +1240,18 @@ CImgList<char> update_filters(const bool try_net_update, const bool is_silent=fa
           if (err>=3) { // Filter has a specified preview command.
             cimg::strpare(preview_command,' ',false,true);
             char *const preview_mode = std::strchr(preview_command,'(');
-            unsigned int is_zoom_buttons = 1;
+            bool is_accurate_when_zoomed = false;
             double factor = 1;
             char sep = 0;
             if (preview_mode &&
-                (cimg_sscanf(preview_mode + 1,"%lf)(%u%c",&factor,&is_zoom_buttons,&sep)==3 ||
-                 cimg_sscanf(preview_mode + 1,"%lf%c",&factor,&sep)==2) &&
-                factor>=0 && is_zoom_buttons<=1 && sep==')')
+                ((cimg_sscanf(preview_mode + 1,"%lf)%c",&factor,&sep)==2 && sep=='+') ||
+                 (cimg_sscanf(preview_mode + 1,"%lf%c",&factor,&sep)==2 && sep==')')) &&
+                factor>=0) {
               *preview_mode = 0;
-            else { factor = -1; is_zoom_buttons = 1; }
+              is_accurate_when_zoomed = sep=='+';
+            } else factor = -1;
             CImg<char>::string(preview_command).move_to(gmic_preview_commands);
-            CImg<double>::vector(factor,(double)is_zoom_buttons).move_to(gmic_preview_factors);
+            CImg<double>::vector(factor,(double)is_accurate_when_zoomed).move_to(gmic_preview_factors);
           } else {
             CImg<char>::string("_none_").move_to(gmic_preview_commands);
             CImg<double>::vector(-1,1).move_to(gmic_preview_factors);
@@ -1700,7 +1701,6 @@ void set_preview_factor() {
   const unsigned int filter = get_current_filter();
   if (filter && gmic_preview_factors[filter] && GIMP_IS_PREVIEW(gui_preview)) {
     double factor = gmic_preview_factors(filter,0);
-    bool is_zoom_buttons = (bool)gmic_preview_factors(filter,1);
     if (factor>=0) {
       if (!factor) { // Compute factor so that 1:1 preview of the image is displayed.
         int _pw = 0, _ph = 0;
@@ -1713,9 +1713,7 @@ void set_preview_factor() {
         factor = std::sqrt((dw*dw + dh*dh)/(pw*pw + ph*ph));
       }
       gimp_zoom_model_zoom(gimp_zoom_preview_get_model(GIMP_ZOOM_PREVIEW(gui_preview)),GIMP_ZOOM_TO,factor);
-    } else is_zoom_buttons = true;
-    if (is_zoom_buttons) gtk_widget_show(gui_preview_zoom_buttons);
-    else gtk_widget_hide(gui_preview_zoom_buttons);
+    }
   }
 }
 
@@ -1788,10 +1786,11 @@ void create_parameters_gui(const bool);
 void process_image(const char *const, const bool is_apply);
 void process_preview();
 
-void on_preview_button_changed(const GtkToggleButton *const) {
+void on_preview_button_changed(GtkToggleButton *const toggle_button) {
   cimg::mutex(25);
   if (p_spt) { st_process_thread &spt = *(st_process_thread*)p_spt; spt.is_abort = true; }
   cimg::mutex(25,0);
+  if (!gtk_toggle_button_get_active(toggle_button)) gtk_widget_hide(gui_preview_warning);
 }
 
 // Secure function for invalidate preview.
@@ -1829,9 +1828,12 @@ void _gimp_preview_invalidate() {
     GtkBoxChild *const child1 = (GtkBoxChild*)children1->data;
     GtkWidget *const preview_button = child1->widget;
     g_signal_connect(preview_button,"toggled",G_CALLBACK(on_preview_button_changed),0);
-    GList *const children2 = children1->next;
+
+    /*    GList *const children2 = children1->next;
     GtkBoxChild *const child2 = (GtkBoxChild*)children2->data;
-    gui_preview_zoom_buttons = child2->widget;
+    GtkWidget *const zoom_button = child2->widget;
+    */
+
     gtk_widget_show(gui_preview);
     gtk_box_pack_end(GTK_BOX(left_pane),gui_preview,true,true,0);
     g_signal_connect(gui_preview,"invalidated",G_CALLBACK(process_preview),0);
@@ -3036,6 +3038,23 @@ void process_preview() {
     }
   }
 
+  // Display warning message about preview inaccuracy, if needed.
+  double default_factor = gmic_preview_factors(filter,0);
+  if (!default_factor) {
+    int _pw = 0, _ph = 0;
+    gimp_preview_get_size(GIMP_PREVIEW(gui_preview),&_pw,&_ph);
+    const float
+      pw = (float)_pw,
+      ph = (float)_ph,
+      dw = (float)drawable_preview->width,
+      dh = (float)drawable_preview->height;
+    default_factor = std::sqrt((dw*dw + dh*dh)/(pw*pw + ph*ph));
+  }
+  const bool is_accurate_when_zoomed = gmic_preview_factors(filter,1);
+  if (is_accurate_when_zoomed || cimg::abs(factor-default_factor)<0.1) gtk_widget_hide(gui_preview_warning);
+  else gtk_widget_show(gui_preview_warning);
+
+  // Update rendered image in preview widget.
   std::memcpy(ptr0,computed_preview.data(),wp*hp*sp*sizeof(unsigned char));
   gimp_preview_draw_buffer(GIMP_PREVIEW(gui_preview),ptr0,wp*sp);
   g_free(ptr0);
@@ -3628,6 +3647,11 @@ bool create_dialog_gui() {
   gtk_widget_show(left_frame);
   gtk_container_set_border_width(GTK_CONTAINER(left_frame),4);
   gtk_container_add(GTK_CONTAINER(left_align),left_frame);
+
+  gui_preview_warning = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(gui_preview_warning),
+                       t("<small><b>Warning:</b> Preview may be inaccurate (zoom factor has been modified)</small>"));
+  gtk_box_pack_end(GTK_BOX(left_pane),gui_preview_warning,false,false,0);
 
   GtkWidget *const frame_title = gtk_label_new(NULL);
   gtk_widget_show(frame_title);
