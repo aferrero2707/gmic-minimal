@@ -4,10 +4,11 @@
 #
 #  Description : Makefile for compiling :
 #
-#                 . the G'MIC command line tool (type 'make').
+#                 . the G'MIC command line tool (type 'make cli').
 #                 . the G'MIC plug-in for GIMP (type 'make gimp').
 #                 . the G'MIC interpreter, as a C++ library (type 'make lib').
 #                 . the ZArt software (type 'make zart').
+#                 . To compile all of them, just type 'make', or 'make all').
 #
 #                ( http://gmic.eu )
 #
@@ -477,4 +478,4 @@ distclean: clean
 clean:
 	rm -rf CImg.h gmic_stdlib.h gmic*.o gmic$(EXE) gmic_gimp$(EXE) gmic_use_lib$(EXE) libgmic* *~
 
-# End of Makefile
+# End of Makefile.

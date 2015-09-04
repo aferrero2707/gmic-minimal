@@ -355,6 +355,7 @@
   </command>
   <int name="Number of scales" default="3" min="1" max="10" />
   <choice name="Shape" default="8" choice0="Triangle" choice1="Square" choice2="Diamond" choice3="Pentagon" choice4="Hexagon" choice5="Octogon" choice6="Decagon" choice7="Star" choice8="Circular" />
+  <int name="Random seed" default="0" min="0" max="65535" />
   <separator />
   <note text="&lt;small&gt;&lt;b&gt;Starting parameters:&lt;/b&gt;&lt;/small&gt;" />
   <int name="Density" default="30" min="1" max="256" />
@@ -3347,6 +3348,7 @@ jpeg_action:
   <float name="Y-scale" default="1" min="1" max="10" />
   <float name="Hue" default="0" min="-180" max="180" />
   <float name="Opacity" default="0.85" min="0" max="1" />
+  <choice name="Blend mode" default="2" choice0="Normal" choice1="Lighten" choice2="Screen" choice3="Dodge" choice4="Add" choice5="Darken" choice6="Multiply" choice7="Burn" choice8="Overlay" choice9="Soft light" choice10="Hard light" choice11="Difference" choice12="Subtract" choice13="Grain extract" choice14="Grain merge" choice15="Divide" choice16="Hue" choice17="Saturation" choice18="Value" />
   <bool name="Output as separate layers" default="1" />
   <separator />
   <const value="0" />

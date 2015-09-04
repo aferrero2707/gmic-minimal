@@ -714,7 +714,8 @@ const char *t(const char *const s) {
     }
     _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
        "(zoom factor has been modified)</span>",
-       "\n<span color=\"#AA0000\"><b>Uwaga:</b> Podgl\304\205d mo\305\274e si\304\231 r\303\263\305\274ni\304\207 od efektu ko\305\204cowego\n"
+       "\n<span color=\"#AA0000\"><b>Uwaga:</b> Podgl\304\205d mo\305\274e si\304\231 r\303\263\305\274ni\304\207 od "
+       "efektu ko\305\204cowego\n"
        "ze wzgl\304\231du na zmian\304\231 przybli\305\274enia</span>");
     _t("G'MIC for GIMP","G'MIC dla GIMP");
     _t("<i>Select a filter...</i>","<i>Wybierz filtr...</i>");
@@ -774,7 +775,8 @@ const char *t(const char *const s) {
     }
     _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
        "(zoom factor has been modified)</span>",
-       "\n<span color=\"#AA0000\"><b>Aten\303\247\303\243o:</b> a pr\303\251-visualiza\303\247\303\243o pode estar incorreta\n"
+       "\n<span color=\"#AA0000\"><b>Aten\303\247\303\243o:</b> a pr\303\251-visualiza\303\247\303\243o pode "
+       "estar incorreta\n"
        "(o fator amplia\303\247\303\243o foi modificado)</span>");
     _t("G'MIC for GIMP","G'MIC para o GIMP");
     _t("<i>Select a filter...</i>","<i>Escolha um filtro</i>");
