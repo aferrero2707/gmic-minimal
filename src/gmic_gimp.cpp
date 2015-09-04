@@ -461,8 +461,8 @@ const char *t(const char *const s) {
     }
     _t("\n<span color=\"#AA0000\"><b>Warning:</b> Preview may be inaccurate\n"
        "(zoom factor has been modified)</span>",
-       "\n<span color=\"#AA0000\"><b>Waarschuwing:</b> Voorbeeld kan onnauwkeurig zijn\n"
-       "(zoomfactor is gewijzigd)</span>");
+       "\n<span color=\"#AA0000\"><b>Waarschuwing:</b> Voorbeeld mogelijk niet correct\n"
+       "(zoomratio veranderd)﻿</span>");
     _t("G'MIC for GIMP","G'MIC voor GIMP");
     _t("<i>Select a filter...</i>","<i>Kies een filter...</i>");
     _t("<i>No parameters to set...</i>","<i>Geen parameters nodig...</i>");
