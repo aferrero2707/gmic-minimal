@@ -73,6 +73,7 @@ CImgList<char> gmic_faves;                     // The list of favorites filters 
 CImgList<double> gmic_preview_factors;         // The list of default preview factors for each filter.
 CImgList<unsigned int> gmic_button_parameters; // The list of button parameters for the current filter.
 CImg<gmic_pixel_type> computed_preview;        // The last computed preview image.
+CImg<unsigned char> latest_preview_buffer;     // The latest content of the preview buffer.
 CImg<char> gmic_additional_commands;           // The buffer of additional G'MIC command implementations.
 bool _create_dialog_gui;                       // Return value for 'create_gui_dialog()' (set by events handlers).
 bool is_block_preview = false;                 // Flag to block preview, when double-clicking on the filter tree.
@@ -2334,6 +2335,7 @@ void on_filter_selected(GtkWidget *const tree_view) {
     set_current_filter(filter);
     create_parameters_gui(false);
     _create_dialog_gui = true;
+    latest_preview_buffer.assign();
     _gimp_preview_invalidate();
   }
 }
@@ -2980,10 +2982,15 @@ void process_preview() {
     pthread_cond_wait(&spt.wait_cond,&spt.wait_lock); // Wait for the thread to lock the mutex.
     pthread_mutex_unlock(&spt.wait_lock);
     pthread_mutex_destroy(&spt.wait_lock);
+    if (latest_preview_buffer.width()==wp && latest_preview_buffer.height()==hp && // Avoid preview flickering effect.
+        latest_preview_buffer.spectrum()==sp)
+      gimp_preview_draw_buffer(GIMP_PREVIEW(gui_preview),latest_preview_buffer.data(),wp*sp);
+
     while (pthread_mutex_trylock(&spt.is_running)) { // Loop that allows to get a responsive interface.
       while (gtk_events_pending()) { gtk_main_iteration(); }
       cimg::wait(333);
     }
+
     pthread_join(spt.thread,0);
     pthread_mutex_unlock(&spt.is_running);
     pthread_mutex_destroy(&spt.is_running);
@@ -3119,6 +3126,7 @@ void process_preview() {
   // Update rendered image in preview widget.
   std::memcpy(ptr0,computed_preview.data(),wp*hp*sp*sizeof(unsigned char));
   gimp_preview_draw_buffer(GIMP_PREVIEW(gui_preview),ptr0,wp*sp);
+  latest_preview_buffer.assign(ptr0,wp,hp,1,sp);
   g_free(ptr0);
   if (update_parameters) {
     const bool pstate = gimp_preview_get_update(GIMP_PREVIEW(gui_preview));
