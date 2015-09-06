@@ -2969,7 +2969,6 @@ void process_preview() {
     else original_preview.assign(wp,hp,1,4,0);
 
     bool is_abort = spt.is_abort = false;
-
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     cimg::mutex(25); p_spt = (void*)&spt; cimg::mutex(25,0);
     spt.is_thread = true;
