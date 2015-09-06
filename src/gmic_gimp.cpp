@@ -2491,7 +2491,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   cimglist_for(gmic_button_parameters,l) set_filter_parameter(filter,gmic_button_parameters(l,0),"0");
 
   // Create processing thread and wait for its completion.
-  bool is_abort = false;
+  bool is_abort = spt.is_abort = false;
   if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     const unsigned long time0 = cimg::time();
@@ -2501,7 +2501,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
     pthread_mutex_init(&spt.wait_lock,0);
     pthread_cond_init(&spt.wait_cond,0);
     pthread_mutex_lock(&spt.wait_lock);
-    spt.is_abort = false;
     pthread_create(&(spt.thread),0,process_thread,(void*)&spt);
     pthread_cond_wait(&spt.wait_cond,&spt.wait_lock);  // Wait for the thread to lock the mutex.
     pthread_mutex_unlock(&spt.wait_lock);
@@ -2969,7 +2968,8 @@ void process_preview() {
     if (spt.images) original_preview = spt.images[0];
     else original_preview.assign(wp,hp,1,4,0);
 
-    bool is_abort = false;
+    bool is_abort = spt.is_abort = false;
+
 #if !defined(__MACOSX__) && !defined(__APPLE__)
     cimg::mutex(25); p_spt = (void*)&spt; cimg::mutex(25,0);
     spt.is_thread = true;
@@ -2977,7 +2977,6 @@ void process_preview() {
     pthread_mutex_init(&spt.wait_lock,0);
     pthread_cond_init(&spt.wait_cond,0);
     pthread_mutex_lock(&spt.wait_lock);
-    spt.is_abort = false;
     pthread_create(&(spt.thread),0,process_thread,(void*)&spt);
     pthread_cond_wait(&spt.wait_cond,&spt.wait_lock); // Wait for the thread to lock the mutex.
     pthread_mutex_unlock(&spt.wait_lock);
