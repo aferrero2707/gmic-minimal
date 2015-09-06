@@ -59,6 +59,11 @@ endif
 ifeq ($(OS),GNU)
 OS = Unix
 endif
+ifndef NO_STRIP
+STRIP=strip
+else
+STRIP=echo Skip strip
+endif
 ifeq ($(OS),Darwin)
 PLUGINDIR = ~/Library/Application\ Support/Gimp/plug-ins
 USR = /opt/local
@@ -83,7 +88,7 @@ PRERELEASE_CFLAGS = -Dgmic_prerelease="\\\"`date +%m%d%y`\\\""
 # Flags that are mandatory to compile 'gmic'.
 MANDATORY_CFLAGS = -Dgmic_build -Dcimg_use_zlib -I$(USR)/$(INCLUDE) $(PRERELEASE_CFLAGS)
 MANDATORY_LIBS = -lz
-ifndef NO_STDLIB
+ifndef NO_SRIPDLIB
 MANDATORY_CFLAGS += -std=c++11
 endif
 MANDATORY_LIBS += -L$(USR)/$(LIB)
@@ -309,7 +314,7 @@ endif
 
 cli:
 	$(MAKE) "CFLAGS+=$(STD_CLI_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STD_CLI_LIBS)" gmic
-	strip gmic$(EXE)
+	$(STRIP) gmic$(EXE)
 
 gimp:
 	$(MAKE) "CFLAGS+=$(STD_GIMP_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STD_GIMP_LIBS)" gmic_gimp
@@ -319,20 +324,20 @@ lib:
 
 gmicol:
 	$(MAKE) "CFLAGS+=$(STD_GMICOL_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STD_GMICOL_LIBS)" gmic
-	strip gmic$(EXE)
+	$(STRIP) gmic$(EXE)
 
 static:
 	$(MAKE) "CFLAGS+=$(STATIC_CLI_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STATIC_CLI_LIBS)" gmic
-	strip gmic$(EXE)
+	$(STRIP) gmic$(EXE)
 
 debug:
 	$(MAKE) "CFLAGS+=$(STD_CLI_CFLAGS) $(DEBUG_CFLAGS)" "LIBS+=$(STD_CLI_LIBS)" gmic
 
 zart: lib
 ifeq ($(OS),Darwin)
-	cd ../zart && qmake zart.pro && $(MAKE) "CFLAGS=$(OPT_CFLAGS)" "SUBLIBS=$(OPT_LIBS)" && strip zart.app/Contents/MacOS/zart
+	cd ../zart && qmake zart.pro && $(MAKE) "CFLAGS=$(OPT_CFLAGS)" "SUBLIBS=$(OPT_LIBS)" && $(STRIP) zart.app/Contents/MacOS/zart
 else
-	cd ../zart && qmake zart.pro && $(MAKE) && strip zart
+	cd ../zart && qmake zart.pro && $(MAKE) && $(STRIP) zart
 endif
 
 # Internal rules to build compilation modules.
@@ -353,7 +358,7 @@ gmic_gimp.o: gmic.cpp gmic.h gmic_stdlib.h CImg.h
 
 gmic_gimp : gmic_gimp.o gmic_gimp.cpp
 	$(CC) -o gmic_gimp gmic_gimp.cpp gmic_gimp.o -Dgmic_gimp `gimptool-2.0$(EXE) --cflags` $(CFLAGS) `gimptool-2.0$(EXE) --libs` $(LIBS)
-	strip gmic_gimp$(EXE)
+	$(STRIP) gmic_gimp$(EXE)
 
 gmic: gmic.cpp gmic.h gmic_stdlib.h CImg.h
 	$(CC) -o gmic gmic.cpp -Dgmic_main $(CFLAGS) $(LIBS)
