@@ -2627,18 +2627,15 @@ void process_image(const char *const commands_line, const bool is_apply) {
           gimp_drawable_update(drawable->drawable_id,x1,y1,x2 - x1,y2 - y1);
           gimp_drawable_detach(drawable);
 #else
-          int gegl_x, gegl_y, gegl_width, gegl_height;
-          if (gimp_drawable_mask_intersect(layers[p],&gegl_x,&gegl_y,&gegl_width,&gegl_height)) {
-            GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layers[p]);
-            const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
-            const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
-              img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
-            (img/=255).permute_axes("cxyz");
-            gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
-            g_object_unref(buffer); // flushes the shadow tiles.
-            gimp_drawable_merge_shadow(layers[p],true);
-            gimp_drawable_update(layers[p],gegl_x,gegl_y,gegl_width,gegl_height);
-          }
+          GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layers[p]);
+          const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
+          const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
+            img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
+          (img/=255).permute_axes("cxyz");
+          gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+          g_object_unref(buffer); // flushes the shadow tiles.
+          gimp_drawable_merge_shadow(layers[p],true);
+          gimp_drawable_update(layers[p],0,0,img.width(),img.height());
 #endif
           img.assign();
           gimp_layer_set_mode(layers[p],layer_blendmode);
@@ -2685,7 +2682,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
             gimp_image_insert_layer(image_id,layer_id,-1,layer_pos + p);
 #endif
 
-
 #if GIMP_MINOR_VERSION<=8
             GimpDrawable *drawable = gimp_drawable_get(layer_id);
             gimp_pixel_rgn_init(&region,drawable,0,0,drawable->width,drawable->height,true,true);
@@ -2696,18 +2692,15 @@ void process_image(const char *const commands_line, const bool is_apply) {
             gimp_drawable_update(drawable->drawable_id,0,0,drawable->width,drawable->height);
             gimp_drawable_detach(drawable);
 #else
-            int gegl_x, gegl_y, gegl_width, gegl_height;
-            if (gimp_drawable_mask_intersect(layer_id,&gegl_x,&gegl_y,&gegl_width,&gegl_height)) {
-              GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
-              const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
-              const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
-                img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
-              (img/=255).permute_axes("cxyz");
-              gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
-              g_object_unref(buffer); // flushes the shadow tiles.
-              gimp_drawable_merge_shadow(layer_id,true);
-              gimp_drawable_update(layer_id,gegl_x,gegl_y,gegl_width,gegl_height);
-            }
+            GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
+            const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
+            const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
+              img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
+            (img/=255).permute_axes("cxyz");
+            gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+            g_object_unref(buffer); // flushes the shadow tiles.
+            gimp_drawable_merge_shadow(layer_id,true);
+            gimp_drawable_update(layer_id,0,0,img.width(),img.height());
 #endif
             img.assign();
           }
@@ -2755,15 +2748,28 @@ void process_image(const char *const commands_line, const bool is_apply) {
 #else
         gimp_image_insert_layer(image_id,layer_id,-1,p);
 #endif
+
+#if GIMP_MINOR_VERSION<=8
         GimpDrawable *drawable = gimp_drawable_get(layer_id);
         gimp_pixel_rgn_init(&region,drawable,0,0,drawable->width,drawable->height,true,true);
         convert_image2uchar(img);
         gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),0,0,img.width(),img.height());
-        img.assign();
         gimp_drawable_flush(drawable);
         gimp_drawable_merge_shadow(drawable->drawable_id,true);
         gimp_drawable_update(drawable->drawable_id,0,0,drawable->width,drawable->height);
         gimp_drawable_detach(drawable);
+#else
+        GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
+        const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
+        const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
+          img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
+        (img/=255).permute_axes("cxyz");
+        gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+        g_object_unref(buffer); // flushes the shadow tiles.
+        gimp_drawable_merge_shadow(layer_id,true);
+        gimp_drawable_update(layer_id,0,0,img.width(),img.height());
+#endif
+        img.assign();
       }
       gimp_image_resize(image_id,cimg::max(image_width,max_width),cimg::max(image_height,max_height),0,0);
       if (output_mode==1) gimp_image_set_active_layer(image_id,active_layer_id);
@@ -2802,16 +2808,29 @@ void process_image(const char *const commands_line, const bool is_apply) {
 #else
           gimp_image_insert_layer(nimage_id,layer_id,-1,p);
 #endif
+
+#if GIMP_MINOR_VERSION<=8
           GimpDrawable *drawable = gimp_drawable_get(layer_id);
           GimpPixelRgn dest_region;
           gimp_pixel_rgn_init(&dest_region,drawable,0,0,drawable->width,drawable->height,true,true);
           convert_image2uchar(img);
           gimp_pixel_rgn_set_rect(&dest_region,(guchar*)img.data(),0,0,img.width(),img.height());
-          img.assign();
           gimp_drawable_flush(drawable);
           gimp_drawable_merge_shadow(drawable->drawable_id,true);
           gimp_drawable_update(drawable->drawable_id,0,0,drawable->width,drawable->height);
           gimp_drawable_detach(drawable);
+#else
+          GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
+          const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
+          const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
+            img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
+          (img/=255).permute_axes("cxyz");
+          gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+          g_object_unref(buffer); // flushes the shadow tiles.
+          gimp_drawable_merge_shadow(layer_id,true);
+          gimp_drawable_update(layer_id,0,0,img.width(),img.height());
+#endif
+          img.assign();
         }
         gimp_display_new(nimage_id);
         gimp_image_undo_group_end(nimage_id);
