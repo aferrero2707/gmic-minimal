@@ -1651,6 +1651,8 @@ CImg<int> get_input_layers(CImgList<T>& images) {
   GimpPixelRgn region;
   gint x1, y1, x2, y2;
   cimglist_for(images,l) {
+
+    //#if GIMP_MINOR_VERSION<=8
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
     if (!_gimp_item_is_valid(drawable->drawable_id)) continue;
     gimp_drawable_mask_bounds(drawable->drawable_id,&x1,&y1,&x2,&y2);
@@ -1703,6 +1705,9 @@ CImg<int> get_input_layers(CImgList<T>& images) {
     }
     g_free(row);
     gimp_drawable_detach(drawable);
+    //#else
+
+      //#endif
     img.move_to(images[l]);
   }
   return input_layers;
@@ -2628,11 +2633,10 @@ void process_image(const char *const commands_line, const bool is_apply) {
           gimp_drawable_detach(drawable);
 #else
           GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layers[p]);
-          const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
           const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
             img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
           (img/=255).permute_axes("cxyz");
-          gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+          gegl_buffer_set(buffer,NULL,0,babl_format(format),img.data(),0);
           g_object_unref(buffer); // flushes the shadow tiles.
           gimp_drawable_merge_shadow(layers[p],true);
           gimp_drawable_update(layers[p],0,0,img.width(),img.height());
@@ -2693,11 +2697,10 @@ void process_image(const char *const commands_line, const bool is_apply) {
             gimp_drawable_detach(drawable);
 #else
             GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
-            const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
             const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
               img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
             (img/=255).permute_axes("cxyz");
-            gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+            gegl_buffer_set(buffer,NULL,0,babl_format(format),img.data(),0);
             g_object_unref(buffer); // flushes the shadow tiles.
             gimp_drawable_merge_shadow(layer_id,true);
             gimp_drawable_update(layer_id,0,0,img.width(),img.height());
@@ -2760,11 +2763,10 @@ void process_image(const char *const commands_line, const bool is_apply) {
         gimp_drawable_detach(drawable);
 #else
         GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
-        const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
         const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
           img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
         (img/=255).permute_axes("cxyz");
-        gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+        gegl_buffer_set(buffer,NULL,0,babl_format(format),img.data(),0);
         g_object_unref(buffer); // flushes the shadow tiles.
         gimp_drawable_merge_shadow(layer_id,true);
         gimp_drawable_update(layer_id,0,0,img.width(),img.height());
@@ -2821,11 +2823,10 @@ void process_image(const char *const commands_line, const bool is_apply) {
           gimp_drawable_detach(drawable);
 #else
           GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
-          const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
           const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
             img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
           (img/=255).permute_axes("cxyz");
-          gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+          gegl_buffer_set(buffer,NULL,0,babl_format(format),img.data(),0);
           g_object_unref(buffer); // flushes the shadow tiles.
           gimp_drawable_merge_shadow(layer_id,true);
           gimp_drawable_update(layer_id,0,0,img.width(),img.height());
@@ -3985,6 +3986,7 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
   // Init plug-in variables.
 #if GIMP_MINOR_VERSION>8
   gegl_init(NULL,NULL);
+  gimp_plugin_enable_precision();
 #endif
 
   static GimpParam return_values[1];
