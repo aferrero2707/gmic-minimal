@@ -2622,85 +2622,99 @@ void process_image(const char *const commands_line, const bool is_apply) {
           gimp_pixel_rgn_init(&region,drawable,x1,y1,x2 - x1,y2 - y1,true,true);
           convert_image2uchar(img);
           gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),x1,y1,x2 - x1,y2 - y1);
-          img.assign();
           gimp_drawable_flush(drawable);
           gimp_drawable_merge_shadow(drawable->drawable_id,true);
           gimp_drawable_update(drawable->drawable_id,x1,y1,x2 - x1,y2 - y1);
           gimp_drawable_detach(drawable);
 #else
-          int x, y, width, height;
-          if (gimp_drawable_mask_intersect(layers[p],&x,&y,&width,&height)) {
+          int gegl_x, gegl_y, gegl_width, gegl_height;
+          if (gimp_drawable_mask_intersect(layers[p],&gegl_x,&gegl_y,&gegl_width,&gegl_height)) {
             GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layers[p]);
             const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
-            GeglBufferIterator *iter = gegl_buffer_iterator_new(buffer,rect,0,
-                                        babl_format("R'G'B' float"),
-                                        GEGL_ACCESS_WRITE,GEGL_ABYSS_NONE);
-            img.channels(0,2).permute_axes("cxyz")/=255;
-            gegl_buffer_set(buffer,rect,0,babl_format("R'G'B' float"),img.data(),0);
+            const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
+              img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
+            (img/=255).permute_axes("cxyz");
+            gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
             g_object_unref(buffer); // flushes the shadow tiles.
-            img.assign();
             gimp_drawable_merge_shadow(layers[p],true);
-            gimp_drawable_update(layers[p],x,y,width,height);
-            gimp_displays_flush();
+            gimp_drawable_update(layers[p],gegl_x,gegl_y,gegl_width,gegl_height);
           }
 #endif
+          img.assign();
           gimp_layer_set_mode(layers[p],layer_blendmode);
           gimp_layer_set_opacity(layers[p],layer_opacity);
           gimp_layer_set_offsets(layers[p],layer_posx,layer_posy);
           if (verbosity_mode==1) gimp_item_set_name(layers[p],new_label);
           else if (layer_name) gimp_item_set_name(layers[p],layer_name);
         } else { // Indirect replacement: create new layers.
-        gimp_selection_none(image_id);
-        const int layer_pos = _gimp_image_get_item_position(image_id,layers[0]);
-        max_width = max_height = 0;
-        cimglist_for(spt.images,p) {
-          layer_posx = layer_posy = 0;
-          if (p<layers.height()) {
-            layer_blendmode = gimp_layer_get_mode(layers[p]);
-            layer_opacity = gimp_layer_get_opacity(layers[p]);
-            if (!is_selection) gimp_drawable_offsets(layers[p],&layer_posx,&layer_posy);
-            CImg<char>::string(gimp_item_get_name(layers[p])).move_to(layer_name);
-            gimp_image_remove_layer(image_id,layers[p]);
-          } else {
-            layer_blendmode = GIMP_NORMAL_MODE;
-            layer_opacity = 100;
-            layer_name.assign();
-          }
-          get_output_layer_props(spt.images_names[p],layer_blendmode,layer_opacity,layer_posx,layer_posy,layer_name);
-          if (layer_posx + spt.images[p]._width>max_width) max_width = layer_posx + spt.images[p]._width;
-          if (layer_posy + spt.images[p]._height>max_height) max_height = layer_posy + spt.images[p]._height;
+          gimp_selection_none(image_id);
+          const int layer_pos = _gimp_image_get_item_position(image_id,layers[0]);
+          max_width = max_height = 0;
+          cimglist_for(spt.images,p) {
+            layer_posx = layer_posy = 0;
+            if (p<layers.height()) {
+              layer_blendmode = gimp_layer_get_mode(layers[p]);
+              layer_opacity = gimp_layer_get_opacity(layers[p]);
+              if (!is_selection) gimp_drawable_offsets(layers[p],&layer_posx,&layer_posy);
+              CImg<char>::string(gimp_item_get_name(layers[p])).move_to(layer_name);
+              gimp_image_remove_layer(image_id,layers[p]);
+            } else {
+              layer_blendmode = GIMP_NORMAL_MODE;
+              layer_opacity = 100;
+              layer_name.assign();
+            }
+            get_output_layer_props(spt.images_names[p],layer_blendmode,layer_opacity,layer_posx,layer_posy,layer_name);
+            if (layer_posx + spt.images[p]._width>max_width) max_width = layer_posx + spt.images[p]._width;
+            if (layer_posy + spt.images[p]._height>max_height) max_height = layer_posy + spt.images[p]._height;
 
-          CImg<gmic_pixel_type> &img = spt.images[p];
-          if (gimp_image_base_type(image_id)==GIMP_GRAY) calibrate_image(img,(img.spectrum()==1 ||
-                                                                              img.spectrum()==3)?1:2,false);
-          else calibrate_image(img,(img.spectrum()==1 || img.spectrum()==3)?3:4,false);
-          gint layer_id = gimp_layer_new(image_id,new_label,img.width(),img.height(),
-                                         img.spectrum()==1?GIMP_GRAY_IMAGE:
-                                         img.spectrum()==2?GIMP_GRAYA_IMAGE:
-                                         img.spectrum()==3?GIMP_RGB_IMAGE:GIMP_RGBA_IMAGE,
-                                         layer_opacity,layer_blendmode);
-          gimp_layer_set_offsets(layer_id,layer_posx,layer_posy);
-          if (verbosity_mode==1) gimp_item_set_name(layer_id,new_label);
-          else if (layer_name) gimp_item_set_name(layer_id,layer_name);
+            CImg<gmic_pixel_type> &img = spt.images[p];
+            if (gimp_image_base_type(image_id)==GIMP_GRAY) calibrate_image(img,(img.spectrum()==1 ||
+                                                                                img.spectrum()==3)?1:2,false);
+            else calibrate_image(img,(img.spectrum()==1 || img.spectrum()==3)?3:4,false);
+            gint layer_id = gimp_layer_new(image_id,new_label,img.width(),img.height(),
+                                           img.spectrum()==1?GIMP_GRAY_IMAGE:
+                                           img.spectrum()==2?GIMP_GRAYA_IMAGE:
+                                           img.spectrum()==3?GIMP_RGB_IMAGE:GIMP_RGBA_IMAGE,
+                                           layer_opacity,layer_blendmode);
+            gimp_layer_set_offsets(layer_id,layer_posx,layer_posy);
+            if (verbosity_mode==1) gimp_item_set_name(layer_id,new_label);
+            else if (layer_name) gimp_item_set_name(layer_id,layer_name);
 #if GIMP_MINOR_VERSION<=6
-          gimp_image_add_layer(image_id,layer_id,layer_pos + p);
+            gimp_image_add_layer(image_id,layer_id,layer_pos + p);
 #else
-          gimp_image_insert_layer(image_id,layer_id,-1,layer_pos + p);
+            gimp_image_insert_layer(image_id,layer_id,-1,layer_pos + p);
 #endif
-          GimpDrawable *drawable = gimp_drawable_get(layer_id);
-          gimp_pixel_rgn_init(&region,drawable,0,0,drawable->width,drawable->height,true,true);
-          convert_image2uchar(img);
-          gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),0,0,img.width(),img.height());
-          img.assign();
-          gimp_drawable_flush(drawable);
-          gimp_drawable_merge_shadow(drawable->drawable_id,true);
-          gimp_drawable_update(drawable->drawable_id,0,0,drawable->width,drawable->height);
-          gimp_drawable_detach(drawable);
-        }
 
-        for (unsigned int p = spt.images._width; p<layers._height; ++p) gimp_image_remove_layer(image_id,layers[p]);
-        if (image_nb_layers==layers.height()) gimp_image_resize(image_id,max_width,max_height,0,0);
-        else gimp_image_resize(image_id,cimg::max(image_width,max_width),cimg::max(image_height,max_height),0,0);
+
+#if GIMP_MINOR_VERSION<=8
+            GimpDrawable *drawable = gimp_drawable_get(layer_id);
+            gimp_pixel_rgn_init(&region,drawable,0,0,drawable->width,drawable->height,true,true);
+            convert_image2uchar(img);
+            gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),0,0,img.width(),img.height());
+            gimp_drawable_flush(drawable);
+            gimp_drawable_merge_shadow(drawable->drawable_id,true);
+            gimp_drawable_update(drawable->drawable_id,0,0,drawable->width,drawable->height);
+            gimp_drawable_detach(drawable);
+#else
+            int gegl_x, gegl_y, gegl_width, gegl_height;
+            if (gimp_drawable_mask_intersect(layer_id,&gegl_x,&gegl_y,&gegl_width,&gegl_height)) {
+              GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layer_id);
+              const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
+              const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
+                img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
+              (img/=255).permute_axes("cxyz");
+              gegl_buffer_set(buffer,rect,0,babl_format(format),img.data(),0);
+              g_object_unref(buffer); // flushes the shadow tiles.
+              gimp_drawable_merge_shadow(layer_id,true);
+              gimp_drawable_update(layer_id,gegl_x,gegl_y,gegl_width,gegl_height);
+            }
+#endif
+            img.assign();
+          }
+
+          for (unsigned int p = spt.images._width; p<layers._height; ++p) gimp_image_remove_layer(image_id,layers[p]);
+          if (image_nb_layers==layers.height()) gimp_image_resize(image_id,max_width,max_height,0,0);
+          else gimp_image_resize(image_id,cimg::max(image_width,max_width),cimg::max(image_height,max_height),0,0);
 
       }
       gimp_image_undo_group_end(image_id);
@@ -2822,7 +2836,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
   }
   if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
     gimp_progress_end();
-    gimp_displays_flush();
     if (update_parameters && is_apply) {
       const bool pstate = gimp_preview_get_update(GIMP_PREVIEW(gui_preview));
       gimp_preview_set_update(GIMP_PREVIEW(gui_preview),false);
@@ -2830,6 +2843,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
       gimp_preview_set_update(GIMP_PREVIEW(gui_preview),pstate);
     }
   }
+  gimp_displays_flush();
 }
 
 // Process the preview image.
@@ -3950,6 +3964,10 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
               gint *nreturn_vals, GimpParam **return_vals) {
 
   // Init plug-in variables.
+#if GIMP_MINOR_VERSION>8
+  gegl_init(NULL,NULL);
+#endif
+
   static GimpParam return_values[1];
   *return_vals  = return_values;
   *nreturn_vals = 1;
