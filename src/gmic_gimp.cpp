@@ -3986,7 +3986,7 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
   // Init plug-in variables.
 #if GIMP_MINOR_VERSION>8
   gegl_init(NULL,NULL);
-  gimp_plugin_enable_precision();
+  //  gimp_plugin_enable_precision();
 #endif
 
   static GimpParam return_values[1];
