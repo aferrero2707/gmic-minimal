@@ -60,6 +60,20 @@
 #define gmic_pixel_type float
 #endif
 
+// Manage different versions of the GIMP API.
+#if GIMP_MINOR_VERSION<=6
+#define _gimp_item_is_valid gimp_drawable_is_valid
+#define _gimp_image_get_item_position gimp_image_get_layer_position
+#else
+#define _gimp_item_is_valid gimp_item_is_valid
+#define _gimp_image_get_item_position gimp_image_get_item_position
+#endif
+#if GIMP_MINOR_VERSION<=8
+#define _gimp_item_get_visible gimp_drawable_get_visible
+#else
+#define _gimp_item_get_visible gimp_item_get_visible
+#endif
+
 using namespace cimg_library;
 
 // Define plug-in global variables.
@@ -376,16 +390,6 @@ void get_output_layer_props(const char *const s, GimpLayerModeEffects &blendmode
     }
     if (!level || *(ps - 1)==')') name.assign(S + 5,(unsigned int)(ps - S - 5)).back() = 0;
   }
-}
-
-// Test if a drawable is valid.
-//------------------------------
-bool gmic_drawable_is_valid(const GimpDrawable *const drawable) {
-#if GIMP_MINOR_VERSION<=6
-  return gimp_drawable_is_valid(drawable->drawable_id);
-#else
-  return gimp_item_is_valid(drawable->drawable_id);
-#endif
 }
 
 // Translate string into the current locale.
@@ -1629,14 +1633,14 @@ CImg<int> get_input_layers(CImgList<T>& images) {
   case 5 : case 7 : { // Input all visible image layers
     CImgList<int> visible_layers;
     for (int i = 0; i<nb_layers; ++i)
-      if (gimp_drawable_get_visible(layers[i])) CImg<int>::vector(layers[i]).move_to(visible_layers);
+      if (_gimp_item_get_visible(layers[i])) CImg<int>::vector(layers[i]).move_to(visible_layers);
     input_layers = visible_layers>'y';
     if (input_mode==7) input_layers.mirror('y');
   } break;
   default : { // Input all invisible image layers
     CImgList<int> invisible_layers;
     for (int i = 0; i<nb_layers; ++i)
-      if (!gimp_drawable_get_visible(layers[i])) CImg<int>::vector(layers[i]).move_to(invisible_layers);
+      if (!_gimp_item_get_visible(layers[i])) CImg<int>::vector(layers[i]).move_to(invisible_layers);
     input_layers = invisible_layers>'y';
     if (input_mode==8) input_layers.mirror('y');
   } break;
@@ -1648,7 +1652,7 @@ CImg<int> get_input_layers(CImgList<T>& images) {
   gint x1, y1, x2, y2;
   cimglist_for(images,l) {
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
-    if (!gmic_drawable_is_valid(drawable)) continue;
+    if (!_gimp_item_is_valid(drawable->drawable_id)) continue;
     gimp_drawable_mask_bounds(drawable->drawable_id,&x1,&y1,&x2,&y2);
     const int channels = drawable->bpp;
     gimp_pixel_rgn_init(&region,drawable,x1,y1,x2 - x1,y2 - y1,false,false);
@@ -1856,7 +1860,7 @@ void _gimp_preview_invalidate() {
     gimp_layer_set_edit_mask(active_layer_id,(gboolean)0);
 
   computed_preview.assign();
-  if (GIMP_IS_PREVIEW(gui_preview) && gmic_drawable_is_valid(drawable_preview))
+  if (GIMP_IS_PREVIEW(gui_preview) && _gimp_item_is_valid(drawable_preview->drawable_id))
     gimp_preview_invalidate(GIMP_PREVIEW(gui_preview));
   else {
     if (GTK_IS_WIDGET(gui_preview)) gtk_widget_destroy(gui_preview);
@@ -2611,28 +2615,43 @@ void process_image(const char *const commands_line, const bool is_apply) {
           get_output_layer_props(spt.images_names[p],layer_blendmode,layer_opacity,layer_posx,layer_posy,layer_name);
           CImg<gmic_pixel_type> &img = spt.images[p];
           calibrate_image(img,layer_dimensions(p,3),false);
+
+#if GIMP_MINOR_VERSION<=8
           GimpDrawable *drawable = gimp_drawable_get(layers[p]);
           gimp_drawable_mask_bounds(drawable->drawable_id,&x1,&y1,&x2,&y2);
           gimp_pixel_rgn_init(&region,drawable,x1,y1,x2 - x1,y2 - y1,true,true);
           convert_image2uchar(img);
           gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),x1,y1,x2 - x1,y2 - y1);
           img.assign();
+          gimp_drawable_flush(drawable);
+          gimp_drawable_merge_shadow(drawable->drawable_id,true);
+          gimp_drawable_update(drawable->drawable_id,x1,y1,x2 - x1,y2 - y1);
+          gimp_drawable_detach(drawable);
+#else
+          int x, y, width, height;
+          if (gimp_drawable_mask_intersect(layers[p],&x,&y,&width,&height)) {
+            GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layers[p]);
+            const GeglRectangle *rect = gegl_buffer_get_extent(buffer);
+            GeglBufferIterator *iter = gegl_buffer_iterator_new(buffer,rect,0,
+                                        babl_format("R'G'B' float"),
+                                        GEGL_ACCESS_WRITE,GEGL_ABYSS_NONE);
+            img.channels(0,2).permute_axes("cxyz")/=255;
+            gegl_buffer_set(buffer,rect,0,babl_format("R'G'B' float"),img.data(),0);
+            g_object_unref(buffer); // flushes the shadow tiles.
+            img.assign();
+            gimp_drawable_merge_shadow(layers[p],true);
+            gimp_drawable_update(layers[p],x,y,width,height);
+            gimp_displays_flush();
+          }
+#endif
           gimp_layer_set_mode(layers[p],layer_blendmode);
           gimp_layer_set_opacity(layers[p],layer_opacity);
           gimp_layer_set_offsets(layers[p],layer_posx,layer_posy);
           if (verbosity_mode==1) gimp_item_set_name(layers[p],new_label);
           else if (layer_name) gimp_item_set_name(layers[p],layer_name);
-          gimp_drawable_flush(drawable);
-          gimp_drawable_merge_shadow(drawable->drawable_id,true);
-          gimp_drawable_update(drawable->drawable_id,x1,y1,x2 - x1,y2 - y1);
-          gimp_drawable_detach(drawable);
         } else { // Indirect replacement: create new layers.
-          gimp_selection_none(image_id);
-#if GIMP_MINOR_VERSION<=6
-        const int layer_pos = gimp_image_get_layer_position(image_id,layers[0]);
-#else
-        const int layer_pos = gimp_image_get_item_position(image_id,layers[0]);
-#endif
+        gimp_selection_none(image_id);
+        const int layer_pos = _gimp_image_get_item_position(image_id,layers[0]);
         max_width = max_height = 0;
         cimglist_for(spt.images,p) {
           layer_posx = layer_posy = 0;
@@ -2850,8 +2869,8 @@ void process_preview() {
       if (!preview_image_id &&
           (input_mode==1 ||
            (input_mode==2 && nb_layers==1) ||
-           (input_mode==3 && nb_layers==1 && gimp_drawable_get_visible(*layers)) ||
-           (input_mode==4 && nb_layers==1 && !gimp_drawable_get_visible(*layers)) ||
+           (input_mode==3 && nb_layers==1 && _gimp_item_get_visible(*layers)) ||
+           (input_mode==4 && nb_layers==1 && !_gimp_item_get_visible(*layers)) ||
            (input_mode==5 && nb_layers==1))) {
 
         // Single input layer: get the default thumbnail provided by GIMP.
