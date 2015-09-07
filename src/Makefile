@@ -319,9 +319,6 @@ cli:
 gimp:
 	$(MAKE) "CFLAGS+=$(STD_GIMP_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STD_GIMP_LIBS)" gmic_gimp
 
-gimp29:
-	$(MAKE) "CFLAGS+=$(STD_GIMP_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STD_GIMP_LIBS)" gmic_gimp29
-
 lib:
 	$(MAKE) "CFLAGS+=$(STD_LIB_CFLAGS) $(OPT_CFLAGS)" "LIBS+=$(STD_LIB_LIBS)" libgmic
 
@@ -362,14 +359,6 @@ gmic_gimp.o: gmic.cpp gmic.h gmic_stdlib.h CImg.h
 gmic_gimp: gmic_gimp.o gmic_gimp.cpp
 	$(CC) -o gmic_gimp gmic_gimp.cpp gmic_gimp.o -Dgmic_gimp `gimptool-2.0$(EXE) --cflags` $(CFLAGS) `gimptool-2.0$(EXE) --libs` $(LIBS)
 	$(STRIP) gmic_gimp$(EXE)
-
-gmic_gimp29: gmic_gimp.o gmic_gimp29.cpp
-	$(CC) -o gmic_gimp29 gmic_gimp29.cpp gmic_gimp.o -Dgmic_gimp `gimptool-2.0$(EXE) --cflags` $(CFLAGS) `gimptool-2.0$(EXE) --libs` $(LIBS) -I$(HOME)/work/src/gimp-2.9/gimp/
-	cp -f gmic_gimp29 $(HOME)/.config/GIMP/2.9/plug-ins/gmic_gimp29
-
-test29: test29.cpp
-	$(CC) -o test29 test29.cpp -Dgmic_gimp `gimptool-2.0$(EXE) --cflags` $(CFLAGS) `gimptool-2.0$(EXE) --libs` $(LIBS) -I$(HOME)/work/src/gimp-2.9/gimp/
-	cp -f test29 $(HOME)/.config/GIMP/2.9/plug-ins/test29
 
 gmic: gmic.cpp gmic.h gmic_stdlib.h CImg.h
 	$(CC) -o gmic gmic.cpp -Dgmic_main $(CFLAGS) $(LIBS)
