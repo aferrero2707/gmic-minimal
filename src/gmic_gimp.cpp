@@ -1654,8 +1654,8 @@ CImg<int> get_input_layers(CImgList<T>& images) {
   cimglist_for(images,l) {
     if (!_gimp_item_is_valid(input_layers[l])) continue;
     gimp_drawable_mask_intersect(input_layers[l],&rgn_x,&rgn_y,&rgn_width,&rgn_height);
-    const int spectrum = gimp_drawable_bpp(input_layers[l]);
-
+    const int spectrum = (gimp_drawable_is_rgb(input_layers[l])?3:1) +
+      (gimp_drawable_has_alpha(input_layers[l])?1:0);
 #if GIMP_MINOR_VERSION<=8
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
     GimpPixelRgn region;
@@ -1720,6 +1720,7 @@ CImg<int> get_input_layers(CImgList<T>& images) {
 #endif
     img.move_to(images[l]);
   }
+
   return input_layers;
 }
 
@@ -4009,7 +4010,7 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
   // Init plug-in variables.
 #if GIMP_MINOR_VERSION>8
   gegl_init(NULL,NULL);
-  //  gimp_plugin_enable_precision();
+  gimp_plugin_enable_precision();
 #endif
 
   static GimpParam return_values[1];
