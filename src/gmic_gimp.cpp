@@ -4044,7 +4044,10 @@ void gmic_run(const gchar *name, gint nparams, const GimpParam *param,
 
   try {
     image_id = param[1].data.d_drawable;
+
+#if GIMP_MINOR_VERSION<=8
     gimp_tile_cache_ntiles(2*(gimp_image_width(image_id)/gimp_tile_width() + 1));
+#endif
 
     // Check for run mode.
     switch (run_mode) {
