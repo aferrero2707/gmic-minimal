@@ -1655,15 +1655,15 @@ CImg<int> get_input_layers(CImgList<T>& images) {
   cimglist_for(images,l) {
     if (!_gimp_item_is_valid(input_layers[l])) continue;
     gimp_drawable_mask_intersect(input_layers[l],&rgn_x,&rgn_y,&rgn_width,&rgn_height);
-    const int rgn_spectrum = gimp_drawable_bpp(input_layers[l]);
+    const int spectrum = gimp_drawable_bpp(input_layers[l]);
 
 #if GIMP_MINOR_VERSION<=8
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
     GimpPixelRgn region;
     gimp_pixel_rgn_init(&region,drawable,rgn_x,rgn_y,rgn_width,rgn_height,false,false);
-    guchar *const row = g_new(guchar,rgn_width*rgn_spectrum), *ptrs = 0;
-    CImg<T> img(rgn_width,rgn_height,1,rgn_spectrum);
-    switch (rgn_spectrum) {
+    guchar *const row = g_new(guchar,rgn_width*spectrum), *ptrs = 0;
+    CImg<T> img(rgn_width,rgn_height,1,spectrum);
+    switch (spectrum) {
     case 1 : {
       T *ptr_r = img.data(0,0,0,0);
       cimg_forY(img,y) {
@@ -1712,9 +1712,9 @@ CImg<int> get_input_layers(CImgList<T>& images) {
     GeglRectangle rect;
     gegl_rectangle_set(&rect,rgn_x,rgn_y,rgn_width,rgn_height);
     GeglBuffer *buffer = gimp_drawable_get_buffer(input_layers[l]);
-    const char *const format = rgn_spectrum==1?"Y' " s_gmic_pixel_type:rgn_spectrum==2?"Y'A " s_gmic_pixel_type:
-      rgn_spectrum==3?"R'G'B' " s_gmic_pixel_type:"R'G'B'A " s_gmic_pixel_type;
-    CImg<float> img(rgn_spectrum,rgn_width,rgn_height);
+    const char *const format = spectrum==1?"Y' " s_gmic_pixel_type:spectrum==2?"Y'A " s_gmic_pixel_type:
+      spectrum==3?"R'G'B' " s_gmic_pixel_type:"R'G'B'A " s_gmic_pixel_type;
+    CImg<float> img(spectrum,rgn_width,rgn_height);
     gegl_buffer_get(buffer,&rect,1,babl_format(format),img.data(),0,GEGL_ABYSS_NONE);
     (img*=255).permute_axes("yzcx");
     g_object_unref(buffer);
@@ -2615,12 +2615,13 @@ void process_image(const char *const commands_line, const bool is_apply) {
 
     // Transfer the output layers back into GIMP.
     GimpLayerModeEffects layer_blendmode = GIMP_NORMAL_MODE;
-    gint x1, y1, x2, y2, layer_posx = 0, layer_posy = 0;
+    gint layer_posx = 0, layer_posy = 0;
     double layer_opacity = 100;
     CImg<char> layer_name;
 
     switch (output_mode) {
     case 0 : { // Output in 'Replace' mode.
+      gint rgn_x, rgn_y, rgn_width, rgn_height;
       gimp_image_undo_group_start(image_id);
       if (is_compatible_dimensions) cimglist_for(spt.images,p) { // Direct replacement of the layer data.
           layer_blendmode = gimp_layer_get_mode(layers[p]);
@@ -2630,21 +2631,21 @@ void process_image(const char *const commands_line, const bool is_apply) {
           get_output_layer_props(spt.images_names[p],layer_blendmode,layer_opacity,layer_posx,layer_posy,layer_name);
           CImg<gmic_pixel_type> &img = spt.images[p];
           calibrate_image(img,layer_dimensions(p,3),false);
-          gimp_drawable_mask_bounds(layers[p],&x1,&y1,&x2,&y2);
+          gimp_drawable_mask_intersect(layers[p],&rgn_x,&rgn_y,&rgn_width,&rgn_height);
 
 #if GIMP_MINOR_VERSION<=8
           GimpDrawable *drawable = gimp_drawable_get(layers[p]);
           GimpPixelRgn region;
-          gimp_pixel_rgn_init(&region,drawable,x1,y1,x2 - x1,y2 - y1,true,true);
+          gimp_pixel_rgn_init(&region,drawable,rgn_x,rgn_y,rgn_width,rgn_height,true,true);
           convert_image2uchar(img);
-          gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),x1,y1,x2 - x1,y2 - y1);
+          gimp_pixel_rgn_set_rect(&region,(guchar*)img.data(),rgn_x,rgn_y,rgn_width,rgn_height);
           gimp_drawable_flush(drawable);
           gimp_drawable_merge_shadow(layers[p],true);
-          gimp_drawable_update(layers[p],x1,y1,x2 - x1,y2 - y1);
+          gimp_drawable_update(layers[p],rgn_x,rgn_y,rgn_width,rgn_height);
           gimp_drawable_detach(drawable);
 #else
           GeglRectangle rect;
-          gegl_rectangle_set(&rect,x1,y1,img.width(),img.height());
+          gegl_rectangle_set(&rect,rgn_x,rgn_y,rgn_width,rgn_height);
           GeglBuffer *buffer = gimp_drawable_get_shadow_buffer(layers[p]);
           const char *const format = img.spectrum()==1?"Y' float":img.spectrum()==2?"Y'A float":
             img.spectrum()==3?"R'G'B' float":"R'G'B'A float";
