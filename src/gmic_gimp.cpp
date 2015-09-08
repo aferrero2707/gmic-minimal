@@ -2856,6 +2856,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
   }
   if (run_mode!=GIMP_RUN_NONINTERACTIVE) {
     gimp_progress_end();
+    gimp_displays_flush();
     if (update_parameters && is_apply) {
       const bool pstate = gimp_preview_get_update(GIMP_PREVIEW(gui_preview));
       gimp_preview_set_update(GIMP_PREVIEW(gui_preview),false);
@@ -2863,7 +2864,6 @@ void process_image(const char *const commands_line, const bool is_apply) {
       gimp_preview_set_update(GIMP_PREVIEW(gui_preview),pstate);
     }
   }
-  gimp_displays_flush();
 }
 
 // Process the preview image.
