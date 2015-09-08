@@ -1652,7 +1652,7 @@ CImg<int> get_input_layers(CImgList<T>& images) {
   gint x1, y1, x2, y2;
   cimglist_for(images,l) {
 
-    //#if GIMP_MINOR_VERSION<=8
+#if GIMP_MINOR_VERSION<=8
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
     if (!_gimp_item_is_valid(drawable->drawable_id)) continue;
     gimp_drawable_mask_bounds(drawable->drawable_id,&x1,&y1,&x2,&y2);
@@ -1705,9 +1705,20 @@ CImg<int> get_input_layers(CImgList<T>& images) {
     }
     g_free(row);
     gimp_drawable_detach(drawable);
-    //#else
+#else
+    GeglBuffer *buffer = gimp_drawable_get_buffer(input_layers[l]);
+    const int
+      width = gimp_drawable_width(input_layers[l]),
+      height = gimp_drawable_height(input_layers[l]),
+      spectrum = gimp_drawable_bpp(input_layers[l]);
+    const char *const format = spectrum==1?"Y' float":spectrum==2?"Y'A float":
+      spectrum==3?"R'G'B' float":"R'G'B'A float";
 
-      //#endif
+    CImg<float> img(spectrum,width,height);
+    gegl_buffer_get(buffer,NULL,1,babl_format(format),img.data(),0,GEGL_ABYSS_NONE);
+    (img*=255).permute_axes("yzcx");
+    g_object_unref(buffer); // flushes the shadow tiles.
+#endif
     img.move_to(images[l]);
   }
   return input_layers;
