@@ -1651,30 +1651,30 @@ CImg<int> get_input_layers(CImgList<T>& images) {
 
   // Read input image data into a CImgList<T>.
   images.assign(input_layers.height());
-  gint x1, y1, x2, y2;
+  gint rgn_x, rgn_y, rgn_width, rgn_height;
   cimglist_for(images,l) {
     if (!_gimp_item_is_valid(input_layers[l])) continue;
-    gimp_drawable_mask_bounds(input_layers[l],&x1,&y1,&x2,&y2);
-    const int spectrum = gimp_drawable_bpp(input_layers[l]);
+    gimp_drawable_mask_intersect(input_layers[l],&rgn_x,&rgn_y,&rgn_width,&rgn_height);
+    const int rgn_spectrum = gimp_drawable_bpp(input_layers[l]);
 
 #if GIMP_MINOR_VERSION<=8
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
     GimpPixelRgn region;
-    gimp_pixel_rgn_init(&region,drawable,x1,y1,x2 - x1,y2 - y1,false,false);
-    guchar *const row = g_new(guchar,(x2 - x1)*spectrum), *ptrs = 0;
-    CImg<T> img(x2 - x1,y2 - y1,1,spectrum);
-    switch (spectrum) {
+    gimp_pixel_rgn_init(&region,drawable,rgn_x,rgn_y,rgn_width,rgn_height,false,false);
+    guchar *const row = g_new(guchar,rgn_width*rgn_spectrum), *ptrs = 0;
+    CImg<T> img(rgn_width,rgn_height,1,rgn_spectrum);
+    switch (rgn_spectrum) {
     case 1 : {
       T *ptr_r = img.data(0,0,0,0);
       cimg_forY(img,y) {
-        gimp_pixel_rgn_get_row(&region,ptrs=row,x1,y1 + y,img.width());
+        gimp_pixel_rgn_get_row(&region,ptrs=row,rgn_x,rgn_y + y,rgn_width);
         cimg_forX(img,x) *(ptr_r++) = (T)*(ptrs++);
       }
     } break;
     case 2 : {
       T *ptr_r = img.data(0,0,0,0), *ptr_g = img.data(0,0,0,1);
       cimg_forY(img,y) {
-        gimp_pixel_rgn_get_row(&region,ptrs=row,x1,y1 + y,img.width());
+        gimp_pixel_rgn_get_row(&region,ptrs=row,rgn_x,rgn_y + y,rgn_width);
         cimg_forX(img,x) {
           *(ptr_r++) = (T)*(ptrs++);
           *(ptr_g++) = (T)*(ptrs++);
@@ -1684,7 +1684,7 @@ CImg<int> get_input_layers(CImgList<T>& images) {
     case 3 : {
       T *ptr_r = img.data(0,0,0,0), *ptr_g = img.data(0,0,0,1), *ptr_b = img.data(0,0,0,2);
       cimg_forY(img,y) {
-        gimp_pixel_rgn_get_row(&region,ptrs=row,x1,y1 + y,img.width());
+        gimp_pixel_rgn_get_row(&region,ptrs=row,rgn_x,rgn_y + y,rgn_width);
         cimg_forX(img,x) {
           *(ptr_r++) = (T)*(ptrs++);
           *(ptr_g++) = (T)*(ptrs++);
@@ -1696,7 +1696,7 @@ CImg<int> get_input_layers(CImgList<T>& images) {
       T *ptr_r = img.data(0,0,0,0), *ptr_g = img.data(0,0,0,1),
         *ptr_b = img.data(0,0,0,2), *ptr_a = img.data(0,0,0,3);
       cimg_forY(img,y) {
-        gimp_pixel_rgn_get_row(&region,ptrs=row,x1,y1 + y,img.width());
+        gimp_pixel_rgn_get_row(&region,ptrs=row,rgn_x,rgn_y + y,rgn_width);
         cimg_forX(img,x) {
           *(ptr_r++) = (T)*(ptrs++);
           *(ptr_g++) = (T)*(ptrs++);
@@ -1710,11 +1710,11 @@ CImg<int> get_input_layers(CImgList<T>& images) {
     gimp_drawable_detach(drawable);
 #else
     GeglRectangle rect;
-    gegl_rectangle_set(&rect,x1,y1,x2 - x1,y2 - y1);
+    gegl_rectangle_set(&rect,rgn_x,rgn_y,rgn_width,rgn_height);
     GeglBuffer *buffer = gimp_drawable_get_buffer(input_layers[l]);
-    const char *const format = spectrum==1?"Y' " s_gmic_pixel_type:spectrum==2?"Y'A " s_gmic_pixel_type:
-      spectrum==3?"R'G'B' " s_gmic_pixel_type:"R'G'B'A " s_gmic_pixel_type;
-    CImg<float> img(spectrum,x2 - x1,y2 - y1);
+    const char *const format = rgn_spectrum==1?"Y' " s_gmic_pixel_type:rgn_spectrum==2?"Y'A " s_gmic_pixel_type:
+      rgn_spectrum==3?"R'G'B' " s_gmic_pixel_type:"R'G'B'A " s_gmic_pixel_type;
+    CImg<float> img(rgn_spectrum,rgn_width,rgn_height);
     gegl_buffer_get(buffer,&rect,1,babl_format(format),img.data(),0,GEGL_ABYSS_NONE);
     (img*=255).permute_axes("yzcx");
     g_object_unref(buffer);
