@@ -2905,7 +2905,11 @@ void process_preview() {
   guchar *const ptr0 = gimp_zoom_preview_get_source(GIMP_ZOOM_PREVIEW(gui_preview),&wp,&hp,&sp);
   const double factor = gimp_zoom_preview_get_factor(GIMP_ZOOM_PREVIEW(gui_preview));
   gimp_preview_get_position(GIMP_PREVIEW(gui_preview),&xp,&yp);
-  if (xp!=_xp || _yp!=yp || _factor!=factor) { _xp = xp; _yp = yp; _factor = factor; computed_preview.assign(); }
+  if (xp!=_xp || _yp!=yp || _factor!=factor) {
+    _xp = xp; _yp = yp; _factor = factor;
+    computed_preview.assign();
+    latest_preview_buffer.assign();
+  }
 
   if (!computed_preview) {
 
@@ -3058,7 +3062,6 @@ void process_preview() {
     if (latest_preview_buffer.width()==wp && latest_preview_buffer.height()==hp && // Avoid preview flickering effect.
         latest_preview_buffer.spectrum()==sp)
       gimp_preview_draw_buffer(GIMP_PREVIEW(gui_preview),latest_preview_buffer.data(),wp*sp);
-
     while (pthread_mutex_trylock(&spt.is_running)) { // Loop that allows to get a responsive interface.
       while (gtk_events_pending()) { gtk_main_iteration(); }
       cimg::wait(333);
@@ -3187,8 +3190,8 @@ void process_preview() {
     const float
       pw = (float)_pw,
       ph = (float)_ph,
-      dw = (float)drawable_preview->width,
-      dh = (float)drawable_preview->height;
+      dw = (float)gimp_zoom_preview_get_drawable(GIMP_ZOOM_PREVIEW(gui_preview))->width,
+      dh = (float)gimp_zoom_preview_get_drawable(GIMP_ZOOM_PREVIEW(gui_preview))->height;
     default_factor = std::sqrt((dw*dw + dh*dh)/(pw*pw + ph*ph));
   }
   const bool is_accurate_when_zoomed = gmic_preview_factors(filter,1);
