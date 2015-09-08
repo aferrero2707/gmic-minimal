@@ -104,7 +104,6 @@ std::FILE *logfile = 0;                        // The log file if any.
 void *p_spt = 0;                               // A pointer to the current running G'MIC thread if any (or 0).
 GimpRunMode run_mode;                          // Run-mode used to call the plug-in.
 GtkTreeStore *tree_view_store = 0;             // The list of the filters as a GtkTreeView model.
-GimpDrawable *drawable_preview = 0;            // The drawable used by the preview window.
 GtkWidget *dialog_window = 0;                  // The plug-in dialog window.
 GtkWidget *left_pane = 0;                      // The left pane, containing the preview window.
 GtkWidget *gui_preview = 0;                    // The preview window.
@@ -1777,8 +1776,8 @@ void set_preview_factor() {
         const float
           pw = (float)_pw,
           ph = (float)_ph,
-          dw = (float)drawable_preview->width,
-          dh = (float)drawable_preview->height;
+          dw = (float)gimp_zoom_preview_get_drawable(GIMP_ZOOM_PREVIEW(gui_preview))->width,
+          dh = (float)gimp_zoom_preview_get_drawable(GIMP_ZOOM_PREVIEW(gui_preview))->height;
         factor = std::sqrt((dw*dw + dh*dh)/(pw*pw + ph*ph));
       }
       gimp_zoom_model_zoom(gimp_zoom_preview_get_model(GIMP_ZOOM_PREVIEW(gui_preview)),GIMP_ZOOM_TO,factor);
@@ -1876,7 +1875,8 @@ void _gimp_preview_invalidate() {
     gimp_layer_set_edit_mask(active_layer_id,(gboolean)0);
 
   computed_preview.assign();
-  if (GIMP_IS_PREVIEW(gui_preview) && _gimp_item_is_valid(drawable_preview->drawable_id))
+  if (GIMP_IS_PREVIEW(gui_preview) &&
+      _gimp_item_is_valid(gimp_zoom_preview_get_drawable(GIMP_ZOOM_PREVIEW(gui_preview))->drawable_id))
     gimp_preview_invalidate(GIMP_PREVIEW(gui_preview));
   else {
     if (GTK_IS_WIDGET(gui_preview)) gtk_widget_destroy(gui_preview);
@@ -1894,7 +1894,7 @@ void _gimp_preview_invalidate() {
       gimp_image_scale(preview_image_id,pw,ph);
       gimp_context_set_interpolation(mode);
     }
-    drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(preview_image_id?preview_image_id:image_id));
+    GimpDrawable *const drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(preview_image_id?preview_image_id:image_id));
     gui_preview = gimp_zoom_preview_new(drawable_preview);
     GtkWidget *controls = gimp_preview_get_controls(GIMP_PREVIEW(gui_preview));
     GList *const children1 = ((GtkBox*)controls)->children;
@@ -3888,8 +3888,6 @@ bool create_dialog_gui() {
   gtk_combo_box_set_active(GTK_COMBO_BOX(preview_size_combobox),get_preview_size(false));
   gtk_table_attach_defaults(GTK_TABLE(left_table),preview_size_combobox,0,1,4,5);
   g_signal_connect(preview_size_combobox,"changed",G_CALLBACK(on_dialog_preview_size_changed),0);
-
-  drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(image_id));
   gui_preview = 0;
   _gimp_preview_invalidate();
   g_signal_connect(dialog_window,"size-request",G_CALLBACK(on_dialog_resized),0);
