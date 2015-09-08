@@ -2796,7 +2796,13 @@ void process_image(const char *const commands_line, const bool is_apply) {
 
     default : { // Output in 'New image' mode.
       if (spt.images.size()) {
+
+#if GIMP_MINOR_VERSION<=8
         const int nimage_id = gimp_image_new(max_width,max_height,max_spectrum<=2?GIMP_GRAY:GIMP_RGB);
+#else
+        const int nimage_id = gimp_image_new_with_precision(max_width,max_height,max_spectrum<=2?GIMP_GRAY:GIMP_RGB,
+          gimp_image_get_precision(image_id));
+#endif
         const gint active_layer_id = gimp_image_get_active_layer(image_id);
         gimp_image_undo_group_start(nimage_id);
         cimglist_for(spt.images,p) {
