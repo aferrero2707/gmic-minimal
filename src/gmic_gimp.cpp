@@ -59,6 +59,9 @@
 #ifndef gmic_pixel_type
 #define gmic_pixel_type float
 #endif
+#define __s_gmic_pixel_type(s) #s
+#define _s_gmic_pixel_type(s) __s_gmic_pixel_type(s)
+#define s_gmic_pixel_type _s_gmic_pixel_type(gmic_pixel_type)
 
 // Manage different versions of the GIMP API.
 #if GIMP_MINOR_VERSION<=6
@@ -1479,12 +1482,12 @@ void convert_image2uchar(CImg<T>& img) {
   }
 }
 
-// Calibrate any image to fit the number of required channels (GRAY,GRAYA, RGB or RGBA).
+// Calibrate any image to fit the required number of channels (GRAY,GRAYA, RGB or RGBA).
 //---------------------------------------------------------------------------------------
 template<typename T>
-void calibrate_image(CImg<T>& img, const unsigned int channels, const bool is_preview) {
-  if (!img || !channels) return;
-  switch (channels) {
+void calibrate_image(CImg<T>& img, const unsigned int spectrum, const bool is_preview) {
+  if (!img || !spectrum) return;
+  switch (spectrum) {
 
   case 1 : // To GRAY
     switch (img.spectrum()) {
@@ -1654,13 +1657,14 @@ CImg<int> get_input_layers(CImgList<T>& images) {
 
 #if GIMP_MINOR_VERSION<=8
     GimpDrawable *drawable = gimp_drawable_get(input_layers[l]);
-    if (!_gimp_item_is_valid(drawable->drawable_id)) continue;
-    gimp_drawable_mask_bounds(drawable->drawable_id,&x1,&y1,&x2,&y2);
-    const int channels = drawable->bpp;
+    if (!_gimp_item_is_valid(input_layers[l])) continue;
+    gimp_drawable_mask_bounds(input_layers[l],&x1,&y1,&x2,&y2);
+    const int spectrum = gimp_drawable_bpp(input_layers[l]);
+
     gimp_pixel_rgn_init(&region,drawable,x1,y1,x2 - x1,y2 - y1,false,false);
-    guchar *const row = g_new(guchar,(x2 - x1)*channels), *ptrs = 0;
-    CImg<T> img(x2 - x1,y2 - y1,1,channels);
-    switch (channels) {
+    guchar *const row = g_new(guchar,(x2 - x1)*spectrum), *ptrs = 0;
+    CImg<T> img(x2 - x1,y2 - y1,1,spectrum);
+    switch (spectrum) {
     case 1 : {
       T *ptr_r = img.data(0,0,0,0);
       cimg_forY(img,y) {
@@ -1711,9 +1715,8 @@ CImg<int> get_input_layers(CImgList<T>& images) {
       width = gimp_drawable_width(input_layers[l]),
       height = gimp_drawable_height(input_layers[l]),
       spectrum = gimp_drawable_bpp(input_layers[l]);
-    const char *const format = spectrum==1?"Y' float":spectrum==2?"Y'A float":
-      spectrum==3?"R'G'B' float":"R'G'B'A float";
-
+    const char *const format = spectrum==1?"Y' " s_gmic_pixel_type:spectrum==2?"Y'A " s_gmic_pixel_type:
+      spectrum==3?"R'G'B' " s_gmic_pixel_type:"R'G'B'A " s_gmic_pixel_type;
     CImg<float> img(spectrum,width,height);
     gegl_buffer_get(buffer,NULL,1,babl_format(format),img.data(),0,GEGL_ABYSS_NONE);
     (img*=255).permute_axes("yzcx");
@@ -2594,12 +2597,12 @@ void process_image(const char *const commands_line, const bool is_apply) {
   } else if (!is_abort) {
 
     // Get output layers dimensions and check if input/output layers have compatible dimensions.
-    unsigned int max_width = 0, max_height = 0, max_channels = 0;
+    unsigned int max_width = 0, max_height = 0, max_spectrum = 0;
     cimglist_for(spt.images,l) {
       if (spt.images[l].is_empty()) { spt.images.remove(l--); continue; }          // Discard possible empty images.
       if (spt.images[l]._width>max_width) max_width = spt.images[l]._width;
       if (spt.images[l]._height>max_height) max_height = spt.images[l]._height;
-      if (spt.images[l]._spectrum>max_channels) max_channels = spt.images[l]._spectrum;
+      if (spt.images[l]._spectrum>max_spectrum) max_spectrum = spt.images[l]._spectrum;
     }
     bool is_compatible_dimensions = (spt.images.size()==layers._height);
     for (unsigned int p = 0; p<spt.images.size() && is_compatible_dimensions; ++p) {
@@ -2792,7 +2795,7 @@ void process_image(const char *const commands_line, const bool is_apply) {
 
     default : { // Output in 'New image' mode.
       if (spt.images.size()) {
-        const int nimage_id = gimp_image_new(max_width,max_height,max_channels<=2?GIMP_GRAY:GIMP_RGB);
+        const int nimage_id = gimp_image_new(max_width,max_height,max_spectrum<=2?GIMP_GRAY:GIMP_RGB);
         const gint active_layer_id = gimp_image_get_active_layer(image_id);
         gimp_image_undo_group_start(nimage_id);
         cimglist_for(spt.images,p) {
