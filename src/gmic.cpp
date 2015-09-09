@@ -4490,13 +4490,15 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           ++item; is_get_version = true;
         }
         strreplace_fw(item);
-        const int err = cimg_sscanf(item,"%255[^[]%c%255[a-zA-Z_0-9.eE%^,:+-]%c%c",
+        const int err = cimg_sscanf(item,"%255[^[.]%c%255[a-zA-Z_0-9.eE%^,:+-]%c%c",
                                     command,&sep0,restriction,&sep1,&end);
         if (err==1) {
           selection.assign(1,images.size());
           cimg_forY(selection,y) selection[y] = (unsigned int)y;
-        }
-        else if (err==2 && sep0=='[' && item[std::strlen(command) + 1]==']') {
+        } else if (err==2 && sep0=='.') {
+          selection.assign(1,1,1,1,images.size() - 1);
+          is_restriction = true;
+        } else if (err==2 && sep0=='[' && item[std::strlen(command) + 1]==']') {
           selection.assign(); is_restriction = true;
         } else if (err==4 && sep1==']') {
           is_restriction = true;
