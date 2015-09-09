@@ -4484,6 +4484,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       bool is_get_version = false, is_restriction = false;
       CImg<unsigned int> selection;
       CImg<char> new_name;
+      unsigned int siz;
       if (*item=='-' && item[1] && item[1]!='.') {
         sep0 = sep1 = 0;
         if (item[1]=='-' && item[2] && item[2]!='[' && (item[2]!='3' || item[3]!='d')) {
@@ -4496,8 +4497,26 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           selection.assign(1,images.size());
           cimg_forY(selection,y) selection[y] = (unsigned int)y;
         } else if (err==2 && sep0=='.') {
-          selection.assign(1,1,1,1,images.size() - 1);
-          is_restriction = true;
+          siz = images.size();
+          if (!siz)
+            error("Command '%s': Invalid selection [-1] (no data available).",
+                  command);
+          selection.assign(1,1,1,1,siz - 1);
+          *restriction = 0; is_restriction = true;
+        } else if (err==3 && sep0=='.' && *restriction=='.' && !restriction[1]) {
+          siz = images.size();
+          if (siz<2)
+            error("Command '%s': Invalid selection [-2] (out of range).",
+                  command);
+          selection.assign(1,1,1,1,siz - 2);
+          *restriction = 0; is_restriction = true;
+        } else if (err==3 && sep0=='.' && *restriction=='.' && restriction[1]=='.' && !restriction[2]) {
+          siz = images.size();
+          if (siz<3)
+            error("Command '%s': Invalid selection [-3] (out of range).",
+                  command);
+          selection.assign(1,1,1,1,siz - 3);
+          *restriction = 0; is_restriction = true;
         } else if (err==2 && sep0=='[' && item[std::strlen(command) + 1]==']') {
           selection.assign(); is_restriction = true;
         } else if (err==4 && sep1==']') {
