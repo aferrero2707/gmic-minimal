@@ -11414,7 +11414,6 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     int omx = -1, omy = -1;
                     uimg.assign();
                     vmax = (double)img.max_min(vmin);
-
                     for (disp.show().flush(); !stopflag; ) {
                       const unsigned char white[] = { 255,255,255 }, black[] = { 0,0,0 };
                       const unsigned int key = disp.key();
@@ -11898,6 +11897,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                 disp.assign();
               } else {
                 if (disp) { // Update.
+                  if (!selection) disp.show();
                   disp.resize(dimw>0?(int)dimw:disp.window_width(),
                               dimh>0?(int)dimh:disp.window_height(),
                               false);
