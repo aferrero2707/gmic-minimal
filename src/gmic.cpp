@@ -3818,30 +3818,33 @@ CImg<char> gmic::substitute_item(const char *const source,
           unsigned int wind = 0;
           const char *feature = inbraces.data() + 1;
           if (*feature>='0' && *feature<='9') wind = (unsigned int)(*(feature++) - '0');
+          CImgDisplay &disp = _display_window[wind];
+
           if (!*feature) {
-            cimg_snprintf(substr,substr.width(),"%d",
-              _display_window[wind]?(_display_window[wind].is_closed()?0:1):0);
+            cimg_snprintf(substr,substr.width(),"%d",disp?(disp.is_closed()?0:1):0);
             is_substituted = true;
           } else if (*feature==',') {
             bool flush_request = false;
             if (*(++feature)=='-' &&
                 feature[1]!='w' && feature[1]!='h' && feature[1]!='d' && feature[1]!='e' &&
-                feature[1]!='u' && feature[1]!='v' && feature[1]!='n') { flush_request = true; ++feature; }
+                feature[1]!='u' && feature[1]!='v' && feature[1]!='n' && feature[1]!='t') {
+              flush_request = true; ++feature;
+            }
             if (!feature[1]) switch (*feature) { // Single-char features.
               case 'w' : // Display width.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].width());
+                cimg_snprintf(substr,substr.width(),"%d",disp.width());
                 is_substituted = true;
                 break;
               case 'h' : // Display height.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].height());
+                cimg_snprintf(substr,substr.width(),"%d",disp.height());
                 is_substituted = true;
                 break;
               case 'd' : // Window width.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].window_width());
+                cimg_snprintf(substr,substr.width(),"%d",disp.window_width());
                 is_substituted = true;
                 break;
               case 'e' : // Window height.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].window_height());
+                cimg_snprintf(substr,substr.width(),"%d",disp.window_height());
                 is_substituted = true;
                 break;
               case 'u' : // Screen width.
@@ -3861,57 +3864,60 @@ CImg<char> gmic::substitute_item(const char *const source,
                 is_substituted = true;
                 break;
               case 'n' : // Normalization type.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].normalization());
+                cimg_snprintf(substr,substr.width(),"%d",disp.normalization());
+                is_substituted = true;
+                break;
+              case 't' : // Window title.
+                cimg_snprintf(substr,substr.width(),"%s",disp.title());
                 is_substituted = true;
                 break;
               case 'x' : // X-coordinate of mouse pointer.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].mouse_x());
+                cimg_snprintf(substr,substr.width(),"%d",disp.mouse_x());
                 is_substituted = true;
-                if (flush_request) { _display_window[wind]._mouse_x = -1; _display_window[wind]._mouse_y = -1; }
+                if (flush_request) { disp._mouse_x = -1; disp._mouse_y = -1; }
                 break;
               case 'y' : // Y-coordinate of mouse pointer.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].mouse_y());
+                cimg_snprintf(substr,substr.width(),"%d",disp.mouse_y());
                 is_substituted = true;
-                if (flush_request) { _display_window[wind]._mouse_x = -1; _display_window[wind]._mouse_y = -1; }
+                if (flush_request) { disp._mouse_x = -1; disp._mouse_y = -1; }
                 break;
               case 'b' : // State of mouse buttons.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].button());
+                cimg_snprintf(substr,substr.width(),"%d",disp.button());
                 is_substituted = true;
-                if (flush_request) _display_window[wind]._button = 0;
+                if (flush_request) disp._button = 0;
                 break;
               case 'o' : // State of mouse wheel.
-                cimg_snprintf(substr,substr.width(),"%d",_display_window[wind].wheel());
+                cimg_snprintf(substr,substr.width(),"%d",disp.wheel());
                 is_substituted = true;
-                if (flush_request) _display_window[wind]._wheel = 0;
+                if (flush_request) disp._wheel = 0;
                 break;
               case 'c' : // Closed state of display window.
-                cimg_snprintf(substr,substr.width(),"%d",(int)_display_window[wind].is_closed());
+                cimg_snprintf(substr,substr.width(),"%d",(int)disp.is_closed());
                 is_substituted = true;
-                if (flush_request) _display_window[wind]._is_closed = false;
+                if (flush_request) disp._is_closed = false;
                 break;
               case 'r' : // Resize event.
-                cimg_snprintf(substr,substr.width(),"%d",(int)_display_window[wind].is_resized());
+                cimg_snprintf(substr,substr.width(),"%d",(int)disp.is_resized());
                 is_substituted = true;
-                if (flush_request) _display_window[wind]._is_resized = false;
+                if (flush_request) disp._is_resized = false;
                 break;
               case 'm' : // Move event.
-                cimg_snprintf(substr,substr.width(),"%d",(int)_display_window[wind].is_moved());
+                cimg_snprintf(substr,substr.width(),"%d",(int)disp.is_moved());
                 is_substituted = true;
-                if (flush_request) _display_window[wind]._is_moved = false;
+                if (flush_request) disp._is_moved = false;
                 break;
               case 'k' : // Key event.
-                cimg_snprintf(substr,substr.width(),"%u",_display_window[wind].key());
+                cimg_snprintf(substr,substr.width(),"%u",disp.key());
                 is_substituted = true;
-                if (flush_request) _display_window[wind]._keys[0] = 0;
+                if (flush_request) disp._keys[0] = 0;
                 break;
               } else if (*feature=='w' && feature[1]=='h' && !feature[2]) { // Display width*height.
               cimg_snprintf(substr,substr.width(),"%ld",
-                            (long)_display_window[wind].width()*_display_window[wind].height());
+                            (long)disp.width()*disp.height());
               is_substituted = true;
             } else if (*feature=='d' && feature[1]=='e' && !feature[2]) { // Window width*height.
               cimg_snprintf(substr,substr.width(),"%ld",
-                            (long)_display_window[wind].window_width()*
-                            _display_window[wind].window_height());
+                            (long)disp.window_width()*disp.window_height());
               is_substituted = true;
             } else if (*feature=='u' && feature[1]=='v' && !feature[2]) { // Screen width*height.
               try {
@@ -3923,7 +3929,7 @@ CImg<char> gmic::substitute_item(const char *const source,
               is_substituted = true;
             }
             if (!is_substituted) { // Pressed state of specified key.
-              volatile bool &ik = _display_window[wind].is_key(feature);
+              volatile bool &ik = disp.is_key(feature);
               cimg_snprintf(substr,substr.width(),"%d",(int)ik);
               is_substituted = true;
               if (flush_request) ik = false;
@@ -5857,7 +5863,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                       capture_width,capture_height);
               else print(images,0,"Insert %g image%s from camera #%g, with %g frames skipping.",
                          cam_index,nb_frames,nb_frames>1?"s":"",skip_frames);
-              cimg_snprintf(title,_title.size(),"[Camera #%g]",cam_index);
+              cimg_snprintf(title,_title.width(),"[Camera #%g]",cam_index);
               CImg<char>::string(title).move_to(name);
               if (nb_frames>1) {
                 cimg::mutex(29);
@@ -6443,7 +6449,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             cimg::mutex(31);
             const int errcode = cimg::system(name);
             cimg::mutex(31,0);
-            cimg_snprintf(title,_title.size(),"%d",errcode);
+            cimg_snprintf(title,_title.width(),"%d",errcode);
             CImg<char>::string(title).move_to(status);
             if (errcode) print(images,0,"Command '-exec' returned error code '%d'.",
                                errcode);
@@ -7459,7 +7465,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                  x0,y0,x1,y1,(int)dx,(int)dy).move_to(vertices);
               vertices.object3dtoCImg3d(primitives,false).move_to(images);
               primitives.assign();
-              cimg_snprintf(title,_title.size(),"[3d isoline %g of '%s']",value,formula);
+              cimg_snprintf(title,_title.width(),"[3d isoline %g of '%s']",value,formula);
               CImg<char>::string(title).move_to(images_names);
             } else arg_error("isoline3d");
             is_released = false; ++position; continue;
@@ -7581,7 +7587,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                     x0,y0,z0,x1,y1,z1,(int)dx,(int)dy,(int)dz).move_to(vertices);
               vertices.object3dtoCImg3d(primitives,false).move_to(images);
               primitives.assign();
-              cimg_snprintf(title,_title.size(),"[3d isosurface %g of '%s']",value,formula);
+              cimg_snprintf(title,_title.width(),"[3d isosurface %g of '%s']",value,formula);
               CImg<char>::string(title).move_to(images_names);
             } else arg_error("isosurface3d");
             is_released = false; ++position; continue;
@@ -9252,7 +9258,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
 
               gi.callstack.assign(callstack);
               gi.commands_files.assign(commands_files,true);
-              cimg_snprintf(title,_title.size(),"*thread%d",l);
+              cimg_snprintf(title,_title.width(),"*thread%d",l);
               CImg<char>::string(title).move_to(gi.callstack);
               gi.light3d.assign(light3d);
               gi.status.assign(status);
@@ -9597,7 +9603,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               cimg::eval(formula,values).move_to(values);
 
               CImgList<char> tmp_name;
-              cimg_snprintf(title,_title.size(),"[Plot of '%s']",formula);
+              cimg_snprintf(title,_title.width(),"[Plot of '%s']",formula);
               CImg<char>::string(title).move_to(tmp_name);
               display_plots(tmp_img,tmp_name,CImg<unsigned int>::vector(0),
                             plot_type,vertex_type,xmin,xmax,ymin,ymax);
@@ -11175,7 +11181,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
               vertices.object3dtoCImg3d(primitives,ucolors,false).move_to(images);
               primitives.assign();
               ucolors.assign();
-              cimg_snprintf(title,_title.size(),"[3d streamline of '%s' at (%g,%g,%g)]",
+              cimg_snprintf(title,_title.width(),"[3d streamline of '%s' at (%g,%g,%g)]",
                             formula,x,y,z);
               CImg<char>::string(title).move_to(images_names);
             } else arg_error("streamline3d");
@@ -11884,46 +11890,40 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                     wind);
             }
             if (is_available_display) {
+              CImgDisplay &disp = _display_window[wind];
 
               if (!dimw || !dimh) { // Close.
                 print(images,0,"Close display window [%d].",
                       wind);
-                _display_window[wind].assign();
+                disp.assign();
               } else {
-                if (_display_window[wind]) { // Update.
-                  _display_window[wind].resize(dimw>0?(int)dimw:_display_window[wind].window_width(),
-                                              dimh>0?(int)dimh:_display_window[wind].window_height(),
-                                              false);
+                if (disp) { // Update.
+                  disp.resize(dimw>0?(int)dimw:disp.window_width(),
+                              dimh>0?(int)dimh:disp.window_height(),
+                              false);
                   if (is_move) {
-                    if (sepx=='%') posx*=(CImgDisplay::screen_width() -
-                                          _display_window[wind].window_width())/100.0f;
-                    if (sepy=='%') posy*=(CImgDisplay::screen_height() -
-                                          _display_window[wind].window_height())/100.0f;
-                    _display_window[wind].move((int)posx,(int)posy);
+                    if (sepx=='%') posx*=(CImgDisplay::screen_width() - disp.window_width())/100.0f;
+                    if (sepy=='%') posy*=(CImgDisplay::screen_height() - disp.window_height())/100.0f;
+                    disp.move((int)posx,(int)posy);
                   }
-                  if (norm>=0) _display_window[wind]._normalization = (unsigned int)norm;
-                  if (*title && std::strcmp(_display_window[wind].title(),title))
-                    _display_window[wind].set_title("%s",title);
-                  if (fullscreen>=0 && (bool)fullscreen!=_display_window[wind].is_fullscreen())
-                    _display_window[wind].toggle_fullscreen(false);
+                  if (norm>=0) disp._normalization = (unsigned int)norm;
+                  if (*title && std::strcmp(disp.title(),title)) disp.set_title("%s",title);
+                  if (fullscreen>=0 && (bool)fullscreen!=disp.is_fullscreen()) disp.toggle_fullscreen(false);
                 } else { // Create.
-                  _display_window[wind].assign(dimw>0?(int)dimw:optw,
-                                               dimh>0?(int)dimh:opth,
-                                               title,norm<0?3:norm,
-                                               fullscreen<0?false:(bool)fullscreen,
-                                               is_move);
+                  if (!*title) cimg_snprintf(title,_title.width(),"[G'MIC] Window #%u",wind);
+                  disp.assign(dimw>0?(int)dimw:optw,
+                              dimh>0?(int)dimh:opth,
+                              title,norm<0?3:norm,
+                              fullscreen<0?false:(bool)fullscreen,
+                              is_move);
                   if (is_move) {
-                    if (sepx=='%') posx*=(CImgDisplay::screen_width() -
-                                          _display_window[wind].window_width())/100.0f;
-                    if (sepy=='%') posy*=(CImgDisplay::screen_height() -
-                                          _display_window[wind].window_height())/100.0f;
-                    _display_window[wind].move((int)posx,(int)posy);
+                    if (sepx=='%') posx*=(CImgDisplay::screen_width() - disp.window_width())/100.0f;
+                    if (sepy=='%') posy*=(CImgDisplay::screen_height() - disp.window_height())/100.0f;
+                    disp.move((int)posx,(int)posy);
                   }
                   if (norm==2) {
-                    if (subimages)
-                      _display_window[wind]._max =
-                        (float)subimages.max_min(_display_window[wind]._min);
-                    else { _display_window[wind]._min = 0; _display_window[wind]._max = 255; }
+                    if (subimages) disp._max = (float)subimages.max_min(disp._min);
+                    else { disp._min = 0; disp._max = 255; }
                   }
                 }
                 if (is_move) print(images,0,
@@ -11931,30 +11931,24 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                    "with%snormalization, "
                                    "%sfullscreen, at position (%s,%s) and title '%s'.",
                                    gmic_selection.data(),
-                                   _display_window[wind].width(),
-                                   _display_window[wind].height(),
-                                   _display_window[wind].is_fullscreen()?"fullscreen ":"",
+                                   disp.width(),disp.height(),disp.is_fullscreen()?"fullscreen ":"",
                                    wind,
-                                   _display_window[wind].normalization()==0?"out ":
-                                   _display_window[wind].normalization()==1?" ":
-                                   _display_window[wind].normalization()==2?" 1st-time ":" auto-",
-                                   _display_window[wind].is_fullscreen()?"":"no ",
+                                   disp.normalization()==0?"out ":disp.normalization()==1?" ":
+                                   disp.normalization()==2?" 1st-time ":" auto-",
+                                   disp.is_fullscreen()?"":"no ",
                                    argz,argc,
-                                   _display_window[wind].title());
+                                   disp.title());
                 else print(images,0,
                            "Display image%s in %dx%d %sdisplay window [%d], with%snormalization, "
                            "%sfullscreen and title '%s'.",
                            gmic_selection.data(),
-                           _display_window[wind].width(),
-                           _display_window[wind].height(),
-                           _display_window[wind].is_fullscreen()?"fullscreen ":"",
+                           disp.width(),disp.height(),disp.is_fullscreen()?"fullscreen ":"",
                            wind,
-                           _display_window[wind].normalization()==0?"out ":
-                           _display_window[wind].normalization()==1?" ":
-                           _display_window[wind].normalization()==2?" 1st-time ":" auto-",
-                           _display_window[wind].is_fullscreen()?"":"no ",
-                           _display_window[wind].title());
-                if (subimages) subimages.display(_display_window[wind]);
+                           disp.normalization()==0?"out ":disp.normalization()==1?" ":
+                           disp.normalization()==2?" 1st-time ":" auto-",
+                           disp.is_fullscreen()?"":"no ",
+                           disp.title());
+                if (subimages) subimages.display(disp);
               }
             }
 
@@ -12948,7 +12942,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         CImg<T> new_image(idx,idy,idz,idc,0);
         if (s_values) {
           new_image.fill(s_values.data(),true);
-          cimg_snprintf(title,_title.size(),"[image of '%s']",s_values.data());
+          cimg_snprintf(title,_title.width(),"[image of '%s']",s_values.data());
           CImg<char>::string(title).move_to(input_images_names);
         } else CImg<char>::string("[unnamed]").move_to(input_images_names);
         new_image.move_to(input_images);
