@@ -3059,11 +3059,11 @@ CImg<unsigned int> gmic::selection2cimg(const char *const string, const unsigned
         uind1 = (int)(iind1<0?iind1 + indice_max:iind1);
       if (uind0>uind1) { cimg::swap(uind0,uind1); cimg::swap(iind0,iind1); }
       if (uind0<0 || uind0>=(int)indice_max)
-        error("Command '%s': Invalid %s %c%s%c (contains starting indice '%d', "
+        error("Command '%s': Invalid %s %c%s%c (contains indice '%d', "
               "not in range -%u...%u).",
               command,stype,ctypel,string,ctyper,iind0,indice_max,indice_max - 1);
       if (uind1<0 || uind1>=(int)indice_max)
-        error("Command '%s': Invalid %s %c%s%c (contains ending indice '%d', "
+        error("Command '%s': Invalid %s %c%s%c (contains indice '%d', "
               "not in range -%u...%u).",
               command,stype,ctypel,string,ctyper,iind1,indice_max,indice_max - 1);
       const int istep = (int)cimg::round(step);
@@ -4482,9 +4482,9 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       *command = *restriction = 0;
 
       bool is_get_version = false, is_restriction = false;
+      const unsigned int siz = images._width;
       CImg<unsigned int> selection;
       CImg<char> new_name;
-      unsigned int siz;
       if (*item=='-' && item[1] && item[1]!='.') {
         sep0 = sep1 = 0;
         if (item[1]=='-' && item[2] && item[2]!='[' && (item[2]!='3' || item[3]!='d')) {
@@ -4494,27 +4494,21 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
         const int err = cimg_sscanf(item,"%255[^[.]%c%255[a-zA-Z_0-9.eE%^,:+-]%c%c",
                                     command,&sep0,restriction,&sep1,&end);
         if (err==1) {
-          selection.assign(1,images.size());
+          selection.assign(1,siz);
           cimg_forY(selection,y) selection[y] = (unsigned int)y;
         } else if (err==2 && sep0=='.') {
-          siz = images.size();
-          if (!siz)
-            error("Command '%s': Invalid selection [-1] (no data available).",
-                  command);
+          if (!siz) selection2cimg("-1",siz,images_names,command,
+                                   true,false,CImg<char>::empty()); // Will display error message.
           selection.assign(1,1,1,1,siz - 1);
           *restriction = 0; is_restriction = true;
         } else if (err==3 && sep0=='.' && *restriction=='.' && !restriction[1]) {
-          siz = images.size();
-          if (siz<2)
-            error("Command '%s': Invalid selection [-2] (out of range).",
-                  command);
+          if (siz<2) selection2cimg("-2",siz,images_names,command,
+                                    true,false,CImg<char>::empty()); // Will display error message.
           selection.assign(1,1,1,1,siz - 2);
           *restriction = 0; is_restriction = true;
         } else if (err==3 && sep0=='.' && *restriction=='.' && restriction[1]=='.' && !restriction[2]) {
-          siz = images.size();
-          if (siz<3)
-            error("Command '%s': Invalid selection [-3] (out of range).",
-                  command);
+          if (siz<3) selection2cimg("-3",siz,images_names,command,
+                                    true,false,CImg<char>::empty()); // Will display error message.
           selection.assign(1,1,1,1,siz - 3);
           *restriction = 0; is_restriction = true;
         } else if (err==2 && sep0=='[' && item[std::strlen(command) + 1]==']') {
@@ -4526,7 +4520,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
                                        false,CImg<char>::empty());
           else if ((!std::strcmp("-i",command) || !std::strcmp("-input",command)) &&
                    !is_get_version)
-            selection = selection2cimg(restriction,images.size() + 1,images_names,command,true,
+            selection = selection2cimg(restriction,siz + 1,images_names,command,true,
                                        true,new_name);
           else if ((!std::strcmp("-e",command) || !std::strcmp("-echo",command) ||
                     !std::strcmp("-error",command) || !std::strcmp("-warn",command)) &&
@@ -4537,7 +4531,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             selection = selection2cimg(restriction,parent_images.size(),parent_images_names,command,true,
                                        false,CImg<char>::empty());
           else
-            selection = selection2cimg(restriction,images.size(),images_names,command,true,
+            selection = selection2cimg(restriction,siz,images_names,command,true,
                                        false,CImg<char>::empty());
         } else {
           std::strncpy(command,item,_command.width() - 1);
