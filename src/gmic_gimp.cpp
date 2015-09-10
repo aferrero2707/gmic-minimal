@@ -1895,7 +1895,8 @@ void _gimp_preview_invalidate() {
       gimp_image_scale(preview_image_id,pw,ph);
       gimp_context_set_interpolation(mode);
     }
-    GimpDrawable *const drawable_preview = gimp_drawable_get(gimp_image_get_active_drawable(preview_image_id?preview_image_id:image_id));
+    GimpDrawable *const drawable_preview =
+      gimp_drawable_get(gimp_image_get_active_drawable(preview_image_id?preview_image_id:image_id));
     gui_preview = gimp_zoom_preview_new(drawable_preview);
     GtkWidget *controls = gimp_preview_get_controls(GIMP_PREVIEW(gui_preview));
     GList *const children1 = ((GtkBox*)controls)->children;
