@@ -4497,29 +4497,23 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
           ++item; is_get_version = true;
         }
         strreplace_fw(item);
-        const int err = cimg_sscanf(item,"%255[^[.]%c%255[a-zA-Z_0-9.eE%^,:+-]%c%c",
+        int err = cimg_sscanf(item,"%255[^[]%c%255[a-zA-Z_0-9.eE%^,:+-]%c%c",
                                     command,&sep0,restriction,&sep1,&end);
-        if (err==1) {
+
+        const unsigned int l_command = err==1?std::strlen(command):0;
+        if (err==1 && l_command>=2 && command[l_command - 1]=='.') { // Selection shortcut.
+          err = 4; sep0 = '['; sep1 = ']'; *restriction = '-';
+          if (command[l_command - 2]!='.') { restriction[1] = '1'; command[l_command - 1] = 0; }
+          else if (l_command>=3 && command[l_command - 3]!='.') { restriction[1] = '2'; command[l_command - 2] = 0; }
+          else if (l_command>=4 && command[l_command - 4]!='.') { restriction[1] = '3'; command[l_command - 3] = 0; }
+          restriction[2] = 0;
+        }
+        if (err==1) { // No selection -> all images.
           selection.assign(1,siz);
           cimg_forY(selection,y) selection[y] = (unsigned int)y;
-        } else if (err==2 && sep0=='.') {
-          if (!siz) selection2cimg("-1",siz,images_names,command,
-                                   true,false,CImg<char>::empty()); // Will display error message.
-          selection.assign(1,1,1,1,siz - 1);
-          *restriction = 0; is_restriction = true;
-        } else if (err==3 && sep0=='.' && *restriction=='.' && !restriction[1]) {
-          if (siz<2) selection2cimg("-2",siz,images_names,command,
-                                    true,false,CImg<char>::empty()); // Will display error message.
-          selection.assign(1,1,1,1,siz - 2);
-          *restriction = 0; is_restriction = true;
-        } else if (err==3 && sep0=='.' && *restriction=='.' && restriction[1]=='.' && !restriction[2]) {
-          if (siz<3) selection2cimg("-3",siz,images_names,command,
-                                    true,false,CImg<char>::empty()); // Will display error message.
-          selection.assign(1,1,1,1,siz - 3);
-          *restriction = 0; is_restriction = true;
-        } else if (err==2 && sep0=='[' && item[std::strlen(command) + 1]==']') {
+        } else if (err==2 && sep0=='[' && item[std::strlen(command) + 1]==']') { // Empty selection.
           selection.assign(); is_restriction = true;
-        } else if (err==4 && sep1==']') {
+        } else if (err==4 && sep1==']') { // Other selections.
           is_restriction = true;
           if ((!std::strcmp("-wait",command) || !std::strcmp("-cursor",command)) && !is_get_version)
             selection = selection2cimg(restriction,10,CImgList<char>::empty(),command,true,
