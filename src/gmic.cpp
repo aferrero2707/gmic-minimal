@@ -4493,7 +4493,7 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
       CImg<char> new_name;
       if (*item=='-' && item[1] && item[1]!='.') {
         sep0 = sep1 = 0;
-        if (item[1]=='-' && item[2] && item[2]!='[' && (item[2]!='3' || item[3]!='d')) {
+        if (item[1]=='-' && item[2] && item[2]!='[' && item[2]!='.' && (item[2]!='3' || item[3]!='d')) {
           ++item; is_get_version = true;
         }
         strreplace_fw(item);
