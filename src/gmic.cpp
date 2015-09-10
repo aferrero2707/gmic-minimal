@@ -9305,8 +9305,15 @@ gmic& gmic::_run(const CImgList<char>& commands_line, unsigned int& position,
             cimg_forY(_threads_data,l) {
 #ifdef gmic_is_parallel
 #if cimg_OS!=2
-              pthread_create(&_threads_data[l].thread_id,0,gmic_parallel<T>,
-                             (void*)&_threads_data[l]);
+              pthread_attr_t thread_attr;
+              if( (pthread_attr_init(&thread_attr) == 0) &&
+                  // Reserve 8MB of stack size for the new thread
+                  (pthread_attr_setstacksize(&thread_attr, 8*1024*1024)) == 0)
+                pthread_create(&_threads_data[l].thread_id,&thread_attr,gmic_parallel<T>,
+                               (void*)&_threads_data[l]);
+              else
+                pthread_create(&_threads_data[l].thread_id,0,gmic_parallel<T>,
+                               (void*)&_threads_data[l]);
 #else // #if cimg_OS!=2
               _threads_data[l].thread_id = CreateThread(0,0,gmic_parallel<T>,
                                                         (void*)&_threads_data[l],0,0);
